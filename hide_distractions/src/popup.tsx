@@ -1,13 +1,6 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './popup.css';
-=======
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { IntentionProvider } from './context/intentionPopupContext'
-
->>>>>>> origin/main
 
 function App() {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -126,7 +119,6 @@ function App() {
   );
 }
 
-<<<<<<< HEAD
 // Renders the App component into #root
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -135,10 +127,3 @@ if (rootElement) {
 } else {
   console.error("Root element not found!");
 }
-=======
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode>
-  <IntentionProvider>
-    <App />
-  </IntentionProvider>
-</React.StrictMode>)
->>>>>>> origin/main

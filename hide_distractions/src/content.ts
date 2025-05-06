@@ -51,7 +51,6 @@ const selectorsToHide = [
 ];
 
 for (const selector of selectorsToHide) {
-<<<<<<< HEAD
   const el = document.querySelector(selector)
   if (el) el.remove()
 }
@@ -857,8 +856,3 @@ contentObserver.observe(document.body, {
   childList: true,
   subtree: true
 });
-=======
-  const el = document.querySelector(selector);
-  if (el) el.remove();
-}
->>>>>>> origin/main
