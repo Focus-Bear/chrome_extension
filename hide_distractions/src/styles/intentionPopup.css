@@ -1,3 +1,13 @@
+/* Add these at the top of the file */
+:root {
+  --popup-max-width: 400px;
+  --popup-padding: 30px;
+  --popup-border-radius: 50px;
+  --heading-font-size: 2rem;
+  --text-font-size: 18px;
+  --button-width: 225px;
+}
+
 /* Overlay backdrop */
 .focus-popup {
   position: fixed;
@@ -16,12 +26,12 @@
 /* Popup box */
 .focus-popup-box {
   position: relative;
-  padding: 30px;
-  border-radius: 50px;
+  padding: var(--popup-padding);
+  border-radius: var(--popup-border-radius);
   background-color: #FFE4C6;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   text-align: center;
-  max-width: 400px;
+  max-width: var(--popup-max-width);
   width: 100%;
 }
 
@@ -41,7 +51,7 @@
 
 /* Heading inside popup */
 .focus-popup-box h2 {
-  font-size: 2rem;
+  font-size: var(--heading-font-size);
   margin-bottom: 24px;
   color: #E9902C;
 }
@@ -52,7 +62,7 @@
 
 /* Paragraphs inside popup */
 .focus-popup-box p {
-  font-size: 18px;
+  font-size: var(--text-font-size);
 }
 
 /* Warning text */
@@ -82,7 +92,7 @@
 .focus-button {
   padding: 10px 15px;
   border-radius: 6px;
-  width: 225px;
+  width: var(--button-width);
   height: auto;
   transition: background-color 0.2s;
   text-align: center;
@@ -99,4 +109,181 @@
   color: #F3A650;
   border: 2px solid #F3A650;
   cursor: pointer;
+}
+
+/* Add these responsive styles at the bottom of the file */
+
+/* Tablet devices */
+@media screen and (max-width: 768px) {
+  .focus-popup-box {
+    max-width: 90%;
+    padding: 25px;
+    margin: 10px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.75rem;
+  }
+
+  .focus-popup-box p {
+    font-size: 16px;
+  }
+
+  .focus-input {
+    font-size: 16px;
+  }
+
+  .focus-button {
+    width: 200px;
+  }
+}
+
+/* iPad specific adjustments - Add this before the mobile queries */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .focus-popup {
+    align-items: flex-start;
+    padding-top: 15vh; /* Moves popup up by starting 15% from top */
+  }
+
+  .focus-popup-box {
+    margin-top: 0;
+    max-height: 80vh; /* Ensures popup doesn't exceed viewport */
+    overflow-y: auto; /* Adds scroll if content is too long */
+  }
+}
+
+/* Mobile devices */
+@media screen and (max-width: 480px) {
+  .focus-popup-box {
+    max-width: 95%;
+    padding: 20px;
+    border-radius: 30px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    margin-left: 36px;
+  }
+
+  .focus-logo {
+    width: 24px;
+    top: 16px;
+    left: 16px;
+  }
+
+  .focus-popup-box textarea.focus-input {
+    height: 80px;
+  }
+
+  .focus-button {
+    width: 175px;
+    padding: 8px 12px;
+  }
+
+  .focus-warning {
+    font-size: 14px;
+  }
+}
+
+/* Small mobile devices */
+@media screen and (max-width: 320px) {
+  .focus-popup-box {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.25rem;
+    margin-left: 36px;
+  }
+
+  .focus-popup-box p {
+    font-size: 14px;
+  }
+
+  .focus-button {
+    width: 150px;
+  }
+}
+
+/* Height-based media queries */
+@media screen and (max-height: 600px) {
+  .focus-popup-box {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .focus-popup-box textarea.focus-input {
+    height: 60px;
+  }
+}
+
+/* High-DPI screens */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+  .focus-popup-box {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Ensure minimum touch target sizes */
+@media (pointer: coarse) {
+  .focus-button,
+  .focus-input,
+  select.focus-input {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .focus-popup {
+    background-color: rgba(0, 0, 0, 0.85);
+  }
+
+  .focus-popup-box {
+    background-color: #2C2C2C;
+  }
+
+  .focus-popup-box h2,
+  .focus-popup-box p {
+    color: #FFE4C6;
+  }
+
+  .focus-input {
+    background-color: #3D3D3D;
+    color: #FFE4C6;
+    border: 1px solid #FFE4C6;
+  }
+
+  .focus-button:not(:disabled) {
+    background-color: #3D3D3D;
+    color: #FFE4C6;
+    border: 2px solid #FFE4C6;
+  }
+}
+
+/* Ensure proper display on ultra-wide screens */
+@media screen and (min-width: 1400px) {
+  .focus-popup-box {
+    max-width: 600px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .focus-popup {
+    background: none;
+    position: static;
+  }
+
+  .focus-popup-box {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
 }

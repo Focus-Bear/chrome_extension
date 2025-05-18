@@ -10,13 +10,59 @@ const selectorsToHide = [
 ];
 
 // Inject floatingPopup if not already present
-if (!document.getElementById("intention-popup-script")) {
-  const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("floatingPopup.js");
-  script.id = "intention-popup-script";
-  script.type = "module";
-  document.body.appendChild(script);
-}
+// 1) At the very top, to confirm the script is running and on which page:
+console.log("[Content] script loaded at URL:", location.href);
+
+// 2) Before you even call storage.get:
+console.log("[Content] about to read showIntentionPopup flag…");
+chrome.storage.local.get(
+  { showIntentionPopup: true, lastIntention: "", lastFocusDuration: 0 },
+  ({ showIntentionPopup, lastIntention, lastFocusDuration }) => {
+    // 3) Immediately after the storage read returns:
+    console.log(
+      "[Content] storage.get returned:",
+      { showIntentionPopup, lastIntention, lastFocusDuration }
+    );
+
+    if (!showIntentionPopup) {
+      console.log("[Content] showIntentionPopup is false → skipping injection");
+      return;
+    }
+
+    // 4) Check for an existing script tag:
+    const existing = !!document.getElementById("intention-popup-script");
+    console.log("[Content] intention-popup-script already on page?", existing);
+
+    if (!existing) {
+      console.log("[Content] injecting floatingPopup.js…");
+      const script = document.createElement("script");
+      script.src  = chrome.runtime.getURL("floatingPopup.js");
+      script.id   = "intention-popup-script";
+      script.type = "module";
+
+      script.onload = () => {
+        console.log("[Content] floatingPopup.js loaded, posting INIT_INTENTION_DATA", {
+          lastIntention, lastFocusDuration
+        });
+        window.postMessage({
+          type: "INIT_INTENTION_DATA",
+          payload: { lastIntention, lastFocusDuration }
+        }, "*");
+      };
+
+      document.body.appendChild(script);
+    }
+  }
+);
+
+// 5) In your show-popup-again listener, to see if you ever get this event:
+window.addEventListener("show-popup-again", () => {
+  console.log("[Content] show-popup-again event fired, attempting reinjection…");
+  // … rest of your code …
+});
+
+
+
 
 let focusTimer: ReturnType<typeof setTimeout> | null = null;
 let isBlurEnabled = true;
@@ -24,17 +70,14 @@ let isBlurEnabled = true;
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
 
-  // Save intention (sent from popup to content)
   if (event.data.type === "SAVE_INTENTION") {
     const intention = event.data.payload;
     const customEvent = new CustomEvent("intention-saved", { detail: intention });
     window.dispatchEvent(customEvent);
   }
 
-  // Start timer and dispatch event when finished
   if (event.data.type === "START_FOCUS_TIMER") {
     const durationInMinutes = event.data.payload;
-
     if (focusTimer) clearTimeout(focusTimer);
 
     console.log(`Starting focus timer for ${durationInMinutes} minutes.`);
@@ -43,6 +86,22 @@ window.addEventListener("message", (event) => {
       window.dispatchEvent(new CustomEvent("show-popup-again"));
     }, durationInMinutes * 60 * 1000);
   }
+
+  if (event.data.type === "STORE_FOCUS_DATA") {
+    const { focusStart, focusDuration, focusIntention } = event.data.payload;
+    chrome.storage.local.set(
+      {
+        focusStart,
+        focusDuration,
+        focusIntention,
+        showIntentionPopup: false,
+        lastIntention: focusIntention,
+        lastFocusDuration: focusDuration
+      },
+      () => console.log("✅ Stored focus session & hid popup permanently")
+    );
+  }
+
 });
 
 for (const selector of selectorsToHide) {
@@ -196,10 +255,17 @@ const applyBlurImmediately = () => {
 
 
 const sidebarObserver = new MutationObserver(() => {
-  if (isBlurEnabled) applyBlurToSections();
+  chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
+    if (blurEnabled) applyBlurToSections();
+    else removeBlur();  // optional cleanup
+  });
 });
+
 const chipsObserver = new MutationObserver(() => {
-  if (isBlurEnabled) blurChipsBar();
+  chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
+    if (blurEnabled) blurChipsBar();
+    else removeBlur();  // if such a function exists
+  });
 });
 const shortsmenuObserver = new MutationObserver(() => {
   chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
@@ -240,6 +306,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
   }
 });
+
+
+
 
 chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
   isBlurEnabled = blurEnabled;
@@ -297,6 +366,30 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     });
     return true;
   }
+});
+
+
+window.addEventListener("show-popup-again", () => {
+  chrome.storage.local.get(
+    { showIntentionPopup: true, lastIntention: "", lastFocusDuration: 0 },
+    ({ showIntentionPopup, lastIntention, lastFocusDuration }) => {
+      if (!showIntentionPopup) return;
+
+      if (!document.getElementById("intention-popup-script")) {
+        const script = document.createElement("script");
+        script.src  = chrome.runtime.getURL("floatingPopup.js");
+        script.id   = "intention-popup-script";
+        script.type = "module";
+        script.onload = () => {
+          window.postMessage({
+            type: "INIT_INTENTION_DATA",
+            payload: { lastIntention, lastFocusDuration },
+          }, "*");
+        };
+        document.body.appendChild(script);
+      }
+    }
+  );
 });
 
 function applyShortsToggle(shouldBlur: boolean) {
