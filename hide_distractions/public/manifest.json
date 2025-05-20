@@ -3,7 +3,7 @@
   "name": "Focus Bear",
   "version": "1.0",
   "description": "Hide distractions using a clean Chrome Extension.",
-  "permissions": ["activeTab", "scripting", "storage","tabs"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["*://*.youtube.com/*"],
   "action": {
     "default_popup": "src/popup.html",
@@ -16,7 +16,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
+      "matches": ["https://www.youtube.com/*"],
       "js": ["content.js", "homePageBlur.js"],
       "css": ["assets/intentionPopup.css"]
     }

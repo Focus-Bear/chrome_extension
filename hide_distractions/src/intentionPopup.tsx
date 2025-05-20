@@ -8,8 +8,8 @@ import iconUrl from '../public/icons/bearLogo.png';
 const containerId = "focus-popup-container";
 const IntentionPopup = () => {
   const { intention, setIntention, isIntentionSet } = useIntention();
-  const [visible, setVisible] = useState<boolean>(true);
-  const { timer, setTimer } = useIntention();
+  const [visible, setVisible] = useState(true);
+  const [duration, setDuration] = useState("");
   const [showWarning, setShowWarning] = useState(false);
   const [proceedDisabled, setProceedDisabled] = useState(true);
 
@@ -33,75 +33,52 @@ const IntentionPopup = () => {
   useEffect(() => {
     const trimmedIntention = intention.trim();
     const isShortIntention = trimmedIntention.length < 5;
-    const isLongDuration = ["10", "15", "30"].includes(timer.toString());
+    const isLongDuration = ["10", "15", "30"].includes(duration);
     const needsDetailedIntention =
       isLongDuration && trimmedIntention.length < 15;
 
-    const shouldDisable = !timer || isShortIntention || needsDetailedIntention;
+    const shouldDisable =
+      !duration || isShortIntention || needsDetailedIntention;
 
     setProceedDisabled(shouldDisable);
-  }, [intention, timer]);
+  }, [intention, duration]);
 
-  // ───── new INIT_INTENTION_DATA listener ─────
+  // Get initial intention
   useEffect(() => {
-    function handleInit(event: MessageEvent) {
-      if (event.source !== window) return;
-      if (event.data?.type !== "INIT_INTENTION_DATA") return;
-
-      const { lastIntention, lastFocusDuration } = event.data.payload;
-      if (lastIntention)   setIntention(lastIntention);
-      if (typeof lastFocusDuration === "number") setTimer(lastFocusDuration);
-      setVisible(true);
+    const saved = sessionStorage.getItem("intention");
+    if (saved) {
+      setIntention(saved);
     }
-
-    window.addEventListener("message", handleInit);
-    return () => {
-      window.removeEventListener("message", handleInit);
-    };
   }, []);
-
 
   /// to handle the intention save fucntionality
   const handleSave = () => {
-    const focusDuration = timer;
-    const focusStart = Date.now();
-
-    // Send to content script to store in chrome.storage.local
+    sessionStorage.setItem("intention", intention); // Save temporarily
+    sessionStorage.setItem("focusDuration", duration);
+    window.postMessage({ type: "SAVE_INTENTION", payload: intention }, "*");
     window.postMessage(
-      {
-        type: "STORE_FOCUS_DATA",
-        payload: {
-          focusStart,
-          focusDuration,
-          focusIntention: intention,
-        },
-      },
+      { type: "START_FOCUS_TIMER", payload: parseInt(duration, 10) },
       "*"
     );
-    window.postMessage(
-      { type: "START_FOCUS_TIMER", payload: timer },
-      "*"
-    );
-    
     setVisible(false); /// sets popup visibility.
   };
 
   /// to handle the intention change.
   const handleIntentionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIntention(e.target.value);
-    validateIntentionLength(timer); /// validation to check the lenght of intention based on timer.
+    validateIntentionLength(duration); /// validation to check the lenght of intention based on timer.
   };
 
   /// to handle the timer change.
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
-    setTimer(parseInt(selected, 10));
-    validateIntentionLength(parseInt(selected, 10)); /// validation to check the lenght of intention based on timer.
+    setDuration(selected);
+    validateIntentionLength(selected); /// validation to check the lenght of intention based on timer.
   };
 
   // Validate if intention is short for long durations
-  const validateIntentionLength = (selectedDuration: number) => {
-    const minutes = selectedDuration;
+  const validateIntentionLength = (selectedDuration: string) => {
+    const minutes = parseInt(selectedDuration, 10);
     if (
       (minutes === 10 || minutes === 15 || minutes === 30) &&
       intention.trim().length < 15
@@ -111,7 +88,8 @@ const IntentionPopup = () => {
       setShowWarning(false);
     }
   };
-  if (!visible) return null;         // don’t show if storage says hide
+  if (!visible) return null;
+
   return (
     <div id="focus-popup" className="focus-popup">
       <div className="focus-popup-box">  
@@ -138,7 +116,7 @@ const IntentionPopup = () => {
           How long should we watch together for?
         </p>
         <select
-          value={timer}
+          value={duration}
           onChange={handleDurationChange}
           className="focus-input"
         >
