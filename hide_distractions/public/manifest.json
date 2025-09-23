@@ -18,7 +18,8 @@
   "content_scripts": [
     {"matches": [
       "https://www.youtube.com/*",
-      "https://www.linkedin.com/*"  
+      "https://www.linkedin.com/*",
+      "https://*.wikipedia.org/*" 
     ],
       "js": ["content.js"],
       "css": ["assets/intentionPopup.css"]
@@ -30,6 +31,10 @@
     {
       "matches": ["*://*.linkedin.com/*"],
       "js": ["linkedin.js"]
+    },
+    {
+      "matches": ["*://*.wikipedia.org/*"],
+      "js": ["wikipedia.js"]
     }
   ],
   "web_accessible_resources": [
