@@ -23,6 +23,10 @@
     "message": "Blur Shorts",
     "description": "Option to blur YouTube Shorts"
   },
+  "blur_you_menu": {
+    "message": "Blur You Menu",
+    "description": "Option to blur You Menu"
+  },
     "blur_PYMK": {
     "message": "Blur Connection Recommendations",
     "description": "Option to blur (People you may know)"

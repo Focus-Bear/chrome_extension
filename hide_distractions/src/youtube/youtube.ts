@@ -587,6 +587,23 @@ observeYouMenu();
     }
   });
 
+  function applyYouMenuToggle(shouldBlur: boolean) {
+  if (shouldBlur) {
+    blurYouMenu();
+  } else {
+    unblurYouMenu();
+  }
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "TOGGLE_YOU_MENU_BLUR") {
+    const shouldBlur = message.payload;
+    chrome.storage.local.set({ youMenuBlurEnabled: shouldBlur });
+    applyYouMenuToggle(shouldBlur);
+  }
+});
+
+
   let lastUrl = location.href;
   const observeUrlChanges = () => {
     const observer = new MutationObserver(() => {
