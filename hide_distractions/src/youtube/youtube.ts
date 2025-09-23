@@ -104,6 +104,105 @@
     }
   };
 
+// Notification bell and dropdown blur functions
+const NOTIF_BLUR_STYLE_ID = "focus-bear-notifications-blur-style";
+
+function applyNotificationsBlur() {
+  if (document.getElementById(NOTIF_BLUR_STYLE_ID)) return;
+
+  const style = document.createElement("style");
+  style.id = NOTIF_BLUR_STYLE_ID;
+  style.textContent = `
+    /* Bell icon in masthead */
+    ytd-masthead button[aria-label*="Notifications" i],
+    ytd-notification-topbar-button-renderer {
+      filter: blur(8px) !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    /* Notifications dropdown + all its contents */
+    ytd-popup-container ytd-notification-menu-renderer,
+    ytd-popup-container ytd-notification-menu-renderer *,
+    ytd-popup-container [role="dialog"][aria-label*="Notifications" i],
+    ytd-popup-container [role="dialog"][aria-label*="Notifications" i] *,
+    ytd-popup-container ytd-notification-renderer,
+    ytd-popup-container ytd-notification-renderer *,
+    ytd-popup-container [class*="notification" i],
+    ytd-popup-container [class*="notification" i] * {
+      filter: blur(12px) !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function removeNotificationsBlur() {
+  document.getElementById(NOTIF_BLUR_STYLE_ID)?.remove();
+}
+
+
+// List of You menu items to blur individually
+const youMenuItems = ["History", "Your videos", "Liked videos", "Downloads"];
+
+// Generic function to blur a specific entry by name
+const blurYouMenuEntry = (name: string) => {
+  const entry = Array.from(
+    document.querySelectorAll("ytd-guide-entry-renderer")
+  ).find(el => el.textContent?.trim().toLowerCase() === name.toLowerCase()) as HTMLElement | undefined;
+
+  if (entry) {
+    entry.style.filter = "blur(6px)";
+    entry.style.pointerEvents = "none";
+    entry.style.userSelect = "none";
+  }
+};
+
+// Generic function to unblur a specific entry by name
+const unblurYouMenuEntry = (name: string) => {
+  const entry = Array.from(
+    document.querySelectorAll("ytd-guide-entry-renderer")
+  ).find(el => el.textContent?.trim().toLowerCase() === name.toLowerCase()) as HTMLElement | undefined;
+
+  if (entry) {
+    entry.style.filter = "none";
+    entry.style.pointerEvents = "auto";
+    entry.style.userSelect = "auto";
+  }
+};
+
+// Blur all "You" menu items
+const blurYouMenu = () => {
+  youMenuItems.forEach(item => blurYouMenuEntry(item));
+};
+
+// Unblur all "You" menu items
+const unblurYouMenu = () => {
+  youMenuItems.forEach(item => unblurYouMenuEntry(item));
+};
+
+// Observe the "You" menu section for dynamic changes
+const observeYouMenu2 = () => {
+  const guide = document.querySelector("ytd-guide-renderer");
+  if (guide) {
+    const observer = new MutationObserver(() => {
+      blurYouMenu(); // Blur entries whenever menu updates
+    });
+    observer.observe(guide, { childList: true, subtree: true });
+
+    // Blur immediately on load
+    blurYouMenu();
+  } else {
+    // Retry later if the guide hasn't loaded yet
+    setTimeout(observeYouMenu, 500);
+  }
+};
+
+// Initialize observer
+observeYouMenu();
+
+
   const isShortsPage = () => {
     return window.location.pathname.startsWith("/shorts/");
   };
@@ -254,6 +353,8 @@
     }
     unblurTopSubscriptionsMenu();
     unblurLeftIconSubscriptions();
+    removeNotificationsBlur();
+    unblurYouMenu();
   };
 
   const applyBlurImmediately = () => {
@@ -267,6 +368,8 @@
     blurMiniSidebarShorts();
     blurTopSubscriptionsMenu();
     blurLeftIconSubscriptions();
+    applyNotificationsBlur();
+    blurYouMenu();
   };
 
   const sidebarObserver = new MutationObserver(() => {
@@ -298,6 +401,14 @@
       unblurTopSubscriptionsMenu();
     }
   });
+
+  const youMenuObserver = new MutationObserver(() => {
+  if (isBlurEnabled) {
+    blurYouMenu();
+  } else {
+    unblurYouMenu();
+  }
+});
 
   const miniGuideObserver = new MutationObserver(() => {
     setTimeout(() => {
@@ -367,6 +478,7 @@
     if (isBlurEnabled) {
       applyBlurImmediately();
     }
+    observeYouMenu();
     sidebarObserver.observe(document.body, { childList: true, subtree: true });
     chipsObserver.observe(document.body, { childList: true, subtree: true });
     shortsmenuObserver.observe(document.body, { childList: true, subtree: true });
@@ -383,7 +495,7 @@
       childList: true,
       subtree: true,
     });
-    miniGuideObserver.observe(document.body, { childList: true, subtree: true });
+    miniGuideObserver.observe(document.body, { childList: true, subtree: true });    
   });
 
   // Blur comments
@@ -409,6 +521,24 @@
     const style = document.getElementById(COMMENT_BLUR_ID);
     if (style) style.remove();
   }
+
+function observeYouMenu() {
+  const guide = document.querySelector("ytd-guide-renderer");
+  if (guide) {
+    // Observe sidebar changes
+    const youMenuObserver = new MutationObserver(() => {
+      blurYouMenu();
+    });
+    youMenuObserver.observe(guide, { childList: true, subtree: true });
+    // blur immediately
+      blurYouMenu();
+    } else {
+    // Retry later if guide not found yet
+    setTimeout(observeYouMenu, 500);
+  }
+}
+
+observeYouMenu();
 
   // on page load, read storage and blur if needed
   const commentsObserver = new MutationObserver(() => {
