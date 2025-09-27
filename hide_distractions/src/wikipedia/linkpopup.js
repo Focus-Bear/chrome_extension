@@ -1,5 +1,13 @@
 (function () {
   const containerId = "focus-wikipedia-link-popup";
+  let enabled = true;
+
+  // Listen for toggle messages from popup
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.type === "TOGGLE_WIKI_LINK_POPUP") {
+      enabled = !!msg.payload;
+    }
+  });
 
   // Inject intentionPopup CSS if not already present
   function injectIntentionPopupCSS() {
@@ -107,6 +115,7 @@
   }
 
   document.addEventListener("click", function (e) {
+    if (!enabled) return;
     const link = e.target.closest("a[href^='/wiki/']");
     if (!link) return;
 

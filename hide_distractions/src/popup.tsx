@@ -34,6 +34,7 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
+  const [wikiLinkPopupEnabled, setWikiLinkPopupEnabled] = useState(true);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -61,6 +62,7 @@ const App = () => {
         "linkedinBlurNews",
         "linkedinBlurJobs",
         "linkedinBlurHome",
+        "wikiLinkPopupEnabled",
       ],
       ({
         blurEnabled,
@@ -72,6 +74,7 @@ const App = () => {
         linkedinBlurNews,
         linkedinBlurJobs,
         linkedinBlurHome,
+        wikiLinkPopupEnabled,
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
@@ -82,6 +85,7 @@ const App = () => {
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinBlurJobs(linkedinBlurJobs ?? true);
         setLinkedinBlurHome(linkedinBlurHome ?? true);
+        setWikiLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
       }
     );
   }, []);
@@ -134,6 +138,12 @@ const App = () => {
       { linkedinBlurHome: true },
       ({ linkedinBlurHome }) => {
         setLinkedinBlurHome(linkedinBlurHome);
+      }
+    );
+    chrome.storage.local.get(
+      { wikiLinkPopupEnabled: true },
+      ({ wikiLinkPopupEnabled }) => {
+        setWikiLinkPopupEnabled(wikiLinkPopupEnabled);
       }
     );
   }, []);
@@ -335,6 +345,23 @@ const App = () => {
     }
   };
 
+  const handleWikiLinkPopupToggle = async () => {
+    const newValue = !wikiLinkPopupEnabled;
+    setWikiLinkPopupEnabled(newValue);
+    await chrome.storage.local.set({ wikiLinkPopupEnabled: newValue });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_WIKI_LINK_POPUP",
+        payload: newValue,
+      });
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -448,6 +475,15 @@ const App = () => {
           <Toggle
             checked={linkedinBlurHome}
             onChange={handleLinkedinHomeToggle}
+          />
+        </label>
+
+        <h3 className="settings-label">Wikipedia</h3>
+        <label className="option-label">
+          <span className="option-text">Wikipedia Link Popup</span>
+          <Toggle
+            checked={wikiLinkPopupEnabled}
+            onChange={handleWikiLinkPopupToggle}
           />
         </label>
       </div>
