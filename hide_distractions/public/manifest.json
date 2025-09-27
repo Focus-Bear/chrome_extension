@@ -5,7 +5,7 @@
   "description": "Hide distractions using a clean Chrome Extension.",
   "default_locale": "en",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": ["*://*.youtube.com/*", "*://*.linkedin.com/*"],
+  "host_permissions": ["*://*.youtube.com/*", "*://*.linkedin.com/*","*://*.wikipedia.org/*"],
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": {
@@ -34,7 +34,7 @@
     },
     {
       "matches": ["*://*.wikipedia.org/*"],
-      "js": ["wikipedia.js"]
+      "js": ["wikipedia.js", "linkpopup.js"]
     }
   ],
   "web_accessible_resources": [

@@ -25,15 +25,7 @@
       }
     );
 
-    // Popup for links
-    document.addEventListener("click", (e) => {
-      const link = (e.target as HTMLElement).closest("a[href^='/wiki/']");
-      if (link) {
-        e.preventDefault(); // stop immediate navigation
-      }
-    });
 
-    
     // Allow popup toggle
     chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
       if (msg.type === "TOGGLE_WIKIPEDIA_MAIN") {
