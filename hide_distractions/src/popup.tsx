@@ -34,7 +34,8 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
-  const [wikiLinkPopupEnabled, setWikiLinkPopupEnabled] = useState(true);
+  const [wikipediaLinkPopupEnabled, setWikipediaLinkPopupEnabled] = useState(true);
+  const [wikipediaMainBlur, setWikipediaMainBlur] = useState(true);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -63,6 +64,7 @@ const App = () => {
         "linkedinBlurJobs",
         "linkedinBlurHome",
         "wikiLinkPopupEnabled",
+        "wikipediaMainBlur",
       ],
       ({
         blurEnabled,
@@ -75,6 +77,7 @@ const App = () => {
         linkedinBlurJobs,
         linkedinBlurHome,
         wikiLinkPopupEnabled,
+        wikipediaMainBlur,
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
@@ -85,7 +88,8 @@ const App = () => {
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinBlurJobs(linkedinBlurJobs ?? true);
         setLinkedinBlurHome(linkedinBlurHome ?? true);
-        setWikiLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
+        setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled ?? true);
+        setWikipediaMainBlur(wikipediaMainBlur ?? true);
       }
     );
   }, []);
@@ -141,9 +145,15 @@ const App = () => {
       }
     );
     chrome.storage.local.get(
-      { wikiLinkPopupEnabled: true },
-      ({ wikiLinkPopupEnabled }) => {
-        setWikiLinkPopupEnabled(wikiLinkPopupEnabled);
+      { wikipediaLinkPopupEnabled: true },
+      ({ wikipediaLinkPopupEnabled }) => {
+        setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled);
+      }
+    );
+    chrome.storage.local.get(
+      { wikipediaMainBlur: true },
+      ({ wikipediaMainBlur }) => {
+        setWikipediaMainBlur(wikipediaMainBlur);
       }
     );
   }, []);
@@ -345,10 +355,10 @@ const App = () => {
     }
   };
 
-  const handleWikiLinkPopupToggle = async () => {
-    const newValue = !wikiLinkPopupEnabled;
-    setWikiLinkPopupEnabled(newValue);
-    await chrome.storage.local.set({ wikiLinkPopupEnabled: newValue });
+  const handleWikipediaLinkPopupToggle = async () => {
+    const newValue = !wikipediaLinkPopupEnabled;
+    setWikipediaLinkPopupEnabled(newValue);
+    await chrome.storage.local.set({ wikipediaLinkPopupEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -357,6 +367,23 @@ const App = () => {
     if (tab?.id) {
       await chrome.tabs.sendMessage(tab.id, {
         type: "TOGGLE_WIKI_LINK_POPUP",
+        payload: newValue,
+      });
+    }
+  };
+
+  const handleWikipediaMainBlurToggle = async () => {
+    const newValue = !wikipediaMainBlur;
+    setWikipediaMainBlur(newValue);
+    await chrome.storage.local.set({ wikipediaMainBlur: newValue });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_WIKIPEDIA_MAIN",
         payload: newValue,
       });
     }
@@ -480,10 +507,17 @@ const App = () => {
 
         <h3 className="settings-label">Wikipedia</h3>
         <label className="option-label">
-          <span className="option-text">Wikipedia Link Popup</span>
+          <span className="option-text">Link Popup</span>
           <Toggle
-            checked={wikiLinkPopupEnabled}
-            onChange={handleWikiLinkPopupToggle}
+            checked={wikipediaLinkPopupEnabled}
+            onChange={handleWikipediaLinkPopupToggle}
+          />
+        </label>
+        <label className="option-label">
+          <span className="option-text">Main Page Blur</span>
+          <Toggle
+            checked={wikipediaMainBlur}
+            onChange={handleWikipediaMainBlurToggle}
           />
         </label>
       </div>

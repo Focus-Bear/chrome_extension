@@ -26,7 +26,7 @@
     );
 
 
-    // Allow popup toggle
+    // Listen for settings toggle
     chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
       if (msg.type === "TOGGLE_WIKIPEDIA_MAIN") {
         toggleMainPage(!!msg.payload);

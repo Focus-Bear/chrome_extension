@@ -3,9 +3,10 @@
   let enabled = true;
 
   // Listen for toggle messages from popup
-  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (msg.type === "TOGGLE_WIKI_LINK_POPUP") {
       enabled = !!msg.payload;
+      sendResponse({ ok: true });
     }
   });
 
