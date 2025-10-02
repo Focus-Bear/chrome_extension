@@ -67,7 +67,7 @@ const App = () => {
         commentsHidden,
         homePageBlurEnabled,
         shortsBlurEnabled,
-        youMenuEnabled,
+        youMenuBlurEnabled,
         linkedinBlurPYMK,
         linkedinBlurNews,
         linkedinBlurJobs,
@@ -194,7 +194,6 @@ const App = () => {
 
   const handleBlurToggle = async () => {
     const newValue = !blurEnabled;
-    setBlurEnabled(newValue);
     chrome.storage.local.set({ blurEnabled: newValue });
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -253,7 +252,8 @@ const App = () => {
   const handleYouBlurToggle = async () => {
     const newValue = !youBlurEnabled;
     setYouBlurEnabled(newValue);
-    await chrome.storage.local.set({ youBlurEnabled: newValue });
+    setBlurEnabled(newValue);
+    await chrome.storage.local.set({ youMenuBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -261,7 +261,7 @@ const App = () => {
     });
     if (tab?.id) {
       await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_YOU_BLUR",
+        type: "TOGGLE_YOU_MENU_BLUR",
         payload: newValue,
       });
     }
