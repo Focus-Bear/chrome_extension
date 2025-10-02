@@ -7,7 +7,7 @@ html, body {
 .popup-container {
   position: relative;
   width: 400px;
-  height: 500px;
+  height: fit-content;
   padding: 24px 30px 30px;
   background-color: #FFE4C6;
   font-family: sans-serif;

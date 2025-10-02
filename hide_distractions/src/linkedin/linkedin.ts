@@ -76,6 +76,20 @@
     });
   };
 
+
+  // Hide red notification badge
+  const toggleNotificationBadge = (on: boolean) => {
+    const badges = document.querySelectorAll<HTMLElement>(  
+      ".global-nav__primary-link-notification-badge, .notification-badge"
+    );
+
+    console.log("toggleNotification running", badges.length);
+    badges.forEach(badge => {
+      badge.remove();
+    });
+  }
+
+
   // Stored setting on load
   chrome.storage.local.get(
     { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true },

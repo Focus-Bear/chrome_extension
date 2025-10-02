@@ -29,7 +29,9 @@ export default defineConfig({
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
         youtube: resolve(__dirname, 'src/youtube/youtube.ts'),
-        linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts')
+        linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts'),
+        wikipedia: resolve(__dirname, 'src/wikipedia/wikipedia.ts'),
+        linkpopup: resolve(__dirname, 'src/wikipedia/linkPopup.js')
       },
       output: {
         entryFileNames: '[name].js'
