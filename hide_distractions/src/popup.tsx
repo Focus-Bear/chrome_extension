@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
 import iconUrl from "../public/icons/bearLogo.png";
@@ -20,6 +20,248 @@ const Toggle = ({
   </div>
 );
 
+const BlocklistEditor = ({
+  onClose,
+}: {
+  onClose: () => void;
+}) => {
+  const [blocklist, setBlocklist] = useState<string[]>([]);
+  const [relaxlist, setRelaxlist] = useState<string[]>([]);
+  const [newSite, setNewSite] = useState("");
+  const [activeHours, setActiveHours] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+  const [isValid, setIsValid] = useState(true);
+  const [isBlockedNow, setIsBlockedNow] = useState(false);
+  const [currentTab, setCurrentTab] = useState<"blocklist" | "relaxlist">("blocklist");
+  const loadedOnce = useRef(false);
+
+  const checkIfBlockedNow = (hours: { start: number; end: number }) => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const { start, end } = hours;
+    return start <= end
+      ? currentHour >= start && currentHour < end
+      : currentHour >= start || currentHour < end; // overnight
+  };
+
+  useEffect(() => {
+    if (loadedOnce.current) return;
+    chrome.storage.local.get(["blocklist", "relaxlist", "activeHours"], (data) => {
+      if (data.blocklist) setBlocklist(data.blocklist);
+      if (data.relaxlist) setRelaxlist(data.relaxlist);
+      if (data.activeHours) setActiveHours(data.activeHours);
+      setIsBlockedNow(checkIfBlockedNow(data.activeHours || activeHours));
+      loadedOnce.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsBlockedNow(checkIfBlockedNow(activeHours));
+    }, 1000 * 60); // every minute
+    return () => clearInterval(interval);
+  }, [activeHours]);
+
+  const handleActiveHoursChange = (start: number, end: number) => {
+    const sanitizedStart = Math.max(0, Math.min(23, Math.floor(start)));
+    const sanitizedEnd = Math.max(0, Math.min(23, Math.floor(end)));
+    setActiveHours({ start: sanitizedStart, end: sanitizedEnd });
+
+    // Validation: must be within 0-23, start and end cannot be NaN
+    setIsValid(
+      !isNaN(sanitizedStart) &&
+      !isNaN(sanitizedEnd) &&
+      sanitizedStart >= 0 &&
+      sanitizedStart <= 23 &&
+      sanitizedEnd >= 0 &&
+      sanitizedEnd <= 23
+    );
+  };
+
+  const saveActiveHours = () => {
+    if (!isValid) return;
+    chrome.storage.local.set({ activeHours });
+    setIsBlockedNow(checkIfBlockedNow(activeHours));
+  };
+
+  const normalizeDomain = (input: string) => {
+    let domain = input.trim().toLowerCase();
+    domain = domain.replace(/^https?:\/\//, "");
+    domain = domain.split("/")[0];
+    return domain;
+  };
+
+  const addSite = () => {
+    if (isBlockedNow || !newSite) return;
+    const formatted = normalizeDomain(newSite);
+    if (!blocklist.includes(formatted)) {
+      const updated = [...blocklist, formatted];
+      setBlocklist(updated);
+      chrome.storage.local.set({ blocklist: updated });
+    }
+    setNewSite("");
+  };
+
+  const removeSite = (site: string) => {
+  if (isBlockedNow) return;
+  const updatedBlock = blocklist.filter((s) => s !== site);
+  setBlocklist(updatedBlock);
+  chrome.storage.local.set({ blocklist: updatedBlock });
+
+  if (relaxlist.includes(site)) {
+    const updatedRelax = relaxlist.filter((s) => s !== site);
+    setRelaxlist(updatedRelax);
+    chrome.storage.local.set({ relaxlist: updatedRelax });
+  }
+};
+
+  const toggleRelaxlist = (site: string) => {
+    if (isBlockedNow) return;
+    let updatedRelax: string[];
+    if (relaxlist.includes(site)) {
+      updatedRelax = relaxlist.filter((s) => s !== site);
+    } else {
+      updatedRelax = [...relaxlist, site];
+    }
+    setRelaxlist(updatedRelax);
+    chrome.storage.local.set({ relaxlist: updatedRelax });
+  };
+
+  return (
+    <div className="blocklist-editor">
+      <h2 className="settings-title">Manage Websites</h2>
+
+      <div className="tab-buttons">
+        <button
+          className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
+          onClick={() => setCurrentTab("blocklist")}
+        >
+          Blocklist
+        </button>
+        <button
+          className={`tab-button ${currentTab === "relaxlist" ? "active" : ""}`}
+          onClick={() => setCurrentTab("relaxlist")}
+        >
+          Relaxlist
+        </button>
+      </div>
+
+      {currentTab === "blocklist" && (
+        <>
+          <p className="blocklist-instructions">
+            Enter a site to block during your active hours:
+          </p>
+          <div className="site-input-container">
+            <input
+              type="text"
+              value={newSite}
+              placeholder="Enter site to block"
+              onChange={(e) => setNewSite(e.target.value)}
+              disabled={isBlockedNow}
+            />
+            <button onClick={addSite} disabled={isBlockedNow}>
+              Add
+            </button>
+          </div>
+
+          <ul className="site-list">
+            {blocklist.map((site) => (
+              <li key={site} className="site-card">
+                <span>{site}</span>
+                <div className="site-actions">
+                  <button
+                    className={relaxlist.includes(site) ? "active" : ""}
+                    onClick={() => toggleRelaxlist(site)}
+                    disabled={isBlockedNow}
+                  >
+                    {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
+                  </button>
+                  <button
+                    onClick={() => removeSite(site)}
+                    disabled={isBlockedNow}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="active-hours-container">
+            <label>
+              Start Hour:
+              <input
+                type="number"
+                min={0}
+                max={23}
+                value={activeHours.start}
+                onChange={(e) =>
+                  handleActiveHoursChange(+e.target.value, activeHours.end)
+                }
+                disabled={isBlockedNow}
+                className="active-hours-input"
+              />
+            </label>
+            <label>
+              End Hour:
+              <input
+                type="number"
+                min={0}
+                max={23}
+                value={activeHours.end}
+                onChange={(e) =>
+                  handleActiveHoursChange(activeHours.start, +e.target.value)
+                }
+                disabled={isBlockedNow}
+                className="active-hours-input"
+              />
+            </label>
+            <button
+              className="save-hours-btn"
+              onClick={saveActiveHours}
+              disabled={!isValid || isBlockedNow}
+            >
+              Save
+            </button>
+          </div>
+
+          {isBlockedNow && (
+            <p className="settings-warning">
+              Blocklist is locked during active hours
+            </p>
+          )}
+        </>
+      )}
+
+      {currentTab === "relaxlist" && (
+        <>
+          <p className="blocklist-instructions">
+            These websites are accessable during your breaks
+          </p>
+          <ul className="site-list">
+            {relaxlist.length === 0 && <li>No sites in Relaxlist</li>}
+            {relaxlist.map((site) => (
+              <li key={site} className="site-card">
+                <span>{site}</span>
+                <button
+                  className="remove-button"
+                  onClick={() => toggleRelaxlist(site)}
+                  disabled={isBlockedNow}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <button className="close-button" onClick={onClose}>
+        Back
+      </button>
+    </div>
+  );
+};
+
 const App = () => {
   const t = (key: string) => chrome.i18n.getMessage(key); // i18n helper
   const [blurEnabled, setBlurEnabled] = useState(true);
@@ -33,6 +275,8 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
+
+  const [showBlocklist, setShowBlocklist] = useState(false);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -368,6 +612,10 @@ const App = () => {
           <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
         </label>
       </div>
+      <button className="close-button" onClick={() => setShowBlocklist(true)}>
+        Edit Blocklist
+      </button>
+
       <button className="close-button" onClick={() => setShowSettings(false)}>
         {t("close_button")}
       </button>
@@ -376,7 +624,7 @@ const App = () => {
 
   return (
     <div className="popup-container">
-      {showSettings ? settingsView : mainView}
+      {showBlocklist ? (<BlocklistEditor onClose={() => setShowBlocklist(false)} />) : showSettings ? settingsView : mainView}
     </div>
   );
 };

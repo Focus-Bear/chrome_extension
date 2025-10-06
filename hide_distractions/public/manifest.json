@@ -30,6 +30,10 @@
     {
       "matches": ["*://*.linkedin.com/*"],
       "js": ["linkedin.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["blocklist.js"]
     }
   ],
   "web_accessible_resources": [

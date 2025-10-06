@@ -28,6 +28,7 @@ export default defineConfig({
         popup: resolve(__dirname, 'src/popup.html'),
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
+        blocklist: resolve(__dirname, 'src/blocklist.ts'),
         youtube: resolve(__dirname, 'src/youtube/youtube.ts'),
         linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts')
       },
