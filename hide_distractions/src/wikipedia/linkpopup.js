@@ -46,9 +46,12 @@
         color: #663300;
       }
       .focus-popup-logo {
-        width: 64px;
-        height: 64px;
-        margin-bottom: 16px;
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        width: 32px;
+        height: auto;
+        z-index: 1;
       }
       .focus-popup-button-container {
         display: flex;
@@ -75,6 +78,9 @@
   function createPopup(url, onClose, onContinue) {
     injectIntentionPopupCSS();
 
+    // Get extension image URL
+    const logoUrl = chrome.runtime.getURL("icons/bearLogo.png");
+
     // Overlay
     const overlay = document.createElement("div");
     overlay.className = "focus-popup-overlay";
@@ -85,7 +91,7 @@
     popup.className = "focus-popup";
     popup.innerHTML = `
       <div class="focus-popup-box">
-        <img src="../public/icons/bearLogo.png" alt="Focus Mode Icon" class="focus-popup-logo" />
+        <img src="${logoUrl}" alt="Focus Mode Icon" class="focus-popup-logo" />
         <h2>Are you staying on topic?</h2>
         <p>Do you want to continue to this page?</p>
         <p>${url}</p>
