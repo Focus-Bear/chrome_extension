@@ -34,8 +34,11 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
-  const [wikipediaLinkPopupEnabled, setWikipediaLinkPopupEnabled] = useState(true);
+  const [wikipediaLinkPopupEnabled, setWikipediaLinkPopupEnabled] =
+    useState(true);
   const [wikipediaMainBlur, setWikipediaMainBlur] = useState(true);
+  const [gmailBlurEnabled, setGmailBlurEnabled] = useState(true);
+  const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -65,6 +68,8 @@ const App = () => {
         "linkedinBlurHome",
         "wikiLinkPopupEnabled",
         "wikipediaMainBlur",
+        "gmailBlurEnabled",
+        "promotionBlurEnabled",
       ],
       ({
         blurEnabled,
@@ -78,18 +83,22 @@ const App = () => {
         linkedinBlurHome,
         wikiLinkPopupEnabled,
         wikipediaMainBlur,
+        gmailBlurEnabled,
+        promotionBlurEnabled,
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
         setHomeBlurEnabled(homePageBlurEnabled ?? true);
         setShortsBlurEnabled(shortsBlurEnabled ?? true);
-        setYouBlurEnabled(youBlurEnabled ?? true);
+        setYouBlurEnabled(youMenuBlurEnabled ?? true); // <-- use the right variable
         setLinkedinBlurPYMK(linkedinBlurPYMK ?? true);
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinBlurJobs(linkedinBlurJobs ?? true);
         setLinkedinBlurHome(linkedinBlurHome ?? true);
-        setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled ?? true);
+        setWikipediaLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
         setWikipediaMainBlur(wikipediaMainBlur ?? true);
+        setGmailBlurEnabled(gmailBlurEnabled ?? true);
+        setPromotionBlurEnabled(promotionBlurEnabled ?? true);
       }
     );
   }, []);
@@ -214,6 +223,7 @@ const App = () => {
 
   const handleBlurToggle = async () => {
     const newValue = !blurEnabled;
+    setBlurEnabled(newValue);
     chrome.storage.local.set({ blurEnabled: newValue });
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -272,8 +282,7 @@ const App = () => {
   const handleYouBlurToggle = async () => {
     const newValue = !youBlurEnabled;
     setYouBlurEnabled(newValue);
-    setBlurEnabled(newValue);
-    await chrome.storage.local.set({ youMenuBlurEnabled: newValue });
+    await chrome.storage.local.set({ youBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -281,7 +290,7 @@ const App = () => {
     });
     if (tab?.id) {
       await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_YOU_MENU_BLUR",
+        type: "TOGGLE_YOU_BLUR",
         payload: newValue,
       });
     }
@@ -384,6 +393,40 @@ const App = () => {
     if (tab?.id) {
       await chrome.tabs.sendMessage(tab.id, {
         type: "TOGGLE_WIKIPEDIA_MAIN",
+        payload: newValue,
+      });
+    }
+  };
+
+  const handleGmailBlurToggle = async () => {
+    const newValue = !gmailBlurEnabled;
+    setGmailBlurEnabled(newValue);
+    await chrome.storage.local.set({ gmailBlurEnabled: newValue });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_GMAIL_BLUR",
+        payload: newValue,
+      });
+    }
+  };
+
+  const handlePromotionBlurToggle = async () => {
+    const newValue = !promotionBlurEnabled;
+    setPromotionBlurEnabled(newValue);
+    await chrome.storage.local.set({ promotionBlurEnabled: newValue });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_PROMOTION_BLUR",
         payload: newValue,
       });
     }
@@ -518,6 +561,19 @@ const App = () => {
           <Toggle
             checked={wikipediaMainBlur}
             onChange={handleWikipediaMainBlurToggle}
+          />
+        </label>
+        <h3 className="settings-label">Gmail</h3>
+        <label className="option-label">
+          <span className="option-text">Blur Gmail</span>
+          <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
+        </label>
+
+        <label className="option-label">
+          <span className="option-text">Blur Promotions</span>
+          <Toggle
+            checked={promotionBlurEnabled}
+            onChange={handlePromotionBlurToggle}
           />
         </label>
       </div>

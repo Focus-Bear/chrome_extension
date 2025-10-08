@@ -31,7 +31,8 @@ export default defineConfig({
         youtube: resolve(__dirname, 'src/youtube/youtube.ts'),
         linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts'),
         wikipedia: resolve(__dirname, 'src/wikipedia/wikipedia.ts'),
-        linkpopup: resolve(__dirname, 'src/wikipedia/linkPopup.js')
+        linkpopup: resolve(__dirname, 'src/wikipedia/linkPopup.js'),
+        gmail: resolve(__dirname, 'src/gmail/gmail.ts')
       },
       output: {
         entryFileNames: '[name].js'

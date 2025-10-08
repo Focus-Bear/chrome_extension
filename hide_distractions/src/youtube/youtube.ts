@@ -1,8 +1,5 @@
 (() => {
   console.log("YouTube blur script injected at", location.href);
-  let isBlurEnabled = true;            // global blur
-  let isYouMenuBlurEnabled = true;     // You-menu blur (NEW)
-
 
   const COMMENT_BLUR_ID = "focus-bear-comment-blur-style";
   const selectorsToHide = [
@@ -12,8 +9,6 @@
     ".sidebar",
     // 'ytd-watch-next-secondary-results-renderer'
   ];
-
-  
 
   for (const selector of selectorsToHide) {
     const el = document.querySelector(selector);
@@ -175,7 +170,6 @@ const unblurYouMenuEntry = (name: string) => {
     entry.style.pointerEvents = "auto";
     entry.style.userSelect = "auto";
   }
-
 };
 
 // Blur all "You" menu items
@@ -187,6 +181,27 @@ const blurYouMenu = () => {
 const unblurYouMenu = () => {
   youMenuItems.forEach(item => unblurYouMenuEntry(item));
 };
+
+// Observe the "You" menu section for dynamic changes
+const observeYouMenu2 = () => {
+  const guide = document.querySelector("ytd-guide-renderer");
+  if (guide) {
+    const observer = new MutationObserver(() => {
+      blurYouMenu(); // Blur entries whenever menu updates
+    });
+    observer.observe(guide, { childList: true, subtree: true });
+
+    // Blur immediately on load
+    blurYouMenu();
+  } else {
+    // Retry later if the guide hasn't loaded yet
+    setTimeout(observeYouMenu, 500);
+  }
+};
+
+// Initialize observer
+observeYouMenu();
+
 
   const isShortsPage = () => {
     return window.location.pathname.startsWith("/shorts/");
@@ -342,28 +357,20 @@ const unblurYouMenu = () => {
     unblurYouMenu();
   };
 
- const applyBlurImmediately = () => {
-  // everything else can stay the same
-  applyBlurToSections();
-  blurChipsBar();
-  blurShortsMenu();
-  blurShortsShelf();
-  if (isShortsPage()) {
-    blurShortsPage();
-  }
-  blurMiniSidebarShorts();
-  blurTopSubscriptionsMenu();
-  blurLeftIconSubscriptions();
-  applyNotificationsBlur();
-
-  // Only blur the You menu if its own toggle is ON
-  if (isYouMenuBlurEnabled) {
+  const applyBlurImmediately = () => {
+    applyBlurToSections();
+    blurChipsBar();
+    blurShortsMenu();
+    blurShortsShelf();
+    if (isShortsPage()) {
+      blurShortsPage();
+    }
+    blurMiniSidebarShorts();
+    blurTopSubscriptionsMenu();
+    blurLeftIconSubscriptions();
+    applyNotificationsBlur();
     blurYouMenu();
-  } else {
-    unblurYouMenu();
-  }
-};
-
+  };
 
   const sidebarObserver = new MutationObserver(() => {
     chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
@@ -394,6 +401,14 @@ const unblurYouMenu = () => {
       unblurTopSubscriptionsMenu();
     }
   });
+
+  const youMenuObserver = new MutationObserver(() => {
+  if (isBlurEnabled) {
+    blurYouMenu();
+  } else {
+    unblurYouMenu();
+  }
+});
 
   const miniGuideObserver = new MutationObserver(() => {
     setTimeout(() => {
@@ -457,38 +472,31 @@ const unblurYouMenu = () => {
     }
   });
 
-  chrome.storage.local.get(
-  { blurEnabled: true, youMenuBlurEnabled: true },
-  ({ blurEnabled, youMenuBlurEnabled }) => {
+  chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
     isBlurEnabled = blurEnabled;
-    isYouMenuBlurEnabled = youMenuBlurEnabled;
 
     if (isBlurEnabled) {
       applyBlurImmediately();
     }
-    observeYouMenu(); // start You-menu observer once
-
-    // keep your other observers below as they were
+    observeYouMenu();
     sidebarObserver.observe(document.body, { childList: true, subtree: true });
     chipsObserver.observe(document.body, { childList: true, subtree: true });
     shortsmenuObserver.observe(document.body, { childList: true, subtree: true });
-    shortsshelfObserver.observe(document.body, { childList: true, subtree: true });
+    shortsshelfObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
     shortspageObserver.observe(document.body, { childList: true, subtree: true });
-    shortsMiniSidebarObserver.observe(document.body, { childList: true, subtree: true });
-    subscriptionsMenuObserver.observe(document.body, { childList: true, subtree: true });
-    miniGuideObserver.observe(document.body, { childList: true, subtree: true });
-  }
-);
-
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === "TOGGLE_YOU_MENU_BLUR") {
-    isYouMenuBlurEnabled = !!message.payload;
-    chrome.storage.local.set({ youMenuBlurEnabled: isYouMenuBlurEnabled });
-    if (isYouMenuBlurEnabled) blurYouMenu();
-    else unblurYouMenu();
-  }
-});
+    shortsMiniSidebarObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    });
+    subscriptionsMenuObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+    miniGuideObserver.observe(document.body, { childList: true, subtree: true });    
+  });
 
   // Blur comments
   function applyCommentBlur() {
@@ -516,20 +524,18 @@ chrome.runtime.onMessage.addListener((message) => {
 
 function observeYouMenu() {
   const guide = document.querySelector("ytd-guide-renderer");
-  if (!guide) {
+  if (guide) {
+    // Observe sidebar changes
+    const youMenuObserver = new MutationObserver(() => {
+      blurYouMenu();
+    });
+    youMenuObserver.observe(guide, { childList: true, subtree: true });
+    // blur immediately
+      blurYouMenu();
+    } else {
+    // Retry later if guide not found yet
     setTimeout(observeYouMenu, 500);
-    return;
   }
-  // Re-apply according to the dedicated flag, not the global blur
-  const mo = new MutationObserver(() => {
-    if (isYouMenuBlurEnabled) blurYouMenu();
-    else unblurYouMenu();
-  });
-  mo.observe(guide, { childList: true, subtree: true });
-
-  // Initial apply (respects the flag)
-  if (isYouMenuBlurEnabled) blurYouMenu();
-  else unblurYouMenu();
 }
 
 observeYouMenu();
@@ -582,18 +588,20 @@ observeYouMenu();
   });
 
   function applyYouMenuToggle(shouldBlur: boolean) {
-  if (shouldBlur) blurYouMenu();
-  else unblurYouMenu();
+  if (shouldBlur) {
+    blurYouMenu();
+  } else {
+    unblurYouMenu();
+  }
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "TOGGLE_YOU_MENU_BLUR") {
-    isYouMenuBlurEnabled = !!message.payload;
-    chrome.storage.local.set({ youMenuBlurEnabled: isYouMenuBlurEnabled });
-    applyYouMenuToggle(isYouMenuBlurEnabled);
+    const shouldBlur = message.payload;
+    chrome.storage.local.set({ youMenuBlurEnabled: shouldBlur });
+    applyYouMenuToggle(shouldBlur);
   }
 });
-
 
 
   let lastUrl = location.href;
