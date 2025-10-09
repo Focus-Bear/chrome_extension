@@ -39,6 +39,7 @@ const App = () => {
   const [wikipediaMainBlur, setWikipediaMainBlur] = useState(true);
   const [gmailBlurEnabled, setGmailBlurEnabled] = useState(true);
   const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
+  const [socialBlurEnabled, setSocialBlurEnabled] = useState(true);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -70,6 +71,7 @@ const App = () => {
         "wikipediaMainBlur",
         "gmailBlurEnabled",
         "promotionBlurEnabled",
+        "socialBlurEnabled",
       ],
       ({
         blurEnabled,
@@ -85,6 +87,7 @@ const App = () => {
         wikipediaMainBlur,
         gmailBlurEnabled,
         promotionBlurEnabled,
+        socialBlurEnabled,
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
@@ -99,6 +102,7 @@ const App = () => {
         setWikipediaMainBlur(wikipediaMainBlur ?? true);
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
         setPromotionBlurEnabled(promotionBlurEnabled ?? true);
+        setSocialBlurEnabled(socialBlurEnabled ?? true);
       }
     );
   }, []);
@@ -432,6 +436,20 @@ const App = () => {
     }
   };
 
+  const handleSocialBlurToggle = async () => {
+    const newValue = !socialBlurEnabled;
+    setSocialBlurEnabled(newValue);
+    await chrome.storage.local.set({ socialBlurEnabled: newValue });
+    
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_SOCIAL_BLUR",
+        payload: newValue,
+      });
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -566,7 +584,10 @@ const App = () => {
         <h3 className="settings-label">Gmail</h3>
         <label className="option-label">
           <span className="option-text">Blur Gmail</span>
-          <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
+          <Toggle 
+          checked={gmailBlurEnabled} 
+          onChange={handleGmailBlurToggle}
+          />
         </label>
 
         <label className="option-label">
@@ -574,6 +595,14 @@ const App = () => {
           <Toggle
             checked={promotionBlurEnabled}
             onChange={handlePromotionBlurToggle}
+          />
+        </label>
+
+        <label className="option-label">
+          <span className="option-text">Blur Social and Updates</span>
+          <Toggle 
+          checked={socialBlurEnabled} 
+          onChange={handleSocialBlurToggle}
           />
         </label>
       </div>
