@@ -31,6 +31,8 @@
       }
 
       .focus-popup-box {
+        display: flex;
+        justify-content: center;
         position: relative;
         padding: 30px;
         border-radius: 50px;
@@ -55,6 +57,7 @@
       }
       .focus-popup-button-container {
         display: flex;
+        justify-content: center;
         gap: 12px;
         margin-top: 16px;
       }
