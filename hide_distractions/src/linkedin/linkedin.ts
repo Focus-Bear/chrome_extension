@@ -83,22 +83,21 @@
       ".global-nav__primary-link-notification-badge, .notification-badge"
     );
 
-    console.log("toggleNotification running", badges.length);
     badges.forEach(badge => {
-      badge.remove();
+      badge.style.cssText = on ? "display: none;": "";   
     });
   }
 
 
   // Stored setting on load
   chrome.storage.local.get(
-    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinBlurBadges: true},
-    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinBlurBadges}) => {
+    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
+    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
       togglePYMK(linkedinBlurPYMK);
       toggleNews(linkedinBlurNews);
       toggleJobPageSections(linkedinBlurJobs);
       toggleHomeFeed(linkedinBlurHome);
-      toggleNotificationBadge(linkedinBlurBadges);
+      toggleNotificationBadge(linkedinRemoveBadges);
     }
   );
 
@@ -106,13 +105,13 @@
   new MutationObserver(muts => {
     if (muts.some(m => m.addedNodes.length)) {
       chrome.storage.local.get(
-        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinBlurBadges: true},
-        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinBlurBadges}) => {
+        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
+        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
           togglePYMK(linkedinBlurPYMK);
           toggleNews(linkedinBlurNews);
           toggleJobPageSections(linkedinBlurJobs);
           toggleHomeFeed(linkedinBlurHome);
-          toggleNotificationBadge(linkedinBlurBadges);
+          toggleNotificationBadge(linkedinRemoveBadges);
         }
       );
     }
@@ -138,5 +137,11 @@
       toggleHomeFeed(!!msg.payload);
       sendResponse({ ok: true });
     }
+    if (msg.type === "TOGGLE_LINKEDIN_BADGES") {
+      console.log("Received TOGGLE_LINKEDIN_BADGES message:", msg.payload);
+      toggleNotificationBadge(!!msg.payload);
+      sendResponse({ ok: true });
+    }
+
   });
 })();

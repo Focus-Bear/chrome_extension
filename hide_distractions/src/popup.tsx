@@ -31,6 +31,7 @@ const App = () => {
   const [linkedinBlurNews, setLinkedinBlurNews] = useState(true);
   const [linkedinBlurJobs, setLinkedinBlurJobs] = useState(true);
   const [linkedinBlurHome, setLinkedinBlurHome] = useState(true);
+  const [linkedinRemoveBadges, setLinkedinRemoveBadges] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
@@ -67,6 +68,7 @@ const App = () => {
         "linkedinBlurNews",
         "linkedinBlurJobs",
         "linkedinBlurHome",
+        "linkedinRemoveBadges",
         "wikiLinkPopupEnabled",
         "wikipediaMainBlur",
         "gmailBlurEnabled",
@@ -83,6 +85,7 @@ const App = () => {
         linkedinBlurNews,
         linkedinBlurJobs,
         linkedinBlurHome,
+        linkedinRemoveBadges,
         wikiLinkPopupEnabled,
         wikipediaMainBlur,
         gmailBlurEnabled,
@@ -93,11 +96,12 @@ const App = () => {
         setHidden(commentsHidden ?? true);
         setHomeBlurEnabled(homePageBlurEnabled ?? true);
         setShortsBlurEnabled(shortsBlurEnabled ?? true);
-        setYouBlurEnabled(youMenuBlurEnabled ?? true); // <-- use the right variable
+        setYouBlurEnabled(youMenuBlurEnabled ?? true); 
         setLinkedinBlurPYMK(linkedinBlurPYMK ?? true);
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinBlurJobs(linkedinBlurJobs ?? true);
         setLinkedinBlurHome(linkedinBlurHome ?? true);
+        setLinkedinRemoveBadges(linkedinRemoveBadges ?? true);
         setWikipediaLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
         setWikipediaMainBlur(wikipediaMainBlur ?? true);
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
@@ -157,6 +161,12 @@ const App = () => {
         setLinkedinBlurHome(linkedinBlurHome);
       }
     );
+    chrome.storage.local.get(
+      { linkedinRemoveBadges: true },
+      ({ linkedinRemoveBadges }) => {
+        setLinkedinRemoveBadges(linkedinRemoveBadges);
+      }
+    )
     chrome.storage.local.get(
       { wikipediaLinkPopupEnabled: true },
       ({ wikipediaLinkPopupEnabled }) => {
@@ -367,6 +377,22 @@ const App = () => {
       });
     }
   };
+    const handleLinkedinBadgeToggle = async () => {
+    const newValue = !linkedinRemoveBadges;
+    setLinkedinRemoveBadges(newValue);
+    await chrome.storage.local.set({ linkedinRemoveBadges: newValue });
+
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_LINKEDIN_BADGES",
+        payload: newValue,
+      });
+    }
+  };
 
   const handleWikipediaLinkPopupToggle = async () => {
     const newValue = !wikipediaLinkPopupEnabled;
@@ -563,6 +589,13 @@ const App = () => {
           <Toggle
             checked={linkedinBlurHome}
             onChange={handleLinkedinHomeToggle}
+          />
+        </label>
+        <label className="option-label">
+          <span className="option-text">Remove Badges</span>
+          <Toggle
+            checked={linkedinRemoveBadges}
+            onChange={handleLinkedinBadgeToggle}
           />
         </label>
 
