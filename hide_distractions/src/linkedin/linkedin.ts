@@ -92,12 +92,13 @@
 
   // Stored setting on load
   chrome.storage.local.get(
-    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true },
-    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome }) => {
+    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinBlurBadges: true},
+    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinBlurBadges}) => {
       togglePYMK(linkedinBlurPYMK);
       toggleNews(linkedinBlurNews);
       toggleJobPageSections(linkedinBlurJobs);
       toggleHomeFeed(linkedinBlurHome);
+      toggleNotificationBadge(linkedinBlurBadges);
     }
   );
 
@@ -105,12 +106,13 @@
   new MutationObserver(muts => {
     if (muts.some(m => m.addedNodes.length)) {
       chrome.storage.local.get(
-        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true },
-        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome }) => {
+        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinBlurBadges: true},
+        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinBlurBadges}) => {
           togglePYMK(linkedinBlurPYMK);
           toggleNews(linkedinBlurNews);
           toggleJobPageSections(linkedinBlurJobs);
           toggleHomeFeed(linkedinBlurHome);
+          toggleNotificationBadge(linkedinBlurBadges);
         }
       );
     }
