@@ -78,7 +78,6 @@ runCheck();
 chrome.storage.onChanged.addListener(() => runCheck());
 
 // Blocklist Popup
-
 function showBlocklistPopup() {
   if (document.getElementById("blocklist-popup")) return;
 

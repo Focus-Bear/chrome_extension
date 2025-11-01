@@ -4,6 +4,9 @@ import "./styles/popup.css";
 import iconUrl from "../public/icons/bearLogo.png";
 import setIcon from "../public/icons/settingsIcon.png";
 
+import "@radix-ui/themes/styles.css";
+import PomodoroTimer from "./components/PomodoroTimer";
+
 const Toggle = ({
   checked,
   onChange,
@@ -276,6 +279,8 @@ const App = () => {
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
 
+  const [currentTab, setCurrentTab] = useState<"pomodoro" | "focus">("pomodoro");
+
   const [showBlocklist, setShowBlocklist] = useState(false);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
@@ -532,21 +537,48 @@ const App = () => {
       <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
       <h1 className="popup-title">{t("home_title")}</h1>
 
-      {Object.keys(allFocusSessions).length > 0 ? (
-        <div className="session-list">
-          {Object.entries(allFocusSessions).map(([domain, session]) => (
-            <div key={domain} className="session-card">
-              <strong className="domain">{domain}</strong>
-              <br />
-              <span className="label">{t("time_left")}</span>{" "}
-              {formatTime(session.timeLeft)}
-              <br />
-              <span className="label">{t("intention_label")}</span> {session.intention}
-            </div>
-          ))}
+      {/* Tab buttons */}
+      <div className="tab-buttons">
+        <button
+          className={`tab-button ${currentTab === "pomodoro" ? "active" : ""}`}
+          onClick={() => setCurrentTab("pomodoro")}
+        >
+          Pomodoro
+        </button>
+        <button
+          className={`tab-button ${currentTab === "focus" ? "active" : ""}`}
+          onClick={() => setCurrentTab("focus")}
+        >
+          Focus Sessions
+        </button>
+      </div>
+
+      {/* Tab content */}
+      {currentTab === "pomodoro" && (
+        <div className="pomodoro_player">
+          <PomodoroTimer />
         </div>
-      ) : (
-        <p className="no-session">{t("no_focus_session")}</p>
+      )}`
+    
+      {currentTab === "focus" && (
+        <div>
+          {Object.keys(allFocusSessions).length > 0 ? (
+            <div className="session-list">
+              {Object.entries(allFocusSessions).map(([domain, session]) => (
+                <div key={domain} className="session-card">
+                  <strong className="domain">{domain}</strong>
+                  <br />
+                  <span className="label">{t("time_left")}</span>{" "}
+                  {formatTime(session.timeLeft)}
+                  <br />
+                  <span className="label">{t("intention_label")}</span> {session.intention}
+                  </div>
+                  ))}
+                </div>
+              ) : (
+            <p className="no-session">{t("no_focus_session")}</p>
+          )}
+        </div>
       )}
 
       <img
