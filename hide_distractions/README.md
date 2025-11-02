@@ -68,9 +68,9 @@
 
 - Toggle to blur YouTube you menu
 
-- Toggle to blur LinkedIn notification badges
+- Toggle to remove LinkedIn notification badges
 
-- Toggle to blur Wikipedia link popups
+- Toggle to add Wikipedia link popups
 - Toggle to blur Wikipedia main page
 
 - Toggle to blur Gmail
@@ -84,6 +84,7 @@
 - Remove option for each domain in list
 - Relaxlist toggle for each domain in list
 - Options to set and save active hours for blocklist
+- Popup when attempting to access blocked domains
 
 #### 🛠 Improvements
 
@@ -97,6 +98,7 @@
 #### ❗ Known Issues
 
 - Relaxlist not relaxing when Pomodoro Timer's state onBreak = True
+- Blocklist popup styling not correct, takes attributes from accessed domain
 
 ## Getting Started
 

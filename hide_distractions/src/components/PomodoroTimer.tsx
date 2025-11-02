@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import CircularSlider from "./CircularSlider";
-import InputMask from "react-input-mask";
+import { IMaskInput } from "react-imask";
 import "./PomodoroTimer.css";
 
 const DEFAULT_WORK = 25 * 60;
@@ -166,13 +166,15 @@ const PomodoroTimer: React.FC = () => {
             {/* Break Duration with react-input-mask */}
             <div className="breakduration-input">
               <label className="break-title">Break Duration:</label>
-              <input
-                value={breakInput}
-                onChange={(e) => setBreakInput(e.target.value)}
-                onBlur={commitBreakInput}
-                placeholder="MM:SS"
-                className="break-input"
-              />
+                <IMaskInput
+                  mask="00:00"
+                  value={breakInput}
+                  unmask={false}
+                  onAccept={(value: string) => setBreakInput(value)}
+                  onBlur={commitBreakInput}
+                  placeholder="MM:SS"
+                  className="break-input"
+                />
             </div>
 
             <div
