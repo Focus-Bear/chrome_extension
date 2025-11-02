@@ -1,6 +1,12 @@
-(function () {
+(async () => {
   const containerId = "focus-wikipedia-link-popup";
-  let enabled = true;
+
+  // Load user setting from storage
+  const { wikipediaLinkPopupEnabled } = await chrome.storage.local.get({
+    wikipediaLinkPopupEnabled: true,
+  });
+
+  let enabled = wikipediaLinkPopupEnabled;
 
   // Listen for toggle messages from popup
   chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
@@ -10,7 +16,7 @@
     }
   });
 
-  // Inject intentionPopup CSS if not already present
+  // Inject CSS for popup
   function injectIntentionPopupCSS() {
     if (document.getElementById("intentionPopup-css")) return;
     const style = document.createElement("style");
@@ -103,7 +109,6 @@
       </div>
     `;
 
-    // Container
     const container = document.createElement("div");
     container.id = containerId;
     container.appendChild(overlay);
@@ -122,8 +127,9 @@
     return container;
   }
 
+  // Click listener for Wikipedia links
   document.addEventListener("click", function (e) {
-    if (!enabled) return;
+    if (!enabled) return; // Check if link popup is enabled
     const link = e.target.closest("a[href^='/wiki/']");
     if (!link) return;
 
