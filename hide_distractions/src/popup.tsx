@@ -555,7 +555,7 @@ const App = () => {
 
       {/* Tab content */}
       {currentTab === "pomodoro" && (
-        <div className="pomodoro_player">
+        <div className="pomodoro_player" style={{ backgroundColor: "#fffcf6" }}>
           <PomodoroTimer />
         </div>
       )}`
