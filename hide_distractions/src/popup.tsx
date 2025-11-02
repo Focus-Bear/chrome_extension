@@ -118,7 +118,7 @@ const BlocklistEditor = ({
 };
 
   const toggleRelaxlist = (site: string) => {
-    if (isBlockedNow) return;
+    
     let updatedRelax: string[];
     if (relaxlist.includes(site)) {
       updatedRelax = relaxlist.filter((s) => s !== site);
