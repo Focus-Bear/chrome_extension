@@ -68,9 +68,9 @@
 
 - Toggle to blur YouTube you menu
 
-- Toggle to blur LinkedIn notification badges
+- Toggle to remove LinkedIn notification badges
 
-- Toggle to blur Wikipedia link popups
+- Toggle to add Wikipedia link popups
 - Toggle to blur Wikipedia main page
 
 - Toggle to blur Gmail
