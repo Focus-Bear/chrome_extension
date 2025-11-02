@@ -174,7 +174,6 @@ const BlocklistEditor = ({
                   <button
                     className={relaxlist.includes(site) ? "active" : ""}
                     onClick={() => toggleRelaxlist(site)}
-                    disabled={isBlockedNow}
                   >
                     {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
                   </button>
