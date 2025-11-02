@@ -23,6 +23,10 @@
     "message": "Blur Shorts",
     "description": "Option to blur YouTube Shorts"
   },
+  "blur_you_menu": {
+    "message": "Blur You Menu",
+    "description": "Option to blur You Menu"
+  },
     "blur_PYMK": {
     "message": "Blur Connection Recommendations",
     "description": "Option to blur (People you may know)"
@@ -46,12 +50,12 @@
   "no_focus_session": {
   "message": "No active focus session."
   },
-  "heading": {
-    "message": "Hello there! Up to mischief are we?",
+  "headings": {
+    "message": "Hello there! Up to mischief are we?|Caught you lurking again, didn't I?|Planning trouble, or just thinking about it?|Back for more fun, are we?|Sneaky little visit, hmm?|Stirring up chaos, or just passing through?|Oh look, it’s the mastermind again!|Plotting something brilliant... or ridiculous?|Should I be worried, or just impressed?",      
     "description": "Greeting heading for intention popup"
   },
-  "prompt": {
-    "message": "What plans are brewing or should I say bearing?",
+  "prompts": {
+    "message": "What plans are brewing or should I say bearing?|What’s the big idea—or is that just your inner bear stirring?|Got something grizzly planned, or just hibernating on it?|Are we clawing toward success or just paw-sing for thought?|Is that a wild idea, or are you just bear-ly getting started?|Planning something bold, or just padding around the possibilities?|Are you bear-ing the weight of brilliance again?|Got a beary good plan, or is it still in hibernation mode?|Is that a growl of ambition I hear, or just your creativity waking up?|Plotting something fierce, or just feeling a bit fuzzy today?",      
     "description": "Prompt asking user for their intention"
   },
   "placeholder": {

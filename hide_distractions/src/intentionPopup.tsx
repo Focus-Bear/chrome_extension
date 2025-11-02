@@ -6,6 +6,32 @@ import "./styles/intentionPopup.css";
 import iconUrl from '../public/icons/bearLogo.png';
 
 const containerId = "focus-popup-container";
+
+const headings = [
+  "Hello there! Up to mischief are we?",
+  "Caught you lurking again, didn't I?",
+  "Planning trouble, or just thinking about it?",
+  "Back for more fun, are we?",
+  "Sneaky little visit, hmm?",
+  "Stirring up chaos, or just passing through?",
+  "Oh look, it’s the mastermind again!",
+  "Plotting something brilliant... or ridiculous?",
+  "Should I be worried, or just impressed?"
+];
+
+const prompts = [
+  "What plans are brewing or should I say bearing?",
+  "What’s the big idea—or is that just your inner bear stirring?",
+  "Got something grizzly planned, or just hibernating on it?",
+  "Are we clawing toward success or just paw-sing for thought?",
+  "Is that a wild idea, or are you just bear-ly getting started?",
+  "Planning something bold, or just padding around the possibilities?",
+  "Are you bear-ing the weight of brilliance again?",
+  "Got a beary good plan, or is it still in hibernation mode?",
+  "Is that a growl of ambition I hear, or just your creativity waking up?",
+  "Plotting something fierce, or just feeling a bit fuzzy today?"
+];
+
 const IntentionPopup = () => {
   const { intention, setIntention, isIntentionSet } = useIntention();
   const [visible, setVisible] = useState<boolean>(true);
@@ -14,23 +40,25 @@ const IntentionPopup = () => {
   const [proceedDisabled, setProceedDisabled] = useState(true);
   const [localizedText, setLocalizedText] = useState<any | null>(null);
 
+  const [randomHeading, setRandomHeading] = useState<string>("");
+  const [randomPrompt, setRandomPrompt] = useState<string>("");
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.source !== window) return;
       if (event.data.type === "FOCUSBEAR_TRANSLATIONS") {
-        console.log("Received translations:", event.data.payload);
         setLocalizedText(event.data.payload);
+        setRandomHeading(headings[Math.floor(Math.random() * headings.length)]);
+        setRandomPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
       }
     };
     window.addEventListener("message", handleMessage);
 
-    //Request translations if not received after short delay
     const timeout = setTimeout(() => {
       if (!localizedText) {
-        console.log("📡 No translations received, requesting again...");
         window.postMessage({ type: "REQUEST_TRANSLATIONS" }, "*");
       }
-    }, 300); // Adjust delay if needed
+    }, 300);
 
     return () => {
       window.removeEventListener("message", handleMessage);
@@ -38,14 +66,11 @@ const IntentionPopup = () => {
     };
   }, []);
 
-  console.log("Current Intention:", intention);
-  console.log("Has Intention?", isIntentionSet);
-
-  // use effect to handle the event listeners.
   useEffect(() => {
     const handler = () => {
-      console.log("Received show-popup-again event");
       setVisible(true);
+      setRandomHeading(headings[Math.floor(Math.random() * headings.length)]);
+      setRandomPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
     };
     window.addEventListener("show-popup-again", handler);
 
@@ -54,29 +79,28 @@ const IntentionPopup = () => {
     };
   }, []);
 
-  // use effect to check the proceed button validation whenever intention and timer changes.
   useEffect(() => {
     const trimmedIntention = intention.trim();
     const isShortIntention = trimmedIntention.length < 5;
-    const isLongDuration = ["10", "15", "30"].includes(timer.toString());
+    const isLongDuration = ["10", "15"].includes(timer.toString());
     const needsDetailedIntention =
       isLongDuration && trimmedIntention.length < 15;
 
     const shouldDisable = !timer || isShortIntention || needsDetailedIntention;
-
     setProceedDisabled(shouldDisable);
   }, [intention, timer]);
 
-  // ───── INIT_INTENTION_DATA listener ─────
   useEffect(() => {
     function handleInit(event: MessageEvent) {
       if (event.source !== window) return;
       if (event.data?.type !== "INIT_INTENTION_DATA") return;
 
       const { lastIntention, lastFocusDuration } = event.data.payload;
-      if (lastIntention)   setIntention(lastIntention);
+      if (lastIntention) setIntention(lastIntention);
       if (typeof lastFocusDuration === "number") setTimer(lastFocusDuration);
       setVisible(true);
+      setRandomHeading(headings[Math.floor(Math.random() * headings.length)]);
+      setRandomPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
     }
 
     window.addEventListener("message", handleInit);
@@ -85,18 +109,15 @@ const IntentionPopup = () => {
     };
   }, []);
 
-
-  // to handle the intention save fucntionality
   const handleSave = () => {
     const focusDuration = timer;
     const focusStart = Date.now();
 
-    // Send to content script to store in chrome.storage.local
     window.postMessage(
       {
         type: "STORE_FOCUS_DATA",
         payload: {
-    domain: window.location.hostname,
+          domain: window.location.hostname,
           focusStart,
           focusDuration,
           focusIntention: intention,
@@ -108,28 +129,25 @@ const IntentionPopup = () => {
       { type: "START_FOCUS_TIMER", payload: timer },
       "*"
     );
-    
-    setVisible(false); // sets popup visibility.
+
+    setVisible(false);
   };
 
-  // to handle the intention change.
   const handleIntentionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIntention(e.target.value);
-    validateIntentionLength(timer); // validation to check the lenght of intention based on timer.
+    validateIntentionLength(timer);
   };
 
-  // to handle the timer change.
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = e.target.value;
-    setTimer(parseInt(selected, 10));
-    validateIntentionLength(parseInt(selected, 10)); // validation to check the lenght of intention based on timer.
+    const minutes = parseInt(e.target.value, 10);
+    setTimer(minutes);
+    validateIntentionLength(minutes);
   };
 
-  // Validate if intention is short for long durations
   const validateIntentionLength = (selectedDuration: number) => {
     const minutes = selectedDuration;
     if (
-      (minutes === 10 || minutes === 15 || minutes === 30) &&
+      (minutes === 10 || minutes === 15) &&
       intention.trim().length < 15
     ) {
       setShowWarning(true);
@@ -138,17 +156,16 @@ const IntentionPopup = () => {
     }
   };
 
-  if (!visible || !localizedText) { // don’t show if storage says hide
-    console.warn("Waiting for translations or popup not visible");
+  if (!visible || !localizedText) {
     return null;
   }
-  
+
   return (
     <div id="focus-popup" className="focus-popup">
-       <div className="focus-popup-box">
+      <div className="focus-popup-box">
         <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-        <h2>{localizedText.heading}</h2>
-        <p>{localizedText.prompt}</p>
+        <h2>{randomHeading}</h2>
+        <p>{randomPrompt}</p>
         <textarea
           value={intention}
           onChange={handleIntentionChange}
@@ -160,22 +177,23 @@ const IntentionPopup = () => {
         )}
         <p>{localizedText.duration}</p>
         <select
-          value={timer}
+          value={timer === 0 ? "" : timer.toString()}
           onChange={handleDurationChange}
-          className="focus-input" >
+          className="focus-input"
+        >
           <option value="">{localizedText.time_default}</option>
           <option value="1">{localizedText.minute_1}</option>
           <option value="5">{localizedText.minute_5}</option>
           <option value="10">{localizedText.minute_10}</option>
           <option value="15">{localizedText.minute_15}</option>
-          <option value="30">{localizedText.minute_30}</option>
         </select>
-  
+
         <div className="focus-button-container">
           <button
             disabled={proceedDisabled}
             onClick={handleSave}
-            className="focus-button" >
+            className="focus-button"
+          >
             {localizedText.button}
           </button>
         </div>

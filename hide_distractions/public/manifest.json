@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Focus Bear Copy for Edits",
-  "version": "1.0",
+  "name": "Focus Bear",
+  "version": "1.1",
   "description": "Hide distractions using a clean Chrome Extension.",
   "default_locale": "en",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": ["*://*.youtube.com/*", "*://*.linkedin.com/*"],
+  "host_permissions": ["*://*.youtube.com/*", "*://*.linkedin.com/*","*://*.wikipedia.org/*", "*://mail.google.com/*"],
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": {
@@ -18,7 +18,9 @@
   "content_scripts": [
     {"matches": [
       "https://www.youtube.com/*",
-      "https://www.linkedin.com/*"  
+      "https://www.linkedin.com/*",
+      "https://*.wikipedia.org/*", 
+      "https://mail.google.com/*"
     ],
       "js": ["content.js"],
       "css": ["assets/intentionPopup.css"]
@@ -34,7 +36,15 @@
     {
       "matches": ["<all_urls>"],
       "js": ["blocklist.js"]
-    }
+    },
+    {
+      "matches": ["*://*.wikipedia.org/*"],
+      "js": ["wikipedia.js", "linkpopup.js"]
+    },
+    {
+      "matches": ["*://mail.google.com/*"],
+      "js": ["gmail.js"]
+    }    
   ],
   "web_accessible_resources": [
     {

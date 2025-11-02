@@ -76,14 +76,28 @@
     });
   };
 
+
+  // Hide red notification badge
+  const toggleNotificationBadge = (on: boolean) => {
+    const badges = document.querySelectorAll<HTMLElement>(  
+      ".global-nav__primary-link-notification-badge, .notification-badge"
+    );
+
+    badges.forEach(badge => {
+      badge.style.cssText = on ? "display: none;": "";   
+    });
+  }
+
+
   // Stored setting on load
   chrome.storage.local.get(
-    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true },
-    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome }) => {
+    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
+    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
       togglePYMK(linkedinBlurPYMK);
       toggleNews(linkedinBlurNews);
       toggleJobPageSections(linkedinBlurJobs);
       toggleHomeFeed(linkedinBlurHome);
+      toggleNotificationBadge(linkedinRemoveBadges);
     }
   );
 
@@ -91,12 +105,13 @@
   new MutationObserver(muts => {
     if (muts.some(m => m.addedNodes.length)) {
       chrome.storage.local.get(
-        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true },
-        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome }) => {
+        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
+        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
           togglePYMK(linkedinBlurPYMK);
           toggleNews(linkedinBlurNews);
           toggleJobPageSections(linkedinBlurJobs);
           toggleHomeFeed(linkedinBlurHome);
+          toggleNotificationBadge(linkedinRemoveBadges);
         }
       );
     }
@@ -122,5 +137,11 @@
       toggleHomeFeed(!!msg.payload);
       sendResponse({ ok: true });
     }
+    if (msg.type === "TOGGLE_LINKEDIN_BADGES") {
+      console.log("Received TOGGLE_LINKEDIN_BADGES message:", msg.payload);
+      toggleNotificationBadge(!!msg.payload);
+      sendResponse({ ok: true });
+    }
+
   });
 })();
