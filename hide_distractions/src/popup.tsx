@@ -546,16 +546,13 @@ const App = () => {
     setYouBlurEnabled(newValue);
     await chrome.storage.local.set({ youBlurEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_YOU_BLUR",
-        payload: newValue,
-      });
-    }
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          type: "TOGGLE_YOU_MENU_BLUR",
+          payload: newValue,
+        });         
+      }
   };
 
   const handleLinkedinBlurToggle = async () => {
