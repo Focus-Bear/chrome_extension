@@ -60,6 +60,44 @@
 - LinkedIn toggles also affects YouTube subscription blurring
 - Intention popup css being injected improperly on all LinkedIn pages
 
+### Version 1.1.0 • 2 Nov 2025
+
+#### 🚀 New Features
+
+- Pomodoro Timer added to popup from original extension
+
+- Toggle to blur YouTube you menu
+
+- Toggle to blur LinkedIn notification badges
+
+- Toggle to blur Wikipedia link popups
+- Toggle to blur Wikipedia main page
+
+- Toggle to blur Gmail
+- Toggle to blur Gmail promotions
+- Toggle to blur Gmail social and updates
+
+- Blocklist accessible through settings
+- Site entry text box trims urls and adds to blocklist
+- Blocked domains displayed in popup
+- Blocked domains are blurred in active hours
+- Remove option for each domain in list
+- Relaxlist toggle for each domain in list
+- Options to set and save active hours for blocklist
+
+#### 🛠 Improvements
+
+- Various new themed messages added to intention popup
+- 
+
+#### 🐞 Bug Fixes
+
+- 
+
+#### ❗ Known Issues
+
+- Relaxlist not relaxing when Pomodoro Timer's state onBreak = True
+
 ## Getting Started
 
 These instructions will help you get a local copy of the project up and running for development/testing.
@@ -100,26 +138,31 @@ If you’re running into issues like missing build files or unexpected behaviour
 ```text
 hide_distractions/
 │
-├── public/                # Static files
-│   ├── _locales/          # Contains languages
-│   ├── icons/             # Extension icons
-│   └── manifest.json      # Chrome Extension manifest
+├── public/                     # Static files
+│   ├── _locales/               # Contains languages
+│   ├── icons/                  # Extension icons
+│   └── manifest.json           # Chrome Extension manifest
 │
-├── src/                   # Source files
-│   ├── context/           # Contains global functions
-│   ├── styles/            # Contains css files
-│   ├── youtube/           # YouTube files
-│   ├── linkedin/          # LinkedIn files
-│   ├── background.ts      # Background script (Runs continuously in the background)
-│   ├── content.ts         # Global content script (Injected into websites)
-│   ├── popup.html         # HTML for popup interface
-│   └── popup.tsx          # React popup UI
+├── src/                        # Source files
+|   ├── components/             # Contains pomodoro timer functions and stylings
+│   ├── context/                # Contains global functions
+│   ├── styles/                 # Contains css files
+│   ├── youtube/                # YouTube files
+│   ├── linkedin/               # LinkedIn files
+│   ├── gmail/                  # Gmail files
+│   ├── wikipedia/              # Wikipedia files
+│   ├── background.ts           # Background script (Runs continuously in the background)
+│   ├── blocklist.ts            # Blocklist functions
+│   ├── content.ts              # Global content script (Injected into websites)
+│   ├── popup.html              # HTML for popup interface
+│   └── popup.tsx               # React popup UI
+│   └── intentionPopup.tsx      # Intention popup functions for focus sessions
 │
-├── package.json           # Project metadata and scripts
-├── package-lock.json      # Dependency lockfile
-├── tsconfig.json          # TypeScript configuration
-├── vite.config.ts         # Vite bundler configuration
-└── README.md              # You're reading it!
+├── package.json                # Project metadata and scripts
+├── package-lock.json           # Dependency lockfile
+├── tsconfig.json               # TypeScript configuration
+├── vite.config.ts              # Vite bundler configuration
+└── README.md                   # You're reading it!
 ```
 
 ## License
