@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import InputMask from "react-input-mask";
+import { IMaskInput } from "react-imask";
 import "./CircularSlider.css";
 
 interface CircularSliderProps {
@@ -105,15 +105,12 @@ const CircularSlider: React.FC<CircularSliderProps> = ({ value, min, max, onChan
 
       <div className="circular-slider-input-container">
         {/* Masked input for work duration */}
-        <input
-          type="text"
+        <IMaskInput
+          mask="00:00"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onBlur={() => {
-            const parsed = parseTime(inputValue);
-            setInputValue(formatTime(parsed));
-            onChange(parsed);
-          }}
+          unmask={false}
+          onAccept={(value: string) => setInputValue(value)}
+          onBlur={handleInputBlur}
           placeholder="MM:SS"
           className="workDuration-input"
         />
