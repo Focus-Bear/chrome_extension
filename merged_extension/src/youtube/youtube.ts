@@ -218,7 +218,7 @@ applyYouMenuToggle(youMenuBlurEnabled);
 observeYouMenu();
 
 // Listen for toggle message from popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "TOGGLE_YOU_MENU_BLUR") {
     youMenuBlurEnabled = message.payload;
     chrome.storage.local.set({ youMenuBlurEnabled });
@@ -466,7 +466,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     );
   });
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message) => {
     const { type, payload } = message;
 
     if (type === "TOGGLE_BLUR") {
@@ -576,48 +576,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       unblurMiniSidebarShorts();
     }
   }
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_SHORTS_BLUR") {
       const blurShorts = message.payload;
       chrome.storage.local.set({ shortsBlurEnabled: blurShorts });
       applyShortsToggle(blurShorts);
     }
   });
-
-  let lastUrl = location.href;
-  const observeUrlChanges = () => {
-    const observer = new MutationObserver(() => {
-      if (location.href !== lastUrl) {
-        lastUrl = location.href;
-
-        // Check if we're on the home page
-        if (window.location.pathname === '/' || window.location.pathname === '/feed/subscriptions') {
-          chrome.storage.local.get(['homePageBlurEnabled'], ({ homePageBlurEnabled }) => {
-            if (homePageBlurEnabled) {
-              // Apply home page specific blur
-              const homePageElements = document.querySelectorAll('#contents, ytd-rich-grid-renderer');
-              homePageElements.forEach(element => {
-                if (element instanceof HTMLElement) {
-                  element.style.filter = 'blur(10px)';
-                  element.style.pointerEvents = 'none';
-                  element.style.userSelect = 'none';
-                }
-              });
-              
-              // Also blur the chips bar on home page
-              blurChipsBar();
-            }
-          });
-        }
-
-        if (isShortsPage() && isBlurEnabled) {
-          blurShortsPage();
-        }
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  };
 
   // Create a separate observer for dynamic content on home page
   const homePageContentObserver = new MutationObserver(() => {
@@ -645,7 +610,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   });
 
   // Add this to your existing chrome.runtime.onMessage listener
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_HOME_PAGE_BLUR") {
       const shouldBlur = message.payload;
       if (window.location.pathname === '/' || window.location.pathname === '/feed/subscriptions') {
@@ -873,7 +838,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   });
 
   // Message handler setup
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message) => {
     const { type, payload } = message;
 
     if (type === "TOGGLE_HOME_PAGE_BLUR") {
