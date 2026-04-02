@@ -4,10 +4,13 @@
   "version": "0.0.1",
   "description": "maintain your focus with Focus Bear",
   "author": "Kiran Kulkarni",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.13",
@@ -30,10 +33,10 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "oxfmt": "^0.43.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
     "vite-plugin-static-copy": "^3.0.0"
-  },
-  "type": "module"
+  }
 }

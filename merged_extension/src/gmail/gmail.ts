@@ -13,7 +13,7 @@ interface BlurToggleMessage {
   const GMAIL_SOCIAL_STYLE_ID = "focus-bear-gmail-social-style";
   let originalTitle = document.title;
 
-  // HELPER: Detect which Gmail tab (Primary/Social/Updates/etc)   
+  // HELPER: Detect which Gmail tab (Primary/Social/Updates/etc)
   const getCurrentGmailCategory = (): string | null => {
     const activeTab = document.querySelector('[role="tab"][aria-selected="true"]');
     if (!activeTab) return null;
@@ -26,7 +26,7 @@ interface BlurToggleMessage {
     return null;
   };
 
-  // Title + Sidebar Blur    
+  // Title + Sidebar Blur
   const blurTitle = (): void => {
     originalTitle = document.title;
     document.title = document.title.replace(/\(\d+\)/, "(••)");
@@ -57,7 +57,7 @@ interface BlurToggleMessage {
     restoreTitle();
   };
 
-  // Promotions Blur  
+  // Promotions Blur
   const applyPromotionBlur = (): void => {
     if (document.getElementById(GMAIL_PROMO_STYLE_ID)) return;
 
@@ -81,14 +81,14 @@ interface BlurToggleMessage {
     document.getElementById(GMAIL_PROMO_STYLE_ID)?.remove();
   };
 
-  // Social/Updates Blur     
+  // Social/Updates Blur
   let socialObserver: MutationObserver | null = null;
   let socialFallbackInterval: number | null = null;
 
   const removeSocialBlur = (): void => {
     document.getElementById(GMAIL_SOCIAL_STYLE_ID)?.remove();
 
-    document.querySelectorAll(".focusbear-social-blurred").forEach(el => {
+    document.querySelectorAll(".focusbear-social-blurred").forEach((el) => {
       const e = el as HTMLElement;
       e.style.filter = "";
       e.style.pointerEvents = "";
@@ -126,7 +126,9 @@ interface BlurToggleMessage {
     }
 
     const findSocialContainer = (): HTMLElement | null => {
-      let panel = document.querySelector('[role="tabpanel"][aria-label*="Social" i]') as HTMLElement | null;
+      let panel = document.querySelector(
+        '[role="tabpanel"][aria-label*="Social" i]',
+      ) as HTMLElement | null;
       if (panel) return panel;
       return document.querySelector('div[role="main"]') as HTMLElement | null;
     };
@@ -154,7 +156,7 @@ interface BlurToggleMessage {
       const container = findSocialContainer();
       if (!container) return;
       const rows = Array.from(container.querySelectorAll(".zA"));
-      rows.forEach(row => {
+      rows.forEach((row) => {
         const el = row as HTMLElement;
         const rect = el.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) return;
@@ -201,7 +203,7 @@ interface BlurToggleMessage {
     }, 1000);
   };
 
-  // Debounce + Observer    
+  // Debounce + Observer
   const debounce = <T extends (...args: any[]) => void>(fn: T, delay = 100): (() => void) => {
     let timer: number;
     return () => {
@@ -234,14 +236,14 @@ interface BlurToggleMessage {
           } else {
             removeSocialBlur();
           }
-        }
+        },
       );
-    }, 150)
+    }, 150),
   );
 
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // Reapply on tab click     
+  // Reapply on tab click
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
     if (target.closest('[role="tab"]')) {
@@ -258,7 +260,7 @@ interface BlurToggleMessage {
     }
   });
 
-  // Chrome Message Listener     
+  // Chrome Message Listener
   chrome.runtime.onMessage.addListener((message: BlurToggleMessage) => {
     if (message.type === "TOGGLE_GMAIL_BLUR") {
       const shouldBlur = Boolean(message.payload);
@@ -289,7 +291,7 @@ interface BlurToggleMessage {
     }
   });
 
-  // On Initial Load    
+  // On Initial Load
   chrome.storage.local.get(
     { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
     (res) => {
@@ -304,6 +306,6 @@ interface BlurToggleMessage {
       if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
         applySocialBlur();
       }
-    }
+    },
   );
 })();

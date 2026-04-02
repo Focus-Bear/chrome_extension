@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useRef,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 
 interface IntentionContextProps {
   intention: string;
@@ -83,11 +76,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
           setTimerActive(false);
-          chrome.storage.local.remove([
-            "focusStart",
-            "focusDuration",
-            "focusIntention",
-          ]);
+          chrome.storage.local.remove(["focusStart", "focusDuration", "focusIntention"]);
           window.dispatchEvent(new CustomEvent("show-popup-again"));
           return 0;
         }

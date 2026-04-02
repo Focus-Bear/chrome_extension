@@ -7,31 +7,21 @@ import setIcon from "../public/icons/settingsIcon.png";
 import "@radix-ui/themes/styles.css";
 import PomodoroTimer from "./components/PomodoroTimer";
 
-const Toggle = ({
-  checked,
-  onChange,
-}: {
-  checked: boolean;
-  onChange: () => void;
-}) => (
-  <div
-    className={`toggle ${checked ? "active" : "inactive"}`}
-    onClick={onChange}
-  >
+const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
+  <div className={`toggle ${checked ? "active" : "inactive"}`} onClick={onChange}>
     <span className="toggle-text">{checked ? "ON" : "OFF"}</span>
     <div className="toggle-button" />
   </div>
 );
 
-const BlocklistEditor = ({
-  onClose,
-}: {
-  onClose: () => void;
-}) => {
+const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
   const [blocklist, setBlocklist] = useState<string[]>([]);
   const [relaxlist, setRelaxlist] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
-  const [activeHours, setActiveHours] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+  const [activeHours, setActiveHours] = useState<{ start: number; end: number }>({
+    start: 0,
+    end: 0,
+  });
   const [isValid, setIsValid] = useState(true);
   const [isBlockedNow, setIsBlockedNow] = useState(false);
   const [currentTab, setCurrentTab] = useState<"blocklist" | "relaxlist">("blocklist");
@@ -72,11 +62,11 @@ const BlocklistEditor = ({
     // Validation: must be within 0-23, start and end cannot be NaN
     setIsValid(
       !isNaN(sanitizedStart) &&
-      !isNaN(sanitizedEnd) &&
-      sanitizedStart >= 0 &&
-      sanitizedStart <= 23 &&
-      sanitizedEnd >= 0 &&
-      sanitizedEnd <= 23
+        !isNaN(sanitizedEnd) &&
+        sanitizedStart >= 0 &&
+        sanitizedStart <= 23 &&
+        sanitizedEnd >= 0 &&
+        sanitizedEnd <= 23,
     );
   };
 
@@ -105,20 +95,19 @@ const BlocklistEditor = ({
   };
 
   const removeSite = (site: string) => {
-  if (isBlockedNow) return;
-  const updatedBlock = blocklist.filter((s) => s !== site);
-  setBlocklist(updatedBlock);
-  chrome.storage.local.set({ blocklist: updatedBlock });
+    if (isBlockedNow) return;
+    const updatedBlock = blocklist.filter((s) => s !== site);
+    setBlocklist(updatedBlock);
+    chrome.storage.local.set({ blocklist: updatedBlock });
 
-  if (relaxlist.includes(site)) {
-    const updatedRelax = relaxlist.filter((s) => s !== site);
-    setRelaxlist(updatedRelax);
-    chrome.storage.local.set({ relaxlist: updatedRelax });
-  }
-};
+    if (relaxlist.includes(site)) {
+      const updatedRelax = relaxlist.filter((s) => s !== site);
+      setRelaxlist(updatedRelax);
+      chrome.storage.local.set({ relaxlist: updatedRelax });
+    }
+  };
 
   const toggleRelaxlist = (site: string) => {
-    
     let updatedRelax: string[];
     if (relaxlist.includes(site)) {
       updatedRelax = relaxlist.filter((s) => s !== site);
@@ -150,9 +139,7 @@ const BlocklistEditor = ({
 
       {currentTab === "blocklist" && (
         <>
-          <p className="blocklist-instructions">
-            Enter a site to block during your active hours:
-          </p>
+          <p className="blocklist-instructions">Enter a site to block during your active hours:</p>
           <div className="site-input-container">
             <input
               type="text"
@@ -177,10 +164,7 @@ const BlocklistEditor = ({
                   >
                     {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
                   </button>
-                  <button
-                    onClick={() => removeSite(site)}
-                    disabled={isBlockedNow}
-                  >
+                  <button onClick={() => removeSite(site)} disabled={isBlockedNow}>
                     Remove
                   </button>
                 </div>
@@ -196,9 +180,7 @@ const BlocklistEditor = ({
                 min={0}
                 max={23}
                 value={activeHours.start}
-                onChange={(e) =>
-                  handleActiveHoursChange(+e.target.value, activeHours.end)
-                }
+                onChange={(e) => handleActiveHoursChange(+e.target.value, activeHours.end)}
                 disabled={isBlockedNow}
                 className="active-hours-input"
               />
@@ -210,9 +192,7 @@ const BlocklistEditor = ({
                 min={0}
                 max={23}
                 value={activeHours.end}
-                onChange={(e) =>
-                  handleActiveHoursChange(activeHours.start, +e.target.value)
-                }
+                onChange={(e) => handleActiveHoursChange(activeHours.start, +e.target.value)}
                 disabled={isBlockedNow}
                 className="active-hours-input"
               />
@@ -227,18 +207,14 @@ const BlocklistEditor = ({
           </div>
 
           {isBlockedNow && (
-            <p className="settings-warning">
-              Blocklist is locked during active hours
-            </p>
+            <p className="settings-warning">Blocklist is locked during active hours</p>
           )}
         </>
       )}
 
       {currentTab === "relaxlist" && (
         <>
-          <p className="blocklist-instructions">
-            These websites are accessable during your breaks
-          </p>
+          <p className="blocklist-instructions">These websites are accessable during your breaks</p>
           <ul className="site-list">
             {relaxlist.length === 0 && <li>No sites in Relaxlist</li>}
             {relaxlist.map((site) => (
@@ -279,8 +255,7 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
-  const [wikipediaLinkPopupEnabled, setWikipediaLinkPopupEnabled] =
-    useState(true);
+  const [wikipediaLinkPopupEnabled, setWikipediaLinkPopupEnabled] = useState(true);
   const [wikipediaMainBlur, setWikipediaMainBlur] = useState(true);
   const [gmailBlurEnabled, setGmailBlurEnabled] = useState(true);
   const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
@@ -344,7 +319,7 @@ const App = () => {
         setHidden(commentsHidden ?? true);
         setHomeBlurEnabled(homePageBlurEnabled ?? true);
         setShortsBlurEnabled(shortsBlurEnabled ?? true);
-        setYouBlurEnabled(youMenuBlurEnabled ?? true); 
+        setYouBlurEnabled(youMenuBlurEnabled ?? true);
         setLinkedinBlurPYMK(linkedinBlurPYMK ?? true);
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinBlurJobs(linkedinBlurJobs ?? true);
@@ -355,7 +330,7 @@ const App = () => {
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
         setPromotionBlurEnabled(promotionBlurEnabled ?? true);
         setSocialBlurEnabled(socialBlurEnabled ?? true);
-      }
+      },
     );
   }, []);
 
@@ -367,75 +342,45 @@ const App = () => {
     chrome.storage.local.get({ commentsHidden: true }, ({ commentsHidden }) => {
       setHidden(commentsHidden);
     });
-    chrome.storage.local.get(
-      { homePageBlurEnabled: true },
-      ({ homePageBlurEnabled }) => {
-        setHomeBlurEnabled(homePageBlurEnabled);
-      }
-    );
-    chrome.storage.local.get(
-      { shortsBlurEnabled: true },
-      ({ shortsBlurEnabled }) => {
-        setShortsBlurEnabled(shortsBlurEnabled);
-      }
-    );
-    chrome.storage.local.get(
-      { youMenuBlurEnabled: true },
-      ({ youMenuBlurEnabled }) => {
-        setYouBlurEnabled(youMenuBlurEnabled);
-      }
-    );
-    chrome.storage.local.get(
-      { linkedinBlurPYMK: true },
-      ({ linkedinBlurPYMK }) => {
-        setLinkedinBlurPYMK(linkedinBlurPYMK);
-      }
-    );
-    chrome.storage.local.get(
-      { linkedinBlurNews: true },
-      ({ linkedinBlurNews }) => {
-        setLinkedinBlurNews(linkedinBlurNews);
-      }
-    );
-    chrome.storage.local.get(
-      { linkedinBlurJobs: true },
-      ({ linkedinBlurJobs }) => {
-        setLinkedinBlurJobs(linkedinBlurJobs);
-      }
-    );
-    chrome.storage.local.get(
-      { linkedinBlurHome: true },
-      ({ linkedinBlurHome }) => {
-        setLinkedinBlurHome(linkedinBlurHome);
-      }
-    );
-    chrome.storage.local.get(
-      { linkedinRemoveBadges: true },
-      ({ linkedinRemoveBadges }) => {
-        setLinkedinRemoveBadges(linkedinRemoveBadges);
-      }
-    )
+    chrome.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
+      setHomeBlurEnabled(homePageBlurEnabled);
+    });
+    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+      setShortsBlurEnabled(shortsBlurEnabled);
+    });
+    chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled }) => {
+      setYouBlurEnabled(youMenuBlurEnabled);
+    });
+    chrome.storage.local.get({ linkedinBlurPYMK: true }, ({ linkedinBlurPYMK }) => {
+      setLinkedinBlurPYMK(linkedinBlurPYMK);
+    });
+    chrome.storage.local.get({ linkedinBlurNews: true }, ({ linkedinBlurNews }) => {
+      setLinkedinBlurNews(linkedinBlurNews);
+    });
+    chrome.storage.local.get({ linkedinBlurJobs: true }, ({ linkedinBlurJobs }) => {
+      setLinkedinBlurJobs(linkedinBlurJobs);
+    });
+    chrome.storage.local.get({ linkedinBlurHome: true }, ({ linkedinBlurHome }) => {
+      setLinkedinBlurHome(linkedinBlurHome);
+    });
+    chrome.storage.local.get({ linkedinRemoveBadges: true }, ({ linkedinRemoveBadges }) => {
+      setLinkedinRemoveBadges(linkedinRemoveBadges);
+    });
     chrome.storage.local.get(
       { wikipediaLinkPopupEnabled: true },
       ({ wikipediaLinkPopupEnabled }) => {
         setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled);
-      }
+      },
     );
-    chrome.storage.local.get(
-      { wikipediaMainBlur: true },
-      ({ wikipediaMainBlur }) => {
-        setWikipediaMainBlur(wikipediaMainBlur);
-      }
-    );
+    chrome.storage.local.get({ wikipediaMainBlur: true }, ({ wikipediaMainBlur }) => {
+      setWikipediaMainBlur(wikipediaMainBlur);
+    });
   }, []);
 
   useEffect(() => {
     const updateSessions = () => {
       chrome.storage.local.get("focusData", ({ focusData }) => {
-        const sessions: Record<
-          string,
-          { intention: string; timeLeft: number }
-        > = {};
+        const sessions: Record<string, { intention: string; timeLeft: number }> = {};
         const now = Date.now();
 
         if (focusData) {
@@ -547,12 +492,12 @@ const App = () => {
     await chrome.storage.local.set({ youBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        chrome.tabs.sendMessage(tab.id, {
-          type: "TOGGLE_YOU_MENU_BLUR",
-          payload: newValue,
-        });         
-      }
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_YOU_MENU_BLUR",
+        payload: newValue,
+      });
+    }
   };
 
   const handleLinkedinBlurToggle = async () => {
@@ -622,7 +567,7 @@ const App = () => {
       });
     }
   };
-    const handleLinkedinBadgeToggle = async () => {
+  const handleLinkedinBadgeToggle = async () => {
     const newValue = !linkedinRemoveBadges;
     setLinkedinRemoveBadges(newValue);
     await chrome.storage.local.set({ linkedinRemoveBadges: newValue });
@@ -711,7 +656,7 @@ const App = () => {
     const newValue = !socialBlurEnabled;
     setSocialBlurEnabled(newValue);
     await chrome.storage.local.set({ socialBlurEnabled: newValue });
-    
+
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
       await chrome.tabs.sendMessage(tab.id, {
@@ -733,7 +678,6 @@ const App = () => {
     <div className="main-view">
       <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
       <h1 className="popup-title">{t("home_title")}</h1>
-
       {/* Tab buttons */}
       <div className="tab-buttons">
         <button
@@ -749,14 +693,13 @@ const App = () => {
           Focus Sessions
         </button>
       </div>
-
       {/* Tab content */}
       {currentTab === "pomodoro" && (
         <div className="pomodoro_player" style={{ backgroundColor: "#fffcf6" }}>
           <PomodoroTimer />
         </div>
-      )}`
-    
+      )}
+      `
       {currentTab === "focus" && (
         <div>
           {Object.keys(allFocusSessions).length > 0 ? (
@@ -765,19 +708,17 @@ const App = () => {
                 <div key={domain} className="session-card">
                   <strong className="domain">{domain}</strong>
                   <br />
-                  <span className="label">{t("time_left")}</span>{" "}
-                  {formatTime(session.timeLeft)}
+                  <span className="label">{t("time_left")}</span> {formatTime(session.timeLeft)}
                   <br />
                   <span className="label">{t("intention_label")}</span> {session.intention}
-                  </div>
-                  ))}
                 </div>
-              ) : (
+              ))}
+            </div>
+          ) : (
             <p className="no-session">{t("no_focus_session")}</p>
           )}
         </div>
       )}
-
       <img
         src={setIcon}
         alt="Settings Icon"
@@ -792,9 +733,7 @@ const App = () => {
         }}
       />
       {settingsBlockedMessage && (
-        <p className="settings-warning">
-          {t("settings_locked_during_session")}
-        </p>
+        <p className="settings-warning">{t("settings_locked_during_session")}</p>
       )}
     </div>
   );
@@ -822,10 +761,7 @@ const App = () => {
 
         <label className="option-label">
           <span className="option-text">{t("blur_shorts")}</span>
-          <Toggle
-            checked={shortsBlurEnabled}
-            onChange={handleShortsBlurToggle}
-          />
+          <Toggle checked={shortsBlurEnabled} onChange={handleShortsBlurToggle} />
         </label>
 
         <label className="option-label">
@@ -836,78 +772,48 @@ const App = () => {
         <h3 className="settings-label">LinkedIn</h3>
         <label className="option-label">
           <span className="option-text">{t("blur_PYMK")}</span>
-          <Toggle
-            checked={linkedinBlurPYMK}
-            onChange={handleLinkedinBlurToggle}
-          />
+          <Toggle checked={linkedinBlurPYMK} onChange={handleLinkedinBlurToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_news")}</span>
-          <Toggle
-            checked={linkedinBlurNews}
-            onChange={handleLinkedinNewsToggle}
-          />
+          <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_jobs")}</span>
-          <Toggle
-            checked={linkedinBlurJobs}
-            onChange={handleLinkedinJobsToggle}
-          />
+          <Toggle checked={linkedinBlurJobs} onChange={handleLinkedinJobsToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_home")}</span>
-          <Toggle
-            checked={linkedinBlurHome}
-            onChange={handleLinkedinHomeToggle}
-          />
+          <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">Remove Badges</span>
-          <Toggle
-            checked={linkedinRemoveBadges}
-            onChange={handleLinkedinBadgeToggle}
-          />
+          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
         </label>
 
         <h3 className="settings-label">Wikipedia</h3>
         <label className="option-label">
           <span className="option-text">Link Popup</span>
-          <Toggle
-            checked={wikipediaLinkPopupEnabled}
-            onChange={handleWikipediaLinkPopupToggle}
-          />
+          <Toggle checked={wikipediaLinkPopupEnabled} onChange={handleWikipediaLinkPopupToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">Main Page Blur</span>
-          <Toggle
-            checked={wikipediaMainBlur}
-            onChange={handleWikipediaMainBlurToggle}
-          />
+          <Toggle checked={wikipediaMainBlur} onChange={handleWikipediaMainBlurToggle} />
         </label>
         <h3 className="settings-label">Gmail</h3>
         <label className="option-label">
           <span className="option-text">Blur Gmail</span>
-          <Toggle 
-          checked={gmailBlurEnabled} 
-          onChange={handleGmailBlurToggle}
-          />
+          <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
         </label>
 
         <label className="option-label">
           <span className="option-text">Blur Promotions</span>
-          <Toggle
-            checked={promotionBlurEnabled}
-            onChange={handlePromotionBlurToggle}
-          />
+          <Toggle checked={promotionBlurEnabled} onChange={handlePromotionBlurToggle} />
         </label>
 
         <label className="option-label">
           <span className="option-text">Blur Social and Updates</span>
-          <Toggle 
-          checked={socialBlurEnabled} 
-          onChange={handleSocialBlurToggle}
-          />
+          <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
         </label>
       </div>
       <button className="close-button" onClick={() => setShowBlocklist(true)}>
@@ -922,7 +828,13 @@ const App = () => {
 
   return (
     <div className="popup-container">
-      {showBlocklist ? (<BlocklistEditor onClose={() => setShowBlocklist(false)} />) : showSettings ? settingsView : mainView}
+      {showBlocklist ? (
+        <BlocklistEditor onClose={() => setShowBlocklist(false)} />
+      ) : showSettings ? (
+        settingsView
+      ) : (
+        mainView
+      )}
     </div>
   );
 };
@@ -930,5 +842,5 @@ const App = () => {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

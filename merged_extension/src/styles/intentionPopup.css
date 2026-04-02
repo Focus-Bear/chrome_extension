@@ -18,7 +18,7 @@
   position: relative;
   padding: 30px;
   border-radius: 50px;
-  background-color: #FFE4C6;
+  background-color: #ffe4c6;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   text-align: center;
   max-width: 400px;
@@ -93,12 +93,12 @@
 }
 
 .focus-button:disabled {
-  background: #CCCCCC;
+  background: #cccccc;
   cursor: not-allowed;
 }
 
 .focus-button:not(:disabled) {
-  background: #FFB86B;
+  background: #ffb86b;
   cursor: pointer;
 }
 
@@ -211,8 +211,7 @@
 }
 
 /* High-DPI screens */
-@media screen and (-webkit-min-device-pixel-ratio: 2),
-       screen and (min-resolution: 192dpi) {
+@media screen and (-webkit-min-device-pixel-ratio: 2), screen and (min-resolution: 192dpi) {
   .focus-popup-box {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
   }

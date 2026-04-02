@@ -1,16 +1,13 @@
-  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-  
-  .pomodoro-container {
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+.pomodoro-container {
   display: flex;
   justify-content: center;
   align-items: flex-start; /* stick content to the top */
-  height: 100%;            /* only take as much height as content */
+  height: 100%; /* only take as much height as content */
   color: #e9902c;
-  padding: 1rem 0;          /* optional: keep a little breathing room */
+  padding: 1rem 0; /* optional: keep a little breathing room */
 }
-
-
-
 
 .pomodoro-content {
   width: 100%;
@@ -36,11 +33,11 @@
   text-align: center;
 }
 
-.task-input:hover{
+.task-input:hover {
   background-color: #e9902c;
 }
 
-.task-input:focus{
+.task-input:focus {
   background-color: #e9902c;
 }
 
@@ -54,14 +51,14 @@
   margin-right: 20px;
 }
 
-.break-title{
-    color: #e9902c;
-    font-size: large;
-    font-weight: bold;
+.break-title {
+  color: #e9902c;
+  font-size: large;
+  font-weight: bold;
 }
 
 .break-input {
-  font-family: 'Courier Prime', sans-serif;
+  font-family: "Courier Prime", sans-serif;
   font-weight: 200;
   width: 20%;
   padding: 7px;

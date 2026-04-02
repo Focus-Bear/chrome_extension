@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { IntentionProvider } from "./context/intentionPopupContext";
 import { useIntention } from "./context/intentionPopupContext";
 import "./styles/intentionPopup.css";
-import iconUrl from '../public/icons/bearLogo.png';
+import iconUrl from "../public/icons/bearLogo.png";
 
 const containerId = "focus-popup-container";
 
@@ -16,7 +16,7 @@ const headings = [
   "Stirring up chaos, or just passing through?",
   "Oh look, it’s the mastermind again!",
   "Plotting something brilliant... or ridiculous?",
-  "Should I be worried, or just impressed?"
+  "Should I be worried, or just impressed?",
 ];
 
 const prompts = [
@@ -29,7 +29,7 @@ const prompts = [
   "Are you bear-ing the weight of brilliance again?",
   "Got a beary good plan, or is it still in hibernation mode?",
   "Is that a growl of ambition I hear, or just your creativity waking up?",
-  "Plotting something fierce, or just feeling a bit fuzzy today?"
+  "Plotting something fierce, or just feeling a bit fuzzy today?",
 ];
 
 const IntentionPopup = () => {
@@ -83,8 +83,7 @@ const IntentionPopup = () => {
     const trimmedIntention = intention.trim();
     const isShortIntention = trimmedIntention.length < 5;
     const isLongDuration = ["10", "15"].includes(timer.toString());
-    const needsDetailedIntention =
-      isLongDuration && trimmedIntention.length < 15;
+    const needsDetailedIntention = isLongDuration && trimmedIntention.length < 15;
 
     const shouldDisable = !timer || isShortIntention || needsDetailedIntention;
     setProceedDisabled(shouldDisable);
@@ -123,12 +122,9 @@ const IntentionPopup = () => {
           focusIntention: intention,
         },
       },
-      "*"
+      "*",
     );
-    window.postMessage(
-      { type: "START_FOCUS_TIMER", payload: timer },
-      "*"
-    );
+    window.postMessage({ type: "START_FOCUS_TIMER", payload: timer }, "*");
 
     setVisible(false);
   };
@@ -146,10 +142,7 @@ const IntentionPopup = () => {
 
   const validateIntentionLength = (selectedDuration: number) => {
     const minutes = selectedDuration;
-    if (
-      (minutes === 10 || minutes === 15) &&
-      intention.trim().length < 15
-    ) {
+    if ((minutes === 10 || minutes === 15) && intention.trim().length < 15) {
       setShowWarning(true);
     } else {
       setShowWarning(false);
@@ -172,9 +165,7 @@ const IntentionPopup = () => {
           placeholder={localizedText.placeholder}
           className="focus-input"
         />
-        {showWarning && (
-          <p className="focus-warning">{localizedText.warning}</p>
-        )}
+        {showWarning && <p className="focus-warning">{localizedText.warning}</p>}
         <p>{localizedText.duration}</p>
         <select
           value={timer === 0 ? "" : timer.toString()}
@@ -189,11 +180,7 @@ const IntentionPopup = () => {
         </select>
 
         <div className="focus-button-container">
-          <button
-            disabled={proceedDisabled}
-            onClick={handleSave}
-            className="focus-button"
-          >
+          <button disabled={proceedDisabled} onClick={handleSave} className="focus-button">
             {localizedText.button}
           </button>
         </div>
@@ -209,6 +196,6 @@ if (!document.getElementById(containerId)) {
   root.render(
     <IntentionProvider>
       <IntentionPopup />
-    </IntentionProvider>
+    </IntentionProvider>,
   );
 }

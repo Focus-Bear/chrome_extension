@@ -16,11 +16,9 @@
   }
 
   const blurTopSubscriptionsMenu = () => {
-    const subLink = Array.from(
-      document.querySelectorAll("ytd-guide-entry-renderer")
-    ).find((el) => el.textContent?.trim().toLowerCase() === "subscriptions") as
-      | HTMLElement
-      | undefined;
+    const subLink = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === "subscriptions",
+    ) as HTMLElement | undefined;
 
     if (subLink) {
       subLink.style.filter = "blur(6px)";
@@ -31,11 +29,9 @@
   };
 
   const unblurTopSubscriptionsMenu = () => {
-    const subLink = Array.from(
-      document.querySelectorAll("ytd-guide-entry-renderer")
-    ).find((el) => el.textContent?.trim().toLowerCase() === "subscriptions") as
-      | HTMLElement
-      | undefined;
+    const subLink = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === "subscriptions",
+    ) as HTMLElement | undefined;
 
     if (subLink) {
       subLink.style.filter = "none";
@@ -46,10 +42,8 @@
   };
 
   const blurLeftIconSubscriptions = () => {
-    const miniSub = Array.from(
-      document.querySelectorAll("ytd-mini-guide-entry-renderer")
-    ).find(
-      (el) => el.getAttribute("aria-label")?.toLowerCase() === "subscriptions"
+    const miniSub = Array.from(document.querySelectorAll("ytd-mini-guide-entry-renderer")).find(
+      (el) => el.getAttribute("aria-label")?.toLowerCase() === "subscriptions",
     ) as HTMLElement | undefined;
 
     if (miniSub) {
@@ -63,10 +57,8 @@
   };
 
   const unblurLeftIconSubscriptions = () => {
-    const miniSub = Array.from(
-      document.querySelectorAll("ytd-mini-guide-entry-renderer")
-    ).find(
-      (el) => el.getAttribute("aria-label")?.toLowerCase() === "subscriptions"
+    const miniSub = Array.from(document.querySelectorAll("ytd-mini-guide-entry-renderer")).find(
+      (el) => el.getAttribute("aria-label")?.toLowerCase() === "subscriptions",
     ) as HTMLElement | undefined;
 
     if (miniSub) {
@@ -78,11 +70,9 @@
   };
 
   const blurShortsMenu = () => {
-    const shorts = Array.from(
-      document.querySelectorAll("ytd-guide-entry-renderer")
-    ).find((el) => el.textContent?.trim().toLowerCase() === "shorts") as
-      | HTMLElement
-      | undefined;
+    const shorts = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === "shorts",
+    ) as HTMLElement | undefined;
 
     if (shorts) {
       shorts.style.filter = "blur(6px)";
@@ -91,11 +81,9 @@
     }
   };
   const unblurShortsMenu = () => {
-    const shorts = Array.from(
-      document.querySelectorAll("ytd-guide-entry-renderer")
-    ).find((el) => el.textContent?.trim().toLowerCase() === "shorts") as
-      | HTMLElement
-      | undefined;
+    const shorts = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === "shorts",
+    ) as HTMLElement | undefined;
 
     if (shorts) {
       shorts.style.filter = "none";
@@ -104,15 +92,15 @@
     }
   };
 
-// Notification bell and dropdown blur functions
-const NOTIF_BLUR_STYLE_ID = "focus-bear-notifications-blur-style";
+  // Notification bell and dropdown blur functions
+  const NOTIF_BLUR_STYLE_ID = "focus-bear-notifications-blur-style";
 
-function applyNotificationsBlur() {
-  if (document.getElementById(NOTIF_BLUR_STYLE_ID)) return;
+  function applyNotificationsBlur() {
+    if (document.getElementById(NOTIF_BLUR_STYLE_ID)) return;
 
-  const style = document.createElement("style");
-  style.id = NOTIF_BLUR_STYLE_ID;
-  style.textContent = `
+    const style = document.createElement("style");
+    style.id = NOTIF_BLUR_STYLE_ID;
+    style.textContent = `
     /* Bell icon in masthead */
     ytd-masthead button[aria-label*="Notifications" i],
     ytd-notification-topbar-button-renderer {
@@ -135,97 +123,95 @@ function applyNotificationsBlur() {
       user-select: none !important;
     }
   `;
-  document.head.appendChild(style);
-}
-
-function removeNotificationsBlur() {
-  document.getElementById(NOTIF_BLUR_STYLE_ID)?.remove();
-}
-
-
-// List of You menu items to blur individually
-const youMenuItems = ["History", "Your videos", "Liked videos", "Downloads"];
-
-let youMenuBlurEnabled = true;
-
-// Generic function to blur a specific entry by name
-const blurYouMenuEntry = (name: string) => {
-  const entry = Array.from(
-    document.querySelectorAll("ytd-guide-entry-renderer")
-  ).find(el => el.textContent?.trim().toLowerCase() === name.toLowerCase()) as HTMLElement | undefined;
-
-  if (entry) {
-    entry.style.filter = "blur(6px)";
-    entry.style.pointerEvents = "none";
-    entry.style.userSelect = "none";
+    document.head.appendChild(style);
   }
-};
 
-// Generic function to unblur a specific entry by name
-const unblurYouMenuEntry = (name: string) => {
-  const entry = Array.from(
-    document.querySelectorAll("ytd-guide-entry-renderer")
-  ).find(el => el.textContent?.trim().toLowerCase() === name.toLowerCase()) as HTMLElement | undefined;
-
-  if (entry) {
-    entry.style.filter = "none";
-    entry.style.pointerEvents = "auto";
-    entry.style.userSelect = "auto";
+  function removeNotificationsBlur() {
+    document.getElementById(NOTIF_BLUR_STYLE_ID)?.remove();
   }
-};
 
-// Blur all "You" menu items
-const blurYouMenu = () => {
-  youMenuItems.forEach(item => blurYouMenuEntry(item));
-};
+  // List of You menu items to blur individually
+  const youMenuItems = ["History", "Your videos", "Liked videos", "Downloads"];
 
-// Unblur all "You" menu items
-const unblurYouMenu = () => {
-  youMenuItems.forEach(item => unblurYouMenuEntry(item));
-};
+  let youMenuBlurEnabled = true;
 
-// Apply blur/unblur based on toggle
-const applyYouMenuToggle = (shouldBlur: boolean) => {
-  if (shouldBlur) blurYouMenu();
-  else unblurYouMenu();
-};
+  // Generic function to blur a specific entry by name
+  const blurYouMenuEntry = (name: string) => {
+    const entry = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === name.toLowerCase(),
+    ) as HTMLElement | undefined;
 
-// Initialize saved state from storage
-chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled: enabled }) => {
-  youMenuBlurEnabled = enabled;
-  applyYouMenuToggle(youMenuBlurEnabled);
-});
+    if (entry) {
+      entry.style.filter = "blur(6px)";
+      entry.style.pointerEvents = "none";
+      entry.style.userSelect = "none";
+    }
+  };
 
-// Observe the "You" menu section for dynamic changes
-const observeYouMenu = () => {
-  const guide = document.querySelector("ytd-guide-renderer");
-  if (!guide) {
-    setTimeout(observeYouMenu, 500);
-    return;  
-}
+  // Generic function to unblur a specific entry by name
+  const unblurYouMenuEntry = (name: string) => {
+    const entry = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
+      (el) => el.textContent?.trim().toLowerCase() === name.toLowerCase(),
+    ) as HTMLElement | undefined;
 
-const youMenuObserver = new MutationObserver(() => {
-  applyYouMenuToggle(youMenuBlurEnabled);
-});
+    if (entry) {
+      entry.style.filter = "none";
+      entry.style.pointerEvents = "auto";
+      entry.style.userSelect = "auto";
+    }
+  };
 
-youMenuObserver.observe(guide, { childList: true, subtree: true });
+  // Blur all "You" menu items
+  const blurYouMenu = () => {
+    youMenuItems.forEach((item) => blurYouMenuEntry(item));
+  };
 
-//Apply immeditately
-applyYouMenuToggle(youMenuBlurEnabled);
-};
+  // Unblur all "You" menu items
+  const unblurYouMenu = () => {
+    youMenuItems.forEach((item) => unblurYouMenuEntry(item));
+  };
 
-// Initialize observer
-observeYouMenu();
+  // Apply blur/unblur based on toggle
+  const applyYouMenuToggle = (shouldBlur: boolean) => {
+    if (shouldBlur) blurYouMenu();
+    else unblurYouMenu();
+  };
 
-// Listen for toggle message from popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "TOGGLE_YOU_MENU_BLUR") {
-    youMenuBlurEnabled = message.payload;
-    chrome.storage.local.set({ youMenuBlurEnabled });
+  // Initialize saved state from storage
+  chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled: enabled }) => {
+    youMenuBlurEnabled = enabled;
     applyYouMenuToggle(youMenuBlurEnabled);
-  }
-});
+  });
 
+  // Observe the "You" menu section for dynamic changes
+  const observeYouMenu = () => {
+    const guide = document.querySelector("ytd-guide-renderer");
+    if (!guide) {
+      setTimeout(observeYouMenu, 500);
+      return;
+    }
+
+    const youMenuObserver = new MutationObserver(() => {
+      applyYouMenuToggle(youMenuBlurEnabled);
+    });
+
+    youMenuObserver.observe(guide, { childList: true, subtree: true });
+
+    //Apply immeditately
+    applyYouMenuToggle(youMenuBlurEnabled);
+  };
+
+  // Initialize observer
+  observeYouMenu();
+
+  // Listen for toggle message from popup
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "TOGGLE_YOU_MENU_BLUR") {
+      youMenuBlurEnabled = message.payload;
+      chrome.storage.local.set({ youMenuBlurEnabled });
+      applyYouMenuToggle(youMenuBlurEnabled);
+    }
+  });
 
   const isShortsPage = () => {
     return window.location.pathname.startsWith("/shorts/");
@@ -233,7 +219,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const blurShortsPage = () => {
     const shortsRoot = document.querySelector(
-      "ytd-reel-video-renderer, #shorts-container, .reel-video-renderer"
+      "ytd-reel-video-renderer, #shorts-container, .reel-video-renderer",
     ) as HTMLElement | null;
     if (shortsRoot) {
       shortsRoot.style.filter = "blur(8px)";
@@ -244,7 +230,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const unblurShortsPage = () => {
     const shortsRoot = document.querySelector(
-      "ytd-reel-video-renderer, #shorts-container, .reel-video-renderer"
+      "ytd-reel-video-renderer, #shorts-container, .reel-video-renderer",
     ) as HTMLElement | null;
     if (shortsRoot) {
       shortsRoot.style.filter = "none";
@@ -293,10 +279,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   };
 
   const blurMiniSidebarShorts = () => {
-    const miniShorts = Array.from(
-      document.querySelectorAll("ytd-mini-guide-entry-renderer")
-    ).find((el) =>
-      el.getAttribute("aria-label")?.toLowerCase().includes("shorts")
+    const miniShorts = Array.from(document.querySelectorAll("ytd-mini-guide-entry-renderer")).find(
+      (el) => el.getAttribute("aria-label")?.toLowerCase().includes("shorts"),
     ) as HTMLElement | undefined;
 
     if (miniShorts) {
@@ -308,10 +292,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   };
 
   const unblurMiniSidebarShorts = () => {
-    const miniShorts = Array.from(
-      document.querySelectorAll("ytd-mini-guide-entry-renderer")
-    ).find((el) =>
-      el.getAttribute("aria-label")?.toLowerCase().includes("shorts")
+    const miniShorts = Array.from(document.querySelectorAll("ytd-mini-guide-entry-renderer")).find(
+      (el) => el.getAttribute("aria-label")?.toLowerCase().includes("shorts"),
     ) as HTMLElement | undefined;
 
     if (miniShorts) {
@@ -337,9 +319,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   };
 
   const blurChipsBar = () => {
-    const chips = document.querySelector(
-      "ytd-feed-filter-chip-bar-renderer"
-    ) as HTMLElement | null;
+    const chips = document.querySelector("ytd-feed-filter-chip-bar-renderer") as HTMLElement | null;
     if (chips) {
       const height = chips.offsetHeight;
 
@@ -362,9 +342,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       elem.style.userSelect = "";
     });
 
-    const chips = document.querySelector(
-      "ytd-feed-filter-chip-bar-renderer"
-    ) as HTMLElement | null;
+    const chips = document.querySelector("ytd-feed-filter-chip-bar-renderer") as HTMLElement | null;
     if (chips) {
       chips.style.filter = "";
       chips.style.pointerEvents = "";
@@ -410,13 +388,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   });
   const shortsmenuObserver = new MutationObserver(() => {
-    chrome.storage.local.get(
-      { shortsBlurEnabled: true },
-      ({ shortsBlurEnabled }) => {
-        if (shortsBlurEnabled) blurShortsMenu();
-        else unblurShortsMenu();
-      }
-    );
+    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+      if (shortsBlurEnabled) blurShortsMenu();
+      else unblurShortsMenu();
+    });
   });
   const subscriptionsMenuObserver = new MutationObserver(() => {
     if (isBlurEnabled) {
@@ -424,7 +399,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else {
       unblurTopSubscriptionsMenu();
     }
-  });  
+  });
 
   const miniGuideObserver = new MutationObserver(() => {
     setTimeout(() => {
@@ -437,33 +412,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   });
 
   const shortspageObserver = new MutationObserver(() => {
-    chrome.storage.local.get(
-      { shortsBlurEnabled: true },
-      ({ shortsBlurEnabled }) => {
-        if (isShortsPage()) {
-          if (shortsBlurEnabled) blurShortsPage();
-          else unblurShortsPage();
-        }
+    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+      if (isShortsPage()) {
+        if (shortsBlurEnabled) blurShortsPage();
+        else unblurShortsPage();
       }
-    );
+    });
   });
   const shortsshelfObserver = new MutationObserver(() => {
-    chrome.storage.local.get(
-      { shortsBlurEnabled: true },
-      ({ shortsBlurEnabled }) => {
-        if (shortsBlurEnabled) blurShortsShelf();
-        else unblurShortsShelf();
-      }
-    );
+    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+      if (shortsBlurEnabled) blurShortsShelf();
+      else unblurShortsShelf();
+    });
   });
   const shortsMiniSidebarObserver = new MutationObserver(() => {
-    chrome.storage.local.get(
-      { shortsBlurEnabled: true },
-      ({ shortsBlurEnabled }) => {
-        if (shortsBlurEnabled) blurMiniSidebarShorts();
-        else unblurMiniSidebarShorts();
-      }
-    );
+    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+      if (shortsBlurEnabled) blurMiniSidebarShorts();
+      else unblurMiniSidebarShorts();
+    });
   });
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -493,7 +459,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (isBlurEnabled) {
       applyBlurImmediately();
-    }    
+    }
     sidebarObserver.observe(document.body, { childList: true, subtree: true });
     chipsObserver.observe(document.body, { childList: true, subtree: true });
     shortsmenuObserver.observe(document.body, { childList: true, subtree: true });
@@ -503,14 +469,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     shortspageObserver.observe(document.body, { childList: true, subtree: true });
     shortsMiniSidebarObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
+      childList: true,
+      subtree: true,
     });
     subscriptionsMenuObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
-    miniGuideObserver.observe(document.body, { childList: true, subtree: true });    
+    miniGuideObserver.observe(document.body, { childList: true, subtree: true });
   });
 
   // Blur comments
@@ -526,7 +492,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           pointer-events: none !important;
           user-select: none !important;
         }
-      `
+      `,
       )
       .join("\n");
     document.head.appendChild(style);
@@ -548,17 +514,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // listen for your popup toggle
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action === "toggleComments") {
-      chrome.storage.local.get(
-        { commentsHidden: false },
-        ({ commentsHidden }) => {
-          const nowHidden = !commentsHidden;
-          if (nowHidden) applyCommentBlur();
-          else removeCommentBlur();
-          chrome.storage.local.set({ commentsHidden: nowHidden }, () => {
-            sendResponse({ status: nowHidden ? "hidden" : "shown" });
-          });
-        }
-      );
+      chrome.storage.local.get({ commentsHidden: false }, ({ commentsHidden }) => {
+        const nowHidden = !commentsHidden;
+        if (nowHidden) applyCommentBlur();
+        else removeCommentBlur();
+        chrome.storage.local.set({ commentsHidden: nowHidden }, () => {
+          sendResponse({ status: nowHidden ? "hidden" : "shown" });
+        });
+      });
       return true;
     }
   });
@@ -591,19 +554,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         lastUrl = location.href;
 
         // Check if we're on the home page
-        if (window.location.pathname === '/' || window.location.pathname === '/feed/subscriptions') {
-          chrome.storage.local.get(['homePageBlurEnabled'], ({ homePageBlurEnabled }) => {
+        if (
+          window.location.pathname === "/" ||
+          window.location.pathname === "/feed/subscriptions"
+        ) {
+          chrome.storage.local.get(["homePageBlurEnabled"], ({ homePageBlurEnabled }) => {
             if (homePageBlurEnabled) {
               // Apply home page specific blur
-              const homePageElements = document.querySelectorAll('#contents, ytd-rich-grid-renderer');
-              homePageElements.forEach(element => {
+              const homePageElements = document.querySelectorAll(
+                "#contents, ytd-rich-grid-renderer",
+              );
+              homePageElements.forEach((element) => {
                 if (element instanceof HTMLElement) {
-                  element.style.filter = 'blur(10px)';
-                  element.style.pointerEvents = 'none';
-                  element.style.userSelect = 'none';
+                  element.style.filter = "blur(10px)";
+                  element.style.pointerEvents = "none";
+                  element.style.userSelect = "none";
                 }
               });
-              
+
               // Also blur the chips bar on home page
               blurChipsBar();
             }
@@ -621,15 +589,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // Create a separate observer for dynamic content on home page
   const homePageContentObserver = new MutationObserver(() => {
-    if (window.location.pathname === '/' || window.location.pathname === '/feed/subscriptions') {
-      chrome.storage.local.get(['homePageBlurEnabled'], ({ homePageBlurEnabled }) => {
+    if (window.location.pathname === "/" || window.location.pathname === "/feed/subscriptions") {
+      chrome.storage.local.get(["homePageBlurEnabled"], ({ homePageBlurEnabled }) => {
         if (homePageBlurEnabled) {
-          const homePageElements = document.querySelectorAll('#contents, ytd-rich-grid-renderer');
-          homePageElements.forEach(element => {
+          const homePageElements = document.querySelectorAll("#contents, ytd-rich-grid-renderer");
+          homePageElements.forEach((element) => {
             if (element instanceof HTMLElement && !element.style.filter) {
-              element.style.filter = 'blur(10px)';
-              element.style.pointerEvents = 'none';
-              element.style.userSelect = 'none';
+              element.style.filter = "blur(10px)";
+              element.style.pointerEvents = "none";
+              element.style.userSelect = "none";
             }
           });
         }
@@ -648,24 +616,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "TOGGLE_HOME_PAGE_BLUR") {
       const shouldBlur = message.payload;
-      if (window.location.pathname === '/' || window.location.pathname === '/feed/subscriptions') {
-        const homePageElements = document.querySelectorAll('#contents, ytd-rich-grid-renderer');
-        homePageElements.forEach(element => {
+      if (window.location.pathname === "/" || window.location.pathname === "/feed/subscriptions") {
+        const homePageElements = document.querySelectorAll("#contents, ytd-rich-grid-renderer");
+        homePageElements.forEach((element) => {
           if (element instanceof HTMLElement) {
-            element.style.filter = shouldBlur ? 'blur(10px)' : 'none';
-            element.style.pointerEvents = shouldBlur ? 'none' : 'auto';
-            element.style.userSelect = shouldBlur ? 'none' : 'auto';
+            element.style.filter = shouldBlur ? "blur(10px)" : "none";
+            element.style.pointerEvents = shouldBlur ? "none" : "auto";
+            element.style.userSelect = shouldBlur ? "none" : "auto";
           }
         });
-        
+
         if (shouldBlur) {
           blurChipsBar();
         } else {
-          const chips = document.querySelector('ytd-feed-filter-chip-bar-renderer') as HTMLElement | null;
+          const chips = document.querySelector(
+            "ytd-feed-filter-chip-bar-renderer",
+          ) as HTMLElement | null;
           if (chips) {
-            chips.style.filter = '';
-            chips.style.pointerEvents = '';
-            chips.style.userSelect = '';
+            chips.style.filter = "";
+            chips.style.pointerEvents = "";
+            chips.style.userSelect = "";
           }
         }
       }
@@ -679,32 +649,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const blurRecommendedVideos = () => {
     // Target home page video grid
-    const homeVideoGrid = document.querySelector('ytd-rich-grid-renderer #contents.ytd-rich-grid-renderer') as HTMLElement | null;
-    const homeVideoItems = document.querySelectorAll('ytd-rich-item-renderer') as NodeListOf<HTMLElement>;
-    
+    const homeVideoGrid = document.querySelector(
+      "ytd-rich-grid-renderer #contents.ytd-rich-grid-renderer",
+    ) as HTMLElement | null;
+    const homeVideoItems = document.querySelectorAll(
+      "ytd-rich-item-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Target video page recommendations (right sidebar)
-    const videoPageRecommendations = document.querySelector('ytd-watch-next-secondary-results-renderer') as HTMLElement | null;
-    const recommendedVideoItems = document.querySelectorAll('ytd-compact-video-renderer, ytd-compact-radio-renderer') as NodeListOf<HTMLElement>;
-    
+    const videoPageRecommendations = document.querySelector(
+      "ytd-watch-next-secondary-results-renderer",
+    ) as HTMLElement | null;
+    const recommendedVideoItems = document.querySelectorAll(
+      "ytd-compact-video-renderer, ytd-compact-radio-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Target related videos below the current video
-    const relatedVideos = document.querySelector('#related') as HTMLElement | null;
-    const belowVideoItems = document.querySelectorAll('ytd-watch-next-secondary-results-renderer ytd-item-section-renderer') as NodeListOf<HTMLElement>;
-    
+    const relatedVideos = document.querySelector("#related") as HTMLElement | null;
+    const belowVideoItems = document.querySelectorAll(
+      "ytd-watch-next-secondary-results-renderer ytd-item-section-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Target videos after Shorts section
-    const shortsSection = document.querySelector('ytd-reel-shelf-renderer') as HTMLElement | null;
-    const afterShortsVideos = document.querySelectorAll('ytd-rich-section-renderer, ytd-shelf-renderer') as NodeListOf<HTMLElement>;
-    const videoShelves = document.querySelectorAll('ytd-video-renderer, ytd-rich-item-renderer') as NodeListOf<HTMLElement>;
-    
+    const shortsSection = document.querySelector("ytd-reel-shelf-renderer") as HTMLElement | null;
+    const afterShortsVideos = document.querySelectorAll(
+      "ytd-rich-section-renderer, ytd-shelf-renderer",
+    ) as NodeListOf<HTMLElement>;
+    const videoShelves = document.querySelectorAll(
+      "ytd-video-renderer, ytd-rich-item-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Target right side recommended videos in video page
-    const rightSideVideos = document.querySelectorAll('ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer, ytd-watch-next-secondary-results-renderer ytd-compact-playlist-renderer') as NodeListOf<HTMLElement>;
-    const rightSideContainer = document.querySelector('ytd-watch-next-secondary-results-renderer #items') as HTMLElement | null;
-    
+    const rightSideVideos = document.querySelectorAll(
+      "ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer, ytd-watch-next-secondary-results-renderer ytd-compact-playlist-renderer",
+    ) as NodeListOf<HTMLElement>;
+    const rightSideContainer = document.querySelector(
+      "ytd-watch-next-secondary-results-renderer #items",
+    ) as HTMLElement | null;
+
     // Blur home page videos if they exist
     if (homeVideoGrid) {
       homeVideoGrid.style.filter = "blur(25px)";
       homeVideoGrid.style.opacity = "0.8";
-      
-      homeVideoItems.forEach(item => {
+
+      homeVideoItems.forEach((item) => {
         item.style.pointerEvents = "none";
         item.style.userSelect = "none";
       });
@@ -714,8 +702,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (videoPageRecommendations) {
       videoPageRecommendations.style.filter = "blur(25px)";
       videoPageRecommendations.style.opacity = "0.8";
-      
-      recommendedVideoItems.forEach(item => {
+
+      recommendedVideoItems.forEach((item) => {
         item.style.pointerEvents = "none";
         item.style.userSelect = "none";
       });
@@ -725,8 +713,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (relatedVideos) {
       relatedVideos.style.filter = "blur(25px)";
       relatedVideos.style.opacity = "0.8";
-      
-      belowVideoItems.forEach(item => {
+
+      belowVideoItems.forEach((item) => {
         item.style.pointerEvents = "none";
         item.style.userSelect = "none";
       });
@@ -735,7 +723,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Blur videos that appear after Shorts
     if (shortsSection) {
       // Find and blur all video sections after Shorts
-      afterShortsVideos.forEach(section => {
+      afterShortsVideos.forEach((section) => {
         if (section.compareDocumentPosition(shortsSection) === Node.DOCUMENT_POSITION_PRECEDING) {
           section.style.filter = "blur(25px)";
           section.style.opacity = "0.8";
@@ -745,7 +733,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
 
       // Blur individual video items
-      videoShelves.forEach(video => {
+      videoShelves.forEach((video) => {
         if (video.compareDocumentPosition(shortsSection) === Node.DOCUMENT_POSITION_PRECEDING) {
           video.style.filter = "blur(25px)";
           video.style.opacity = "0.8";
@@ -759,12 +747,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (rightSideContainer) {
       rightSideContainer.style.filter = "blur(25px)";
       rightSideContainer.style.opacity = "0.8";
-      
-      rightSideVideos.forEach(video => {
+
+      rightSideVideos.forEach((video) => {
         video.style.pointerEvents = "none";
         video.style.userSelect = "none";
         // Add additional styles to ensure thumbnails are blurred
-        const thumbnail = video.querySelector('ytd-thumbnail') as HTMLElement;
+        const thumbnail = video.querySelector("ytd-thumbnail") as HTMLElement;
         if (thumbnail) {
           thumbnail.style.filter = "blur(25px)";
           thumbnail.style.opacity = "0.8";
@@ -775,30 +763,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const removeRecommendedBlur = () => {
     // Clear home page blur
-    const homeVideoGrid = document.querySelector('ytd-rich-grid-renderer #contents.ytd-rich-grid-renderer') as HTMLElement | null;
-    const homeVideoItems = document.querySelectorAll('ytd-rich-item-renderer') as NodeListOf<HTMLElement>;
-    
+    const homeVideoGrid = document.querySelector(
+      "ytd-rich-grid-renderer #contents.ytd-rich-grid-renderer",
+    ) as HTMLElement | null;
+    const homeVideoItems = document.querySelectorAll(
+      "ytd-rich-item-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Clear video page recommendations blur
-    const videoPageRecommendations = document.querySelector('ytd-watch-next-secondary-results-renderer') as HTMLElement | null;
-    const recommendedVideoItems = document.querySelectorAll('ytd-compact-video-renderer, ytd-compact-radio-renderer') as NodeListOf<HTMLElement>;
-    
+    const videoPageRecommendations = document.querySelector(
+      "ytd-watch-next-secondary-results-renderer",
+    ) as HTMLElement | null;
+    const recommendedVideoItems = document.querySelectorAll(
+      "ytd-compact-video-renderer, ytd-compact-radio-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Clear related videos blur
-    const relatedVideos = document.querySelector('#related') as HTMLElement | null;
-    const belowVideoItems = document.querySelectorAll('ytd-watch-next-secondary-results-renderer ytd-item-section-renderer') as NodeListOf<HTMLElement>;
-    
+    const relatedVideos = document.querySelector("#related") as HTMLElement | null;
+    const belowVideoItems = document.querySelectorAll(
+      "ytd-watch-next-secondary-results-renderer ytd-item-section-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Clear blur from videos after Shorts
-    const afterShortsVideos = document.querySelectorAll('ytd-rich-section-renderer, ytd-shelf-renderer') as NodeListOf<HTMLElement>;
-    const videoShelves = document.querySelectorAll('ytd-video-renderer, ytd-rich-item-renderer') as NodeListOf<HTMLElement>;
-    
+    const afterShortsVideos = document.querySelectorAll(
+      "ytd-rich-section-renderer, ytd-shelf-renderer",
+    ) as NodeListOf<HTMLElement>;
+    const videoShelves = document.querySelectorAll(
+      "ytd-video-renderer, ytd-rich-item-renderer",
+    ) as NodeListOf<HTMLElement>;
+
     // Clear right side recommended videos blur
-    const rightSideVideos = document.querySelectorAll('ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer, ytd-watch-next-secondary-results-renderer ytd-compact-playlist-renderer') as NodeListOf<HTMLElement>;
-    const rightSideContainer = document.querySelector('ytd-watch-next-secondary-results-renderer #items') as HTMLElement | null;
-    
+    const rightSideVideos = document.querySelectorAll(
+      "ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer, ytd-watch-next-secondary-results-renderer ytd-compact-playlist-renderer",
+    ) as NodeListOf<HTMLElement>;
+    const rightSideContainer = document.querySelector(
+      "ytd-watch-next-secondary-results-renderer #items",
+    ) as HTMLElement | null;
+
     if (homeVideoGrid) {
       homeVideoGrid.style.filter = "";
       homeVideoGrid.style.opacity = "";
-      
-      homeVideoItems.forEach(item => {
+
+      homeVideoItems.forEach((item) => {
         item.style.pointerEvents = "";
         item.style.userSelect = "";
       });
@@ -807,8 +813,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (videoPageRecommendations) {
       videoPageRecommendations.style.filter = "";
       videoPageRecommendations.style.opacity = "";
-      
-      recommendedVideoItems.forEach(item => {
+
+      recommendedVideoItems.forEach((item) => {
         item.style.pointerEvents = "";
         item.style.userSelect = "";
       });
@@ -817,21 +823,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (relatedVideos) {
       relatedVideos.style.filter = "";
       relatedVideos.style.opacity = "";
-      
-      belowVideoItems.forEach(item => {
+
+      belowVideoItems.forEach((item) => {
         item.style.pointerEvents = "";
         item.style.userSelect = "";
       });
     }
 
-    afterShortsVideos.forEach(section => {
+    afterShortsVideos.forEach((section) => {
       section.style.filter = "";
       section.style.opacity = "";
       section.style.pointerEvents = "";
       section.style.userSelect = "";
     });
 
-    videoShelves.forEach(video => {
+    videoShelves.forEach((video) => {
       video.style.filter = "";
       video.style.opacity = "";
       video.style.pointerEvents = "";
@@ -841,12 +847,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (rightSideContainer) {
       rightSideContainer.style.filter = "";
       rightSideContainer.style.opacity = "";
-      
-      rightSideVideos.forEach(video => {
+
+      rightSideVideos.forEach((video) => {
         video.style.pointerEvents = "";
         video.style.userSelect = "";
         // Clear thumbnail blur
-        const thumbnail = video.querySelector('ytd-thumbnail') as HTMLElement;
+        const thumbnail = video.querySelector("ytd-thumbnail") as HTMLElement;
         if (thumbnail) {
           thumbnail.style.filter = "";
           thumbnail.style.opacity = "";
@@ -859,10 +865,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const recommendationsObserver = new MutationObserver((mutations) => {
     if (isHomePageBlurEnabled) {
       // Check if the mutation includes video content
-      const hasVideoContent = mutations.some(mutation => {
+      const hasVideoContent = mutations.some((mutation) => {
         const target = mutation.target as Element;
-        return target && target.querySelector?.(
-          'ytd-rich-section-renderer, ytd-shelf-renderer, ytd-video-renderer, ytd-rich-item-renderer'
+        return (
+          target &&
+          target.querySelector?.(
+            "ytd-rich-section-renderer, ytd-shelf-renderer, ytd-video-renderer, ytd-rich-item-renderer",
+          )
         );
       });
 
@@ -882,10 +891,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (isHomePageBlurEnabled) {
         blurRecommendedVideos();
-        recommendationsObserver.observe(document.body, { 
-          childList: true, 
+        recommendationsObserver.observe(document.body, {
+          childList: true,
           subtree: true,
-          attributes: true 
+          attributes: true,
         });
       } else {
         removeRecommendedBlur();
@@ -897,15 +906,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Initialize on page load
   chrome.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
     isHomePageBlurEnabled = homePageBlurEnabled;
-    
+
     if (homePageBlurEnabled) {
       blurRecommendedVideos();
-      recommendationsObserver.observe(document.body, { 
-        childList: true, 
+      recommendationsObserver.observe(document.body, {
+        childList: true,
         subtree: true,
-        attributes: true 
+        attributes: true,
       });
     }
   });
-
 })();

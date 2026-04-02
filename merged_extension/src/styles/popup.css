@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -9,7 +10,7 @@ html, body {
   width: 400px;
   height: fit-content;
   padding: 24px 30px 30px;
-  background-color: #FFE4C6;
+  background-color: #ffe4c6;
   font-family: sans-serif;
 }
 
@@ -99,7 +100,7 @@ img.settings-icon {
 }
 
 .toggle.active {
-  background-color: #E9902C;
+  background-color: #e9902c;
 }
 
 .toggle.inactive {
@@ -137,16 +138,16 @@ button.close-button {
   width: 225px;
   padding: 10px 15px;
   font-size: 18px;
-  color: #F3A650;
-  background-color: #FFFCF6;
-  border: 2px solid #F3A650;
+  color: #f3a650;
+  background-color: #fffcf6;
+  border: 2px solid #f3a650;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 button.close-button:disabled {
-  background-color: #CCCCCC;
+  background-color: #cccccc;
   color: #666;
   cursor: not-allowed;
 }
@@ -160,7 +161,7 @@ button.close-button:disabled {
 
 /* Individual Session Card */
 .session-card {
-  background-color: #FFFCF6;
+  background-color: #fffcf6;
   border: 1px solid #e0b991;
   border-radius: 8px;
   padding: 10px 14px;
@@ -193,12 +194,12 @@ img.settings-icon {
   margin: 10px auto;
   text-align: center;
   color: #990000;
-  background: #FFFCF6;
+  background: #fffcf6;
   font-weight: bold;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 14px;
-  border: 1px solid #F3A650;
+  border: 1px solid #f3a650;
 }
 
 /* Blocklist/Relaxlist */
@@ -218,7 +219,9 @@ img.settings-icon {
   border: 1px solid #e0b991;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s, font-weight 0.2s;
+  transition:
+    background-color 0.2s,
+    font-weight 0.2s;
 }
 
 .tab-button.active {
@@ -237,7 +240,7 @@ img.settings-icon {
 
 /* Individual site card */
 .site-list li {
-  background-color: #FFFCF6;
+  background-color: #fffcf6;
   border: 1px solid #e0b991;
   border-radius: 8px;
   padding: 10px 14px;
@@ -261,16 +264,16 @@ img.settings-icon {
   padding: 4px 10px;
   font-size: 14px;
   border-radius: 6px;
-  border: 2px solid #F3A650;
-  background-color: #FFFCF6;
-  color: #F3A650;
+  border: 2px solid #f3a650;
+  background-color: #fffcf6;
+  color: #f3a650;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .site-list li button:hover:not(:disabled) {
-  background-color: #F3A650;
-  color: #FFFCF6;
+  background-color: #f3a650;
+  color: #fffcf6;
 }
 
 .site-list li button:disabled {
@@ -282,9 +285,9 @@ img.settings-icon {
 
 /* Special state for relaxlist toggle */
 .site-list li button.relax-active {
-  background-color: #E9902C;
+  background-color: #e9902c;
   color: white;
-  border-color: #E9902C;
+  border-color: #e9902c;
 }
 
 /* Buttons */
@@ -346,7 +349,6 @@ img.settings-icon {
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  
 }
 
 .save-hours-btn:disabled {
@@ -377,7 +379,7 @@ img.settings-icon {
   border-radius: 8px 0 0 8px;
   border: 1px solid #e0b991;
   font-size: 14px;
-  background-color: #FFFCF6;
+  background-color: #fffcf6;
   color: #5a2c00;
 }
 
@@ -385,9 +387,9 @@ img.settings-icon {
 .site-input-container button {
   padding: 8px 14px;
   border-radius: 0 8px 8px 0;
-  border: 1px solid #F3A650;
-  background-color: #FFFCF6;
-  color: #F3A650;
+  border: 1px solid #f3a650;
+  background-color: #fffcf6;
+  color: #f3a650;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
@@ -395,8 +397,8 @@ img.settings-icon {
 }
 
 .site-input-container button:hover:not(:disabled) {
-  background-color: #F3A650;
-  color: #FFFCF6;
+  background-color: #f3a650;
+  color: #fffcf6;
 }
 
 .site-input-container button:disabled {
