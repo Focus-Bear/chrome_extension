@@ -128,8 +128,28 @@ const App = () => {
     );
   }, []);
 
+  
+
   useEffect(() => {
-    const updateSessions = () => {
+    
+
+const handleCompleteSession = (domain: string) => {
+  chrome.storage.local.get("focusData", ({ focusData }) => {
+    if (focusData && focusData[domain]) {
+      delete focusData[domain];
+      chrome.storage.local.set({ focusData }, () => {
+        setAllFocusSessions((prev) => {
+          const updated = { ...prev };
+          delete updated[domain];
+          return updated;
+        });
+      });
+    }
+  });
+};
+
+
+const updateSessions = () => {
       chrome.storage.local.get("focusData", ({ focusData }) => {
         const sessions: Record<
           string,
@@ -298,6 +318,13 @@ const App = () => {
               {formatTime(session.timeLeft)}
               <br />
               <span className="label">{t("intention_label")}</span> {session.intention}
+              <br />
+              <button
+                className="complete-session-btn"
+                onClick={() => handleCompleteSession(domain)}
+              >
+                ✓ Complete Session
+              </button>
             </div>
           ))}
         </div>
