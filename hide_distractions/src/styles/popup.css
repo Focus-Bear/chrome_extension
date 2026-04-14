@@ -200,3 +200,26 @@ img.settings-icon {
   font-size: 14px;
   border: 1px solid #F3A650;
 }
+
+.complete-session-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 0;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.complete-session-btn:hover {
+  background-color: #27ae60;
+}
+
+.complete-session-btn:active {
+  background-color: #1e8449;
+}

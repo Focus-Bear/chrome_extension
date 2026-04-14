@@ -234,3 +234,19 @@ window.addEventListener("show-popup-again", () => {
     }
   );
 });
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "COMPLETE_SESSION") {
+    chrome.storage.local.get("focusData", ({ focusData }) => {
+      if (focusData) {
+        const domain = message.payload?.domain;
+        if (domain && focusData[domain]) {
+          delete focusData[domain];
+          chrome.storage.local.set({ focusData });
+        }
+      }
+    });
+    window.postMessage({ type: "SESSION_COMPLETE" }, "*");
+  }
+});
+
