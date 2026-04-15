@@ -8,28 +8,32 @@ jobs:
   oxlint:
     name: oxlint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: focus_bear
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
-
+          cache-dependency-path: focus_bear/package-lock.json  # important!
       - run: npm ci
-
       - name: Run oxlint
         run: npx oxlint .
 
   oxfmt:
     name: oxfmt
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: focus_bear
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - run: npm ci
