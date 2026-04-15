@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: focus_bear/package-lock.json  # important!
+          cache-dependency-path: focus_bear/package-lock.json
       - run: npm ci
       - name: Run oxlint
         run: npx oxlint .
@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
 
       - run: npm ci
 
