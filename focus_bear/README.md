@@ -126,7 +126,7 @@ These instructions will help you get a local copy of the project up and running 
 ### Formatting
 
 1. Navigate to directory
-   - cd focus-bear-extension/merged_extension
+   - cd chrome_extension/focus_bear
 
 2. Install dependencies
    - npm install
@@ -139,7 +139,7 @@ These instructions will help you get a local copy of the project up and running 
 To lint the project using Oxlint:
 
 1. Navigate to directory
-   - cd focus-bear-extension/merged_extension
+   - cd chrome_extension/focus_bear
 
 2. Install dependencies
    - npm install
