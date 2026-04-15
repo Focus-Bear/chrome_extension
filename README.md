@@ -1,4 +1,4 @@
-# P000280SE Completion of Focus Bear Chrome Extension
+# P000395SE Completion of Focus Bear Chrome Extension
 
 **Focus Bear** is a Chrome extension designed to help users minimise distractions and stay focused by blocking access and areas of chosen websites.
 
