@@ -1,11 +1,12 @@
 (() => {
   console.log("LinkedIn blur script injected at", location.href);
 
-  const BlurSection = "filter:blur(8px)!important; pointer-events:none!important; user-select:none!important;";
+  const BlurSection =
+    "filter:blur(8px)!important; pointer-events:none!important; user-select:none!important;";
 
   // Blur "people you may know" toggle function
   const togglePYMK = (on: boolean) => {
-    document.querySelectorAll<HTMLElement>("section").forEach(sec => {
+    document.querySelectorAll<HTMLElement>("section").forEach((sec) => {
       if (
         /people you may know/i.test(sec.innerText) ||
         /People to follow based on your activity/i.test(sec.innerText) ||
@@ -21,30 +22,27 @@
   // Blur LinkedIn News toggle function
   const toggleNews = (on: boolean) => {
     // "LinkedIn News" widget typically appears as a <section> containing that heading
-    document.querySelectorAll<HTMLElement>("section").forEach(sec => {
+    document.querySelectorAll<HTMLElement>("section").forEach((sec) => {
       // Look for "LinkedIn News" or "Top stories" in the section's innerText
-      if (
-        /LinkedIn News/i.test(sec.innerText) ||
-        /Top stories/i.test(sec.innerText)
-      ) {
+      if (/LinkedIn News/i.test(sec.innerText) || /Top stories/i.test(sec.innerText)) {
         sec.style.cssText = on ? BlurSection : "";
       }
 
       // Also Look for Notifications feed
-      if (
-        location.pathname.startsWith("/notifications")
-      ) {
-      document.querySelectorAll<HTMLElement>("div.scaffold-finite-scroll__content").forEach(el => {
-        el.style.cssText = on ? BlurSection : "";
-      });
-    }
+      if (location.pathname.startsWith("/notifications")) {
+        document
+          .querySelectorAll<HTMLElement>("div.scaffold-finite-scroll__content")
+          .forEach((el) => {
+            el.style.cssText = on ? BlurSection : "";
+          });
+      }
     });
   };
 
   // Blur job suggestions toggle function
   const toggleJobPageSections = (on: boolean) => {
     // Blur any sections by their visible heading text
-    document.querySelectorAll<HTMLElement>("section").forEach(sec => {
+    document.querySelectorAll<HTMLElement>("section").forEach((sec) => {
       if (
         /Top job picks for you/i.test(sec.innerText) ||
         /Suggested job searches/i.test(sec.innerText) ||
@@ -62,61 +60,84 @@
       "div.discovery-templates-jobs-feed-discovery-module__next-page",
       "section.discovery-templates-vertical-list__next-page",
       "ul#jobs-home-vertical-list__entity-list",
-    ].forEach(selector => {
-      document.querySelectorAll<HTMLElement>(selector).forEach(el => { 
-        el.style.cssText = on ? BlurSection : ""; 
+    ].forEach((selector) => {
+      document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        el.style.cssText = on ? BlurSection : "";
       });
     });
   };
 
   // Blur home feed
   const toggleHomeFeed = (on: boolean) => {
-    document.querySelectorAll<HTMLElement>(".scaffold-finite-scroll__content .feed-shared-update-v2").forEach(sec => {
-      sec.style.cssText = on ? BlurSection : "";
-    });
+    document
+      .querySelectorAll<HTMLElement>(".scaffold-finite-scroll__content .feed-shared-update-v2")
+      .forEach((sec) => {
+        sec.style.cssText = on ? BlurSection : "";
+      });
   };
-
 
   // Hide red notification badge
   const toggleNotificationBadge = (on: boolean) => {
-    const badges = document.querySelectorAll<HTMLElement>(  
-      ".global-nav__primary-link-notification-badge, .notification-badge"
+    const badges = document.querySelectorAll<HTMLElement>(
+      ".global-nav__primary-link-notification-badge, .notification-badge",
     );
 
-    badges.forEach(badge => {
-      badge.style.cssText = on ? "display: none;": "";   
+    badges.forEach((badge) => {
+      badge.style.cssText = on ? "display: none;" : "";
     });
-  }
-
+  };
 
   // Stored setting on load
   chrome.storage.local.get(
-    { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
-    ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
+    {
+      linkedinBlurPYMK: true,
+      linkedinBlurNews: true,
+      linkedinBlurJobs: true,
+      linkedinBlurHome: true,
+      linkedinRemoveBadges: true,
+    },
+    ({
+      linkedinBlurPYMK,
+      linkedinBlurNews,
+      linkedinBlurJobs,
+      linkedinBlurHome,
+      linkedinRemoveBadges,
+    }) => {
       togglePYMK(linkedinBlurPYMK);
       toggleNews(linkedinBlurNews);
       toggleJobPageSections(linkedinBlurJobs);
       toggleHomeFeed(linkedinBlurHome);
       toggleNotificationBadge(linkedinRemoveBadges);
-    }
+    },
   );
 
   // Re-apply if LinkedIn lazy-injects more sections
-  new MutationObserver(muts => {
-    if (muts.some(m => m.addedNodes.length)) {
+  new MutationObserver((muts) => {
+    if (muts.some((m) => m.addedNodes.length)) {
       chrome.storage.local.get(
-        { linkedinBlurPYMK: true, linkedinBlurNews: true, linkedinBlurJobs: true, linkedinBlurHome: true, linkedinRemoveBadges: true},
-        ({ linkedinBlurPYMK, linkedinBlurNews, linkedinBlurJobs, linkedinBlurHome, linkedinRemoveBadges}) => {
+        {
+          linkedinBlurPYMK: true,
+          linkedinBlurNews: true,
+          linkedinBlurJobs: true,
+          linkedinBlurHome: true,
+          linkedinRemoveBadges: true,
+        },
+        ({
+          linkedinBlurPYMK,
+          linkedinBlurNews,
+          linkedinBlurJobs,
+          linkedinBlurHome,
+          linkedinRemoveBadges,
+        }) => {
           togglePYMK(linkedinBlurPYMK);
           toggleNews(linkedinBlurNews);
           toggleJobPageSections(linkedinBlurJobs);
           toggleHomeFeed(linkedinBlurHome);
           toggleNotificationBadge(linkedinRemoveBadges);
-        }
+        },
       );
     }
   }).observe(document.body, { childList: true, subtree: true });
-
 
   // Listen for popup's toggle
   chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
@@ -142,6 +163,5 @@
       toggleNotificationBadge(!!msg.payload);
       sendResponse({ ok: true });
     }
-
   });
 })();

@@ -3,7 +3,7 @@
     "message": "Sesiones de enfoque"
   },
   "settings_title": {
-    "message": "Configuración"  
+    "message": "Configuración"
   },
   "blur_home": {
     "message": "Difuminar página principal"
@@ -74,9 +74,8 @@
   "minute_30": {
     "message": "30 minutos"
   },
-  "settings_locked_during_session": 
-  {
-  "message": "⚠️ No se pueden configurar los ajustes durante una sesión"
+  "settings_locked_during_session": {
+    "message": "⚠️ No se pueden configurar los ajustes durante una sesión"
   },
   "blur_linkedin_home": {
     "message": "Difuminar página principal de LinkedIn"

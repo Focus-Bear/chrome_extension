@@ -10,7 +10,7 @@ export const useFocusTimer = () => {
   const [intention, setIntention] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
-  const intervalRef =  useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const restoreFromStorage = () => {
     chrome.storage.local.get(
@@ -35,18 +35,14 @@ export const useFocusTimer = () => {
               if (prev <= 1) {
                 clearInterval(intervalRef.current!);
                 setTimerActive(false);
-                chrome.storage.local.remove([
-                  "focusStart",
-                  "focusDuration",
-                  "focusIntention",
-                ]);
+                chrome.storage.local.remove(["focusStart", "focusDuration", "focusIntention"]);
                 return 0;
               }
               return prev - 1;
             });
           }, 1000);
         }
-      }
+      },
     );
   };
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
 :root {
   --slider-bg-color: #ffe4c6;
@@ -44,15 +44,15 @@
   stroke-dashoffset: 0.15s ease;
 }
 
-
 /* Knob circle */
 .slider-knob {
   fill: var(--slider-knob-color);
   stroke: #fff;
   stroke-width: 2;
-  transition: fill 0.2s ease, stroke 0.2s ease;
+  transition:
+    fill 0.2s ease,
+    stroke 0.2s ease;
 }
-
 
 /* When the mouse hovers anywhere over the SVG */
 .circular-slider-svg:hover .slider-bg {
@@ -67,7 +67,6 @@
   fill: var(--slider-knob-color-hover);
 }
 
-
 .circular-slider-input-container {
   position: absolute;
   top: 50%;
@@ -79,24 +78,21 @@
 }
 
 .workDuration-input {
-    font-family: 'Courier Prime', sans-serif;
-    font-weight: 700;
-    background: #fab363;
-    border: 2px solid #e9902c;
-    border-radius: 10px;
-    outline: none;
-    box-shadow: none;
-    padding: 0.25rem 0.5rem;
-    margin: 0;
-    text-align: center;
-    font-size: 2rem;
-    color: #fff;
-    width: 6rem;
+  font-family: "Courier Prime", sans-serif;
+  font-weight: 700;
+  background: #fab363;
+  border: 2px solid #e9902c;
+  border-radius: 10px;
+  outline: none;
+  box-shadow: none;
+  padding: 0.25rem 0.5rem;
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+  color: #fff;
+  width: 6rem;
 }
 
-.workDuration-input:hover{
-    background-color: #e9902c;
+.workDuration-input:hover {
+  background-color: #e9902c;
 }
-
-
-

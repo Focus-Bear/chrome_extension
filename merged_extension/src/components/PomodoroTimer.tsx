@@ -28,7 +28,7 @@ const PomodoroTimer: React.FC = () => {
         const { task, workDuration, breakDuration, endTime, isRunning, onBreak, started } = saved;
         const remaining = isRunning
           ? Math.max(Math.floor((endTime - Date.now()) / 1000), 0)
-          : saved.timeLeft ?? workDuration;
+          : (saved.timeLeft ?? workDuration);
         setTask(task);
         setWorkDuration(workDuration);
         setBreakDuration(breakDuration);
@@ -128,13 +128,11 @@ const PomodoroTimer: React.FC = () => {
         setOnBreak(false);
         setTimeLeft(workDuration);
         setManualBreakEdit(true);
-      }
+      },
     );
   };
 
-  const progress = onBreak
-    ? 1 - timeLeft / breakDuration
-    : 1 - timeLeft / workDuration;
+  const progress = onBreak ? 1 - timeLeft / breakDuration : 1 - timeLeft / workDuration;
 
   return (
     <div className="pomodoro-container">
@@ -166,15 +164,15 @@ const PomodoroTimer: React.FC = () => {
             {/* Break Duration with react-input-mask */}
             <div className="breakduration-input">
               <label className="break-title">Break Duration:</label>
-                <IMaskInput
-                  mask="00:00"
-                  value={breakInput}
-                  unmask={false}
-                  onAccept={(value: string) => setBreakInput(value)}
-                  onBlur={commitBreakInput}
-                  placeholder="MM:SS"
-                  className="break-input"
-                />
+              <IMaskInput
+                mask="00:00"
+                value={breakInput}
+                unmask={false}
+                onAccept={(value: string) => setBreakInput(value)}
+                onBlur={commitBreakInput}
+                placeholder="MM:SS"
+                className="break-input"
+              />
             </div>
 
             <div
@@ -188,7 +186,9 @@ const PomodoroTimer: React.FC = () => {
           </div>
         ) : (
           <div className="timer-section">
-            <div className="timer-message">{onBreak ? "Make sure to take a break!" : "Keep focused!"}</div>
+            <div className="timer-message">
+              {onBreak ? "Make sure to take a break!" : "Keep focused!"}
+            </div>
 
             <svg className="timer-svg">
               <circle cx="96" cy="96" r="90" stroke="#ffe4c6" strokeWidth="15" fill="none" />

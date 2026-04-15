@@ -5,7 +5,12 @@
   "description": "Hide distractions using a clean Chrome Extension.",
   "default_locale": "en",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
-  "host_permissions": ["*://*.youtube.com/*", "*://*.linkedin.com/*","*://*.wikipedia.org/*", "*://mail.google.com/*"],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://*.linkedin.com/*",
+    "*://*.wikipedia.org/*",
+    "*://mail.google.com/*"
+  ],
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": {
@@ -16,12 +21,13 @@
     "service_worker": "background.js"
   },
   "content_scripts": [
-    {"matches": [
-      "https://www.youtube.com/*",
-      "https://www.linkedin.com/*",
-      "https://*.wikipedia.org/*", 
-      "https://mail.google.com/*"
-    ],
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://www.linkedin.com/*",
+        "https://*.wikipedia.org/*",
+        "https://mail.google.com/*"
+      ],
       "js": ["content.js"],
       "css": ["assets/intentionPopup.css"]
     },
@@ -44,12 +50,11 @@
     {
       "matches": ["*://mail.google.com/*"],
       "js": ["gmail.js"]
-    }    
+    }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["floatingPopup.js", 
-      "assets/*"],
+      "resources": ["floatingPopup.js", "assets/*"],
       "matches": ["<all_urls>"]
     },
     {

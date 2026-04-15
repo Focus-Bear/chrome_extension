@@ -37,7 +37,7 @@
 
 - Toggle to blur LinkedIn homepage feed
 - Toggle to blur LinkedIn notifications and trending news
-- Toggle to blur LinkedIn job recommendations  
+- Toggle to blur LinkedIn job recommendations
 - Toggle to blur LinkedIn connection recommendations
 
 #### 🛠 Improvements
@@ -89,11 +89,11 @@
 #### 🛠 Improvements
 
 - Various new themed messages added to intention popup
-- 
+-
 
 #### 🐞 Bug Fixes
 
-- 
+-
 
 #### ❗ Known Issues
 
@@ -109,31 +109,43 @@ These instructions will help you get a local copy of the project up and running 
 ### How to run
 
 1. Navigate to directory
-    - cd focus-bear-extension/hide_distractions
+   - cd focus-bear-extension/hide_distractions
 
 2. Install dependencies
-    - npm install
+   - npm install
 
 3. Build the extension (Generates dist/ folder and contents)
-    - npm run build
+   - npm run build
 
 4. Load the extension in Chrome
-    - Open Chrome and navigate to chrome://extensions/
-    - Enable Developer Mode toggle
-    - Press “Load unpacked”
-    - Select the generated dist/ folder
+   - Open Chrome and navigate to chrome://extensions/
+   - Enable Developer Mode toggle
+   - Press “Load unpacked”
+   - Select the generated dist/ folder
+
+### Formatting
+
+1. Navigate to directory
+   - cd focus-bear-extension/merged_extension
+
+2. Install dependencies
+   - npm install
+
+3. Run Oxfmt
+   - npm run fmt
 
 ### Linting
+
 To lint the project using Oxlint:
 
 1. Navigate to directory
-    - cd focus-bear-extension/merged_extension
+   - cd focus-bear-extension/merged_extension
 
 2. Install dependencies
-    - npm install
+   - npm install
 
 3. Run Oxlint
-    - npm run lint
+   - npm run lint
 
 ### Troubleshooting
 
@@ -143,9 +155,9 @@ If you’re running into issues like missing build files or unexpected behaviour
 - You are loading the correct folder in chrome://extensions/
 - You have enabled Developer Mode toggle
 - If these are not the issue try:
-    1. rm -rf dist
-    2. npm run build
-    3. ls dist/
+  1. rm -rf dist
+  2. npm run build
+  3. ls dist/
 
 ## Project Structure
 
@@ -175,6 +187,7 @@ hide_distractions/
 ├── package.json                # Project metadata and scripts
 ├── package-lock.json           # Dependency lockfile
 ├── tsconfig.json               # TypeScript configuration
+├── .oxfmtrc.json               # Oxfmt configuration
 ├── oxlintrc.json               # Oxlint configuration
 ├── vite.config.ts              # Vite bundler configuration
 └── README.md                   # You're reading it!

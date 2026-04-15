@@ -147,7 +147,7 @@
       function continueNav() {
         popup.remove();
         window.location.href = link.href;
-      }
+      },
     );
 
     document.body.appendChild(popup);

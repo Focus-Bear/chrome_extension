@@ -18,20 +18,26 @@ const translations = {
 };
 
 // Send translations initially
-window.postMessage({
-  type: "FOCUSBEAR_TRANSLATIONS",
-  payload: translations
-}, "*");
+window.postMessage(
+  {
+    type: "FOCUSBEAR_TRANSLATIONS",
+    payload: translations,
+  },
+  "*",
+);
 console.log("[FocusBear] Translation message sent");
 
 // Respond if popup requests translations again
 window.addEventListener("message", (event) => {
   if (event.data?.type === "REQUEST_TRANSLATIONS") {
     console.log("[FocusBear] Popup requested translations, resending...");
-    window.postMessage({
-      type: "FOCUSBEAR_TRANSLATIONS",
-      payload: translations
-    }, "*");
+    window.postMessage(
+      {
+        type: "FOCUSBEAR_TRANSLATIONS",
+        payload: translations,
+      },
+      "*",
+    );
   }
 });
 
@@ -46,13 +52,16 @@ chrome.storage.local.get(["focusData"], ({ focusData }) => {
       script.id = "intention-popup-script";
       script.type = "module";
       script.onload = () => {
-        window.postMessage({
-          type: "INIT_INTENTION_DATA",
-          payload: {
-            lastIntention: "",
-            lastFocusDuration: 0,
+        window.postMessage(
+          {
+            type: "INIT_INTENTION_DATA",
+            payload: {
+              lastIntention: "",
+              lastFocusDuration: 0,
+            },
           },
-        }, "*");
+          "*",
+        );
       };
       document.body.appendChild(script);
     }
@@ -90,11 +99,8 @@ chrome.storage.local.get(["focusData"], ({ focusData }) => {
 
 // 5) In your show-popup-again listener, to see if you ever get this event:
 window.addEventListener("show-popup-again", () => {
-  console.log(
-    "[Content] show-popup-again event fired, attempting reinjection…"
-  );
+  console.log("[Content] show-popup-again event fired, attempting reinjection…");
 });
-
 
 let focusTimer: ReturnType<typeof setTimeout> | null = null;
 // oxlint-disable-next-line no-unused-vars
@@ -129,22 +135,15 @@ window.addEventListener("message", (event) => {
         const remaining = totalMs - elapsed;
 
         if (remaining > 0) {
-          console.log(
-            `[Content] [STORE] Scheduling re-popup in ${remaining}ms`
-          );
+          console.log(`[Content] [STORE] Scheduling re-popup in ${remaining}ms`);
           setTimeout(() => {
-            const currentDomain = window.location.hostname.replace(
-              /^www\./,
-              ""
-            );
+            const currentDomain = window.location.hostname.replace(/^www\./, "");
             if (currentDomain === domain) {
-              console.log(
-                `[STORE] Timer expired for ${domain} → showing popup`
-              );
+              console.log(`[STORE] Timer expired for ${domain} → showing popup`);
               window.dispatchEvent(new CustomEvent("show-popup-again"));
             } else {
               console.log(
-                `[STORE] Timer expired for ${domain}, but user is on ${currentDomain} → ignoring`
+                `[STORE] Timer expired for ${domain}, but user is on ${currentDomain} → ignoring`,
               );
             }
           }, remaining);
@@ -152,11 +151,10 @@ window.addEventListener("message", (event) => {
           console.log("[Content] [STORE] Timer already expired; showing now");
           window.dispatchEvent(new CustomEvent("show-popup-again"));
         }
-      }
+      },
     );
   }
 });
-
 
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
@@ -175,10 +173,13 @@ window.addEventListener("message", (event) => {
     if (focusTimer) clearTimeout(focusTimer);
 
     console.log(`Starting focus timer for ${durationInMinutes} minutes.`);
-    focusTimer = setTimeout(() => {
-      console.log("Focus timer ended. Dispatching SHOW_POPUP event.");
-      window.dispatchEvent(new CustomEvent("show-popup-again"));
-    }, durationInMinutes * 60 * 1000);
+    focusTimer = setTimeout(
+      () => {
+        console.log("Focus timer ended. Dispatching SHOW_POPUP event.");
+        window.dispatchEvent(new CustomEvent("show-popup-again"));
+      },
+      durationInMinutes * 60 * 1000,
+    );
   }
 
   // NEW: Save focus data to chrome.storage.local
@@ -227,11 +228,11 @@ window.addEventListener("show-popup-again", () => {
             type: "INIT_INTENTION_DATA",
             payload: { lastIntention, lastFocusDuration },
           },
-          "*"
+          "*",
         );
       };
 
       document.body.appendChild(script);
-    }
+    },
   );
 });

@@ -42,7 +42,7 @@ async function checkBlocklist(blocklist: string[], relaxlist: string[], hours: A
   const { pomodoroState } = await chrome.storage.local.get("pomodoroState");
   const onBreak = pomodoroState?.onBreak === true;
 
-    // If on relaxlist, don't blur during pomodoro breaks
+  // If on relaxlist, don't blur during pomodoro breaks
   if (isRelaxed && onBreak) {
     removeGlobalBlur();
     return;
@@ -68,9 +68,9 @@ function runCheck() {
       checkBlocklist(
         data.blocklist || [],
         data.relaxlist || [],
-        data.activeHours || { start: 0, end: 24 }
+        data.activeHours || { start: 0, end: 24 },
       );
-    }
+    },
   );
 }
 
@@ -97,11 +97,7 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
     ]);
 
     // Run the check and instantly update blur/unblur
-    await checkBlocklist(
-      blocklist || [],
-      relaxlist || [],
-      activeHours || { start: 0, end: 24 }
-    );
+    await checkBlocklist(blocklist || [], relaxlist || [], activeHours || { start: 0, end: 24 });
   }
 });
 
