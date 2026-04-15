@@ -103,6 +103,7 @@ window.addEventListener("show-popup-again", () => {
 });
 
 let focusTimer: ReturnType<typeof setTimeout> | null = null;
+// oxlint-disable-next-line no-unused-vars
 let isBlurEnabled = true;
 
 window.addEventListener("message", (event) => {

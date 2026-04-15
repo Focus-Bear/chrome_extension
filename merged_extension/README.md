@@ -125,8 +125,6 @@ These instructions will help you get a local copy of the project up and running 
 
 ### Formatting
 
-### How to run
-
 1. Navigate to directory
    - cd focus-bear-extension/merged_extension
 
@@ -135,6 +133,19 @@ These instructions will help you get a local copy of the project up and running 
 
 3. Run Oxfmt
    - npm run fmt
+
+### Linting
+
+To lint the project using Oxlint:
+
+1. Navigate to directory
+   - cd focus-bear-extension/merged_extension
+
+2. Install dependencies
+   - npm install
+
+3. Run Oxlint
+   - npm run lint
 
 ### Troubleshooting
 
@@ -177,6 +188,7 @@ hide_distractions/
 ├── package-lock.json           # Dependency lockfile
 ├── tsconfig.json               # TypeScript configuration
 ├── .oxfmtrc.json               # Oxfmt configuration
+├── oxlintrc.json               # Oxlint configuration
 ├── vite.config.ts              # Vite bundler configuration
 └── README.md                   # You're reading it!
 ```

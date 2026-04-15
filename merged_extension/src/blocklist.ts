@@ -160,11 +160,6 @@ function removeBlocklistPopup() {
   if (overlay) overlay.remove();
 }
 
-function getBaseDomain(hostname: string): string {
-  const parts = hostname.split(".");
-  return parts.slice(-2).join(".");
-}
-
 function allowTemporaryAccess(seconds: number) {
   const expiry = Date.now() + seconds * 1000;
   temporaryUnblurUntil = expiry;
