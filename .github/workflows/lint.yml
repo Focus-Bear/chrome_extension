@@ -1,4 +1,4 @@
-name: Lint & Format Check
+name: Pre-merge Code Quality
 
 on:
   pull_request:
