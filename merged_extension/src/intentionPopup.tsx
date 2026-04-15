@@ -33,7 +33,7 @@ const prompts = [
 ];
 
 const IntentionPopup = () => {
-  const { intention, setIntention, isIntentionSet } = useIntention();
+  const { intention, setIntention } = useIntention();
   const [visible, setVisible] = useState<boolean>(true);
   const { timer, setTimer } = useIntention();
   const [showWarning, setShowWarning] = useState(false);

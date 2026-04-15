@@ -123,6 +123,18 @@ These instructions will help you get a local copy of the project up and running 
     - Press “Load unpacked”
     - Select the generated dist/ folder
 
+### Linting
+To lint the project using Oxlint:
+
+1. Navigate to directory
+    - cd focus-bear-extension/merged_extension
+
+2. Install dependencies
+    - npm install
+
+3. Run Oxlint
+    - npm run lint
+
 ### Troubleshooting
 
 If you’re running into issues like missing build files or unexpected behaviour, try the following steps:
@@ -163,6 +175,7 @@ hide_distractions/
 ├── package.json                # Project metadata and scripts
 ├── package-lock.json           # Dependency lockfile
 ├── tsconfig.json               # TypeScript configuration
+├── oxlintrc.json               # Oxlint configuration
 ├── vite.config.ts              # Vite bundler configuration
 └── README.md                   # You're reading it!
 ```

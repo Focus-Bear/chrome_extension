@@ -59,10 +59,6 @@ const CircularSlider: React.FC<CircularSliderProps> = ({ value, min, max, onChan
     handlePointerMove(e.nativeEvent, e.currentTarget);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
   const handleInputBlur = () => {
     const parsed = parseTime(inputValue);
     setInputValue(formatTime(parsed));
