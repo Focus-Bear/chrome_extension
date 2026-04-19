@@ -251,4 +251,3 @@ chrome.runtime.onMessage.addListener((message) => {
     window.postMessage({ type: "SESSION_COMPLETE" }, "*");
   }
 });
-
