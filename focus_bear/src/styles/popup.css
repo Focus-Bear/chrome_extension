@@ -99,6 +99,12 @@ img.settings-icon {
   transition: background-color 0.3s;
 }
 
+.toggle.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .toggle.active {
   background-color: #e9902c;
 }

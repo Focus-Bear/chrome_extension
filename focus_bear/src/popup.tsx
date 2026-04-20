@@ -7,8 +7,20 @@ import setIcon from "../public/icons/settingsIcon.png";
 import "@radix-ui/themes/styles.css";
 import PomodoroTimer from "./components/PomodoroTimer";
 
-const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
-  <div className={`toggle ${checked ? "active" : "inactive"}`} onClick={onChange}>
+const Toggle = ({
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) => (
+  <div
+    className={`toggle ${checked ? "active" : "inactive"}${disabled ? " disabled" : ""}`}
+    onClick={disabled ? undefined : onChange}
+    aria-disabled={disabled}
+  >
     <span className="toggle-text">{checked ? "ON" : "OFF"}</span>
     <div className="toggle-button" />
   </div>
@@ -247,10 +259,7 @@ const App = () => {
   const [homeBlurEnabled, setHomeBlurEnabled] = useState(true);
   const [shortsBlurEnabled, setShortsBlurEnabled] = useState(true);
   const [youBlurEnabled, setYouBlurEnabled] = useState(true);
-  const [linkedinBlurPYMK, setLinkedinBlurPYMK] = useState(true);
   const [linkedinBlurNews, setLinkedinBlurNews] = useState(true);
-  const [linkedinBlurJobs, setLinkedinBlurJobs] = useState(true);
-  const [linkedinBlurHome, setLinkedinBlurHome] = useState(true);
   const [linkedinRemoveBadges, setLinkedinRemoveBadges] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
@@ -287,10 +296,7 @@ const App = () => {
         "homePageBlurEnabled",
         "shortsBlurEnabled",
         "youMenuBlurEnabled",
-        "linkedinBlurPYMK",
         "linkedinBlurNews",
-        "linkedinBlurJobs",
-        "linkedinBlurHome",
         "linkedinRemoveBadges",
         "wikiLinkPopupEnabled",
         "wikipediaMainBlur",
@@ -304,10 +310,7 @@ const App = () => {
         homePageBlurEnabled,
         shortsBlurEnabled,
         youMenuBlurEnabled,
-        linkedinBlurPYMK,
         linkedinBlurNews,
-        linkedinBlurJobs,
-        linkedinBlurHome,
         linkedinRemoveBadges,
         wikiLinkPopupEnabled,
         wikipediaMainBlur,
@@ -320,11 +323,14 @@ const App = () => {
         setHomeBlurEnabled(homePageBlurEnabled ?? true);
         setShortsBlurEnabled(shortsBlurEnabled ?? true);
         setYouBlurEnabled(youMenuBlurEnabled ?? true);
-        setLinkedinBlurPYMK(linkedinBlurPYMK ?? true);
         setLinkedinBlurNews(linkedinBlurNews ?? true);
-        setLinkedinBlurJobs(linkedinBlurJobs ?? true);
-        setLinkedinBlurHome(linkedinBlurHome ?? true);
         setLinkedinRemoveBadges(linkedinRemoveBadges ?? true);
+        // PYMK / Jobs / Home are not implemented yet: keep storage off so LinkedIn script does not apply them.
+        chrome.storage.local.set({
+          linkedinBlurPYMK: false,
+          linkedinBlurJobs: false,
+          linkedinBlurHome: false,
+        });
         setWikipediaLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
         setWikipediaMainBlur(wikipediaMainBlur ?? true);
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
@@ -351,17 +357,8 @@ const App = () => {
     chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled }) => {
       setYouBlurEnabled(youMenuBlurEnabled);
     });
-    chrome.storage.local.get({ linkedinBlurPYMK: true }, ({ linkedinBlurPYMK }) => {
-      setLinkedinBlurPYMK(linkedinBlurPYMK);
-    });
     chrome.storage.local.get({ linkedinBlurNews: true }, ({ linkedinBlurNews }) => {
       setLinkedinBlurNews(linkedinBlurNews);
-    });
-    chrome.storage.local.get({ linkedinBlurJobs: true }, ({ linkedinBlurJobs }) => {
-      setLinkedinBlurJobs(linkedinBlurJobs);
-    });
-    chrome.storage.local.get({ linkedinBlurHome: true }, ({ linkedinBlurHome }) => {
-      setLinkedinBlurHome(linkedinBlurHome);
     });
     chrome.storage.local.get({ linkedinRemoveBadges: true }, ({ linkedinRemoveBadges }) => {
       setLinkedinRemoveBadges(linkedinRemoveBadges);
@@ -524,23 +521,6 @@ const App = () => {
     }
   };
 
-  const handleLinkedinBlurToggle = async () => {
-    const newValue = !linkedinBlurPYMK;
-    setLinkedinBlurPYMK(newValue);
-    await chrome.storage.local.set({ linkedinBlurPYMK: newValue });
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_BLUR",
-        payload: newValue,
-      });
-    }
-  };
-
   const handleLinkedinNewsToggle = async () => {
     const newValue = !linkedinBlurNews;
     setLinkedinBlurNews(newValue);
@@ -558,39 +538,6 @@ const App = () => {
     }
   };
 
-  const handleLinkedinJobsToggle = async () => {
-    const newValue = !linkedinBlurJobs;
-    setLinkedinBlurJobs(newValue);
-    await chrome.storage.local.set({ linkedinBlurJobs: newValue });
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_JOBS_BLUR",
-        payload: newValue,
-      });
-    }
-  };
-
-  const handleLinkedinHomeToggle = async () => {
-    const newValue = !linkedinBlurHome;
-    setLinkedinBlurHome(newValue);
-    await chrome.storage.local.set({ linkedinBlurHome: newValue });
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_HOME",
-        payload: newValue,
-      });
-    }
-  };
   const handleLinkedinBadgeToggle = async () => {
     const newValue = !linkedinRemoveBadges;
     setLinkedinRemoveBadges(newValue);
@@ -803,7 +750,7 @@ const App = () => {
         <h3 className="settings-label">LinkedIn</h3>
         <label className="option-label">
           <span className="option-text">{t("blur_PYMK")}</span>
-          <Toggle checked={linkedinBlurPYMK} onChange={handleLinkedinBlurToggle} />
+          <Toggle checked={false} onChange={() => {}} disabled />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_news")}</span>
@@ -811,11 +758,11 @@ const App = () => {
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_jobs")}</span>
-          <Toggle checked={linkedinBlurJobs} onChange={handleLinkedinJobsToggle} />
+          <Toggle checked={false} onChange={() => {}} disabled />
         </label>
         <label className="option-label">
-          <span className="option-text">{t("blur_home")}</span>
-          <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
+          <span className="option-text">{t("blur_linkedin_home")}</span>
+          <Toggle checked={false} onChange={() => {}} disabled />
         </label>
         <label className="option-label">
           <span className="option-text">Remove Badges</span>

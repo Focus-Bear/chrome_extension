@@ -28,7 +28,7 @@
     "description": "Option to blur You Menu"
   },
   "blur_PYMK": {
-    "message": "Blur Connection Recommendations",
+    "message": "Blur Connection Recommendations (coming soon)",
     "description": "Option to blur (People you may know)"
   },
   "blur_news": {
@@ -36,7 +36,7 @@
     "description": "Option to blur trending news"
   },
   "blur_jobs": {
-    "message": "Blur Job Suggestions",
+    "message": "Blur Job Suggestions (coming soon)",
     "description": "Option to blur LinkedIn job suggestions"
   },
   "intention_label": {
@@ -107,7 +107,7 @@
     "description": "Alert shown when trying to open settings during a focus session"
   },
   "blur_linkedin_home": {
-    "message": "Blur LinkedIn Home",
+    "message": "Blur LinkedIn Home (coming soon)",
     "description": "Option to blur the LinkedIn home page"
   }
 }
