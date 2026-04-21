@@ -33,6 +33,7 @@ const App = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsBlockedMessage, setSettingsBlockedMessage] = useState(false);
   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
+  const [showIntentionPopup, setShowIntentionPopup] = useState(true);
 
   const [allFocusSessions, setAllFocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -331,6 +332,18 @@ const App = () => {
       <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
       <h2 className="settings-title">{t("settings_title")}</h2>
       <div className="options-container">
+        <h3 className="settings-label">General</h3>
+        <label className="option-label">
+          <span className="option-text">Always show intention popup on initial page access</span>
+          <Toggle
+            checked={showIntentionPopup}
+            onChange={() => {
+              const newValue = !showIntentionPopup;
+              setShowIntentionPopup(newValue);
+              chrome.storage.local.set({ showIntentionPopup: newValue });
+            }}
+          />
+        </label>
         <h3 className="settings-label">YouTube</h3>
         <label className="option-label">
           <span className="option-text">{t("blur_home")}</span>
