@@ -1,0 +1,202 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Fixed-size container */
+.popup-container {
+  position: relative;
+  width: 400px;
+  height: 500px;
+  padding: 24px 30px 30px;
+  background-color: #FFE4C6;
+  font-family: sans-serif;
+}
+
+/* Logo */
+.focus-logo {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 32px;
+  height: auto;
+  z-index: 1;
+}
+
+/* Titles */
+h1.popup-title,
+h2.settings-title {
+  font-size: 2rem;
+  margin: 0 0 20px;
+  color: #663300;
+  text-align: center;
+  position: relative;
+  top: -4px;
+}
+
+/* Timer / no-session text */
+.timer-section,
+p.no-session {
+  margin-top: 20px;
+  font-size: 20px;
+  text-align: left;
+}
+
+.timer-section span:first-of-type {
+  display: block;
+  margin: 0 0 12px;
+}
+
+/* Settings icon */
+img.settings-icon {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 32px;
+  height: auto;
+  cursor: pointer;
+}
+
+/* Setting group names */
+.settings-label {
+  font-size: 1.25rem;
+  margin: 6px;
+}
+
+/* Options list */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.option-label {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.option-text {
+  font-size: 18px;
+}
+
+/* Toggle switch */
+.toggle {
+  display: flex;
+  align-items: center;
+  width: 55px;
+  height: 24px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle.active {
+  background-color: #E9902C;
+}
+
+.toggle.inactive {
+  background-color: #ccc;
+}
+
+.toggle-text {
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.toggle-button {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle.active .toggle-button {
+  right: 2px;
+}
+
+.toggle.inactive .toggle-button {
+  left: 2px;
+}
+
+/* Close button */
+button.close-button {
+  display: block;
+  margin: 32px auto 0;
+  width: 225px;
+  padding: 10px 15px;
+  font-size: 18px;
+  color: #F3A650;
+  background-color: #FFFCF6;
+  border: 2px solid #F3A650;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button.close-button:disabled {
+  background-color: #CCCCCC;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Session Cards Container */
+.session-list {
+  max-height: 160px; /* fits 2–3 cards depending on content */
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+/* Individual Session Card */
+.session-card {
+  background-color: #FFFCF6;
+  border: 1px solid #e0b991;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Domain Title */
+.session-card .domain {
+  font-weight: bold;
+  color: #5a2c00;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Session Info Labels */
+.session-card .label {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Fix gear icon position relative to scrollable area */
+img.settings-icon {
+  z-index: 10;
+}
+
+.settings-warning {
+  max-width: 75%;
+  margin: 10px auto;
+  text-align: center;
+  color: #990000;
+  background: #FFFCF6;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid #F3A650;
+}

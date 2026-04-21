@@ -1,0 +1,57 @@
+body {
+  color: white;
+  background-color: #24292e;
+}
+
+/* p {
+  font-size: 20px;
+  max-width: 50%;
+  text-align: center;
+} */
+
+@keyframes colors-and-rot {
+  from {
+    background-color: #e9912cd1;
+    transform: rotate(7deg);
+  }
+  to {
+    background-color: aquamarine;
+  }
+}
+
+@keyframes text-color-change {
+  0% {
+    color: #e9912cd1;
+  }
+  100% {
+    color: aquamarine;
+  }
+}
+
+.decorator {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  transform: rotate(4deg);
+  line-height: 10%;
+  animation: colors-and-rot 5s ease-in-out infinite alternate;
+  background-color: #e9912cd1;
+}
+
+.addBtn {
+  animation: text-color-change 5s ease-in-out infinite alternate;
+  text-decoration: underline 0.25em;
+  cursor: pointer;
+}
+
+.sign {
+  color: #24292e;
+  font-size: 90px;
+  transform: rotate(-4deg);
+  /* animation: text-color-change 15s ease-in-out infinite alternate-reverse; */
+}
+
+.fblogo {
+  margin-bottom: 50px;
+  width: 50%;
+  filter: invert(14%) brightness(139%) contrast(128%);
+}

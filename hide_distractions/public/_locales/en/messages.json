@@ -1,0 +1,110 @@
+{
+  "home_title": {
+    "message": "Focus Sessions",
+    "description": "Label for Focus Sessions section"
+  },
+  "settings_title": {
+    "message": "Settings",
+    "description": "Label for the settings section of the extension"
+  },
+  "blur_home": {
+    "message": "Blur Home Page",
+    "description": "Option to blur the YouTube home page"
+  },
+  "blur_distractions": {
+    "message": "Blur Distractions",
+    "description": "Option to blur distracting elements"
+  },
+  "hide_comments": {
+    "message": "Hide Comments",
+    "description": "Option to hide YouTube comments"
+  },
+  "blur_shorts": {
+    "message": "Blur Shorts",
+    "description": "Option to blur YouTube Shorts"
+  },
+    "blur_PYMK": {
+    "message": "Blur Connection Recommendations",
+    "description": "Option to blur (People you may know)"
+  },
+  "blur_news": {
+    "message": "Blur News",
+    "description": "Option to blur trending news"
+  },
+   "blur_jobs": {
+    "message": "Blur Job Suggestions",
+    "description": "Option to blur LinkedIn job suggestions"
+  },
+  "intention_label": {
+    "message": "Intention",
+    "description": "Label for user intention input"
+  },
+  "time_left": {
+    "message": "Time Left",
+    "description": "Label for remaining focus session time"
+  },
+  "no_focus_session": {
+  "message": "No active focus session."
+  },
+  "heading": {
+    "message": "Hello there! Up to mischief are we?",
+    "description": "Greeting heading for intention popup"
+  },
+  "prompt": {
+    "message": "What plans are brewing or should I say bearing?",
+    "description": "Prompt asking user for their intention"
+  },
+  "placeholder": {
+    "message": "Type...",
+    "description": "Placeholder text for intention input"
+  },
+  "warning": {
+    "message": "Wow that's a while! I think a more thoughtful reason would help keep our focus! (15+ characters).",
+    "description": "Warning shown if intention is too short for long durations"
+  },
+  "duration": {
+    "message": "How long should we watch together for?",
+    "description": "Prompt asking for focus duration"
+  },
+  "button": {
+    "message": "Let's dig in!",
+    "description": "Label for submit button"
+  },
+  "close_button": {
+    "message": "Close",
+    "description": "Label for close button in Settings Page"
+  },
+  "time_default": {
+    "message": "Time...",
+    "description": "Default option in time select"
+  },
+  "minute_1": {
+    "message": "1 minute",
+    "description": "1-minute duration option"
+  },
+  "minute_5": {
+    "message": "5 minutes",
+    "description": "5-minute duration option"
+  },
+  "minute_10": {
+    "message": "10 minutes",
+    "description": "10-minute duration option"
+  },
+  "minute_15": {
+    "message": "15 minutes",
+    "description": "15-minute duration option"
+  },
+  "minute_30": {
+    "message": "30 minutes",
+    "description": "30-minute duration option"
+  },
+  "settings_locked_during_session": 
+  {
+  "message": "⚠️ Settings cannot be configured during an active session.",
+  "description": "Alert shown when trying to open settings during a focus session"
+ },
+ "blur_linkedin_home": {
+  "message": "Blur LinkedIn Home",
+  "description": "Option to blur the LinkedIn home page"
+ }
+}
