@@ -1,0 +1,439 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Fixed-size container */
+.popup-container {
+  position: relative;
+  width: 400px;
+  height: fit-content;
+  padding: 24px 30px 30px;
+  background-color: #ffe4c6;
+  font-family: sans-serif;
+}
+
+/* Logo */
+.focus-logo {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 32px;
+  height: auto;
+  z-index: 1;
+}
+
+/* Titles */
+h1.popup-title,
+h2.settings-title {
+  font-size: 2rem;
+  margin: 0 0 20px;
+  color: #663300;
+  text-align: center;
+  position: relative;
+  top: -4px;
+}
+
+/* Timer / no-session text */
+.timer-section,
+p.no-session {
+  margin-top: 20px;
+  font-size: 20px;
+  text-align: left;
+}
+
+.timer-section span:first-of-type {
+  display: block;
+  margin: 0 0 12px;
+}
+
+/* Settings icon */
+img.settings-icon {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 32px;
+  height: auto;
+  cursor: pointer;
+}
+
+/* Setting group names */
+.settings-label {
+  font-size: 1.25rem;
+  margin: 6px;
+}
+
+/* Options list */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.option-label {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.option-text {
+  font-size: 18px;
+}
+
+/* Toggle switch */
+.toggle {
+  display: flex;
+  align-items: center;
+  width: 55px;
+  height: 24px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.toggle.active {
+  background-color: #e9902c;
+}
+
+.toggle.inactive {
+  background-color: #ccc;
+}
+
+.toggle-text {
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.toggle-button {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle.active .toggle-button {
+  right: 2px;
+}
+
+.toggle.inactive .toggle-button {
+  left: 2px;
+}
+
+/* Close button */
+button.close-button {
+  display: block;
+  margin: 32px auto 0;
+  width: 225px;
+  padding: 10px 15px;
+  font-size: 18px;
+  color: #f3a650;
+  background-color: #fffcf6;
+  border: 2px solid #f3a650;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button.close-button:disabled {
+  background-color: #cccccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Session Cards Container */
+.session-list {
+  max-height: 160px; /* fits 2–3 cards depending on content */
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+/* Individual Session Card */
+.session-card {
+  background-color: #fffcf6;
+  border: 1px solid #e0b991;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Domain Title */
+.session-card .domain {
+  font-weight: bold;
+  color: #5a2c00;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Session Info Labels */
+.session-card .label {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Complete Session Button */
+.complete-session-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 0;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.complete-session-btn:hover {
+  background-color: #27ae60;
+}
+
+.complete-session-btn:active {
+  background-color: #1e8449;
+}
+
+/* Fix gear icon position relative to scrollable area */
+img.settings-icon {
+  z-index: 10;
+}
+
+.settings-warning {
+  max-width: 75%;
+  margin: 10px auto;
+  text-align: center;
+  color: #990000;
+  background: #fffcf6;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid #f3a650;
+}
+
+/* Blocklist/Relaxlist */
+
+/* Tabs */
+.tab-buttons {
+  display: flex;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 16px;
+  background: #fffcf6;
+  border: 1px solid #e0b991;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    font-weight 0.2s;
+}
+
+.tab-button.active {
+  font-weight: bold;
+  background-color: #ffe4c6;
+}
+
+/* Site list */
+.site-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Individual site card */
+.site-list li {
+  background-color: #fffcf6;
+  border: 1px solid #e0b991;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* Site name */
+.site-list li span {
+  font-weight: bold;
+  color: #5a2c00;
+}
+
+/* Buttons for actions */
+.site-list li button {
+  margin-left: 6px;
+  padding: 4px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 2px solid #f3a650;
+  background-color: #fffcf6;
+  color: #f3a650;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.site-list li button:hover:not(:disabled) {
+  background-color: #f3a650;
+  color: #fffcf6;
+}
+
+.site-list li button:disabled {
+  background-color: #ccc;
+  color: #666;
+  border-color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Special state for relaxlist toggle */
+.site-list li button.relax-active {
+  background-color: #e9902c;
+  color: white;
+  border-color: #e9902c;
+}
+
+/* Buttons */
+.relax-button {
+  background: grey;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.relax-button.active {
+  background: green;
+}
+
+.remove-button {
+  background: red;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Active hours section */
+.active-hours-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.active-hours-container label {
+  font-size: 15px;
+  color: #5a2c00;
+  font-weight: 700;
+}
+
+.active-hours-input {
+  width: 60px;
+  padding: 6px;
+  border: 1px solid #b68c5a;
+  border-radius: 6px;
+  background: #fffdf8;
+  color: #3d1f00;
+  font-size: 13px;
+  text-align: center;
+}
+
+.save-hours-btn {
+  background: #5a2c00;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.save-hours-btn:disabled {
+  background-color: #ccc;
+  color: #666;
+  border-color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Instruction text */
+.blocklist-instructions {
+  font-size: 15px;
+  color: #5a2c00;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+/* Input + Add button container */
+.site-input-container {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+/* Input box styled to match cards */
+.site-input-container input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px 0 0 8px;
+  border: 1px solid #e0b991;
+  font-size: 14px;
+  background-color: #fffcf6;
+  color: #5a2c00;
+}
+
+/* Add button styled same width/height */
+.site-input-container button {
+  padding: 8px 14px;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid #f3a650;
+  background-color: #fffcf6;
+  color: #f3a650;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.site-input-container button:hover:not(:disabled) {
+  background-color: #f3a650;
+  color: #fffcf6;
+}
+
+.site-input-container button:disabled {
+  background-color: #ccc;
+  border-color: #aaa;
+  color: #666;
+  cursor: not-allowed;
+}

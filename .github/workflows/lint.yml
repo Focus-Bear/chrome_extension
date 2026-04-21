@@ -1,0 +1,46 @@
+name: Pre-merge Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  oxlint:
+    name: Code Lint Check (oxlint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: focus_bear
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
+      - run: npm ci
+      - name: Run oxlint
+        run: npx oxlint .
+
+  oxfmt:
+    name: Code Format Check (oxfmt)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: focus_bear
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
+
+      - run: npm ci
+
+      - name: Check formatting
+        run: npx oxfmt --check .

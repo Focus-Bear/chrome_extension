@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+.pomodoro-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* stick content to the top */
+  height: 100%; /* only take as much height as content */
+  color: #e9902c;
+  padding: 1rem 0; /* optional: keep a little breathing room */
+}
+
+.pomodoro-content {
+  width: 100%;
+  max-width: 600px;
+}
+
+.task-input-container {
+  text-align: center;
+  margin-bottom: 20px;
+  margin-right: 20px;
+}
+
+.task-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 12px;
+  border: 2px solid #e9902c;
+  outline: none;
+  background-color: #f3a650; /* matches bg-neutral-800 */
+  color: #fffcf6;
+  text-align: center;
+}
+
+.task-input:hover {
+  background-color: #e9902c;
+}
+
+.task-input:focus {
+  background-color: #e9902c;
+}
+
+.task-input::placeholder {
+  color: #535250; /* or any color you like */
+  opacity: 0.5; /* makes sure the color isn’t faded by default */
+}
+
+.breakduration-input {
+  margin-bottom: 15px;
+  margin-right: 20px;
+}
+
+.break-title {
+  color: #e9902c;
+  font-size: large;
+  font-weight: bold;
+}
+
+.break-input {
+  font-family: "Courier Prime", sans-serif;
+  font-weight: 200;
+  width: 20%;
+  padding: 7px;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background-color: #fab363; /* matches bg-neutral-800 */
+  color: #fff;
+  text-align: center;
+  margin-left: 10px;
+}
+
+.break-input:hover {
+  background-color: #e9902c; /* matches bg-neutral-800 */
+}
+
+.break-input:focus {
+  background-color: #e9902c; /* matches bg-neutral-800 */
+}
+
+.sliders-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.control-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fab363;
+  padding: 20px;
+  border-radius: 50%;
+  border: 2px solid #e9902c;
+  cursor: pointer;
+}
+
+.control-button:hover {
+  background-color: #e9902c;
+}
+
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.timer-svg {
+  width: 12rem;
+  height: 12rem;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.timer-svg circle:nth-of-type(2) {
+  transition: stroke-dashoffset 0.6s ease-in-out;
+}
+
+.timer-text {
+  fill: #e9902c;
+  font-size: 1.75rem;
+  font-family: monospace;
+}
