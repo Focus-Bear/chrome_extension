@@ -38,9 +38,9 @@
     if (!isHomeFeed()) return null;
 
     // Text-first targeting: find nodes whose own textContent contains "LinkedIn News".
-    const baseNodes = Array.from(document.querySelectorAll<HTMLElement>("div, section, aside")).filter((el) =>
-      (el.textContent || "").includes("LinkedIn News"),
-    );
+    const baseNodes = Array.from(
+      document.querySelectorAll<HTMLElement>("div, section, aside"),
+    ).filter((el) => (el.textContent || "").includes("LinkedIn News"));
     if (baseNodes.length === 0) return null;
 
     const candidates: HTMLElement[] = [];
@@ -51,7 +51,9 @@
         const text = (current.textContent || "").toLowerCase();
         if (
           isLikelyNewsCard(current) &&
-          (text.includes("top stories") || text.includes("show more news") || text.includes("today's puzzles"))
+          (text.includes("top stories") ||
+            text.includes("show more news") ||
+            text.includes("today's puzzles"))
         ) {
           candidates.push(current);
           break;
@@ -61,7 +63,9 @@
     });
 
     if (candidates.length === 0) return null;
-    return candidates.sort((a, b) => a.clientWidth * a.clientHeight - b.clientWidth * b.clientHeight)[0];
+    return candidates.sort(
+      (a, b) => a.clientWidth * a.clientHeight - b.clientWidth * b.clientHeight,
+    )[0];
   };
 
   const clearNewsBlur = () => {
@@ -155,19 +159,16 @@
 
   const applyFromStorage = (done?: () => void) => {
     injectStyles();
-    chrome.storage.local.get(
-      { linkedinBlurNews: true, linkedinRemoveBadges: true },
-      (res) => {
-        try {
-          setBlurNews(!!res.linkedinBlurNews);
-          setRemoveBadges(!!res.linkedinRemoveBadges);
-        } catch (e) {
-          console.warn("FocusBear: LinkedIn apply failed", e);
-        } finally {
-          done?.();
-        }
-      },
-    );
+    chrome.storage.local.get({ linkedinBlurNews: true, linkedinRemoveBadges: true }, (res) => {
+      try {
+        setBlurNews(!!res.linkedinBlurNews);
+        setRemoveBadges(!!res.linkedinRemoveBadges);
+      } catch (e) {
+        console.warn("FocusBear: LinkedIn apply failed", e);
+      } finally {
+        done?.();
+      }
+    });
   };
 
   chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
@@ -195,12 +196,14 @@
     if (scheduled) return;
     scheduled = true;
     if (scheduleTimer) window.clearTimeout(scheduleTimer);
-    scheduleTimer = window.setTimeout(() =>
-      applyFromStorage(() => {
-        scheduled = false;
-        scheduleTimer = null;
-      }),
-    150);
+    scheduleTimer = window.setTimeout(
+      () =>
+        applyFromStorage(() => {
+          scheduled = false;
+          scheduleTimer = null;
+        }),
+      150,
+    );
   };
 
   const patchHistory = () => {
