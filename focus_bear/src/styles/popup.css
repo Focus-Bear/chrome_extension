@@ -51,11 +51,17 @@ p.no-session {
 /* Settings icon */
 img.settings-icon {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
+  bottom: 5px;
+  left: 5px;
   width: 32px;
   height: auto;
   cursor: pointer;
+  z-index: 10;
+  padding: 4px;
+}
+
+img.settings-icon:hover {
+  transform: translateY(-1px);
 }
 
 /* Setting group names */
@@ -212,11 +218,6 @@ button.close-button:disabled {
 
 .complete-session-btn:active {
   background-color: #1e8449;
-}
-
-/* Fix gear icon position relative to scrollable area */
-img.settings-icon {
-  z-index: 10;
 }
 
 .settings-warning {
