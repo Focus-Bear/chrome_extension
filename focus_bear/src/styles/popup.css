@@ -25,11 +25,15 @@ body {
 }
 
 /* Titles */
-h1.popup-title,
+h1.popup-title {
+  color: black;
+  text-align: center;
+}
+
 h2.settings-title {
   font-size: 2rem;
   margin: 0 0 20px;
-  color: #663300;
+  color: black;
   text-align: center;
   position: relative;
   top: -4px;
