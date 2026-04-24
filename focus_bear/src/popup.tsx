@@ -327,7 +327,6 @@ const App = () => {
         setLinkedinRemoveBadges(linkedinRemoveBadges ?? true);
         // PYMK / Jobs / Home are not implemented yet: keep storage off so LinkedIn script does not apply them.
         chrome.storage.local.set({
-          linkedinBlurPYMK: false,
           linkedinBlurJobs: false,
           linkedinBlurHome: false,
         });
@@ -749,26 +748,17 @@ const App = () => {
 
         <h3 className="settings-label">LinkedIn</h3>
         <label className="option-label">
-          <span className="option-text">{t("blur_PYMK")}</span>
+          <span className="option-text">{t("blur_linkedin_home")}</span>
           <Toggle checked={false} onChange={() => {}} disabled />
+        </label>
+        <label className="option-label">
+          <span className="option-text">Remove Notifications</span>
+          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_news")}</span>
           <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
         </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_jobs")}</span>
-          <Toggle checked={false} onChange={() => {}} disabled />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_linkedin_home")}</span>
-          <Toggle checked={false} onChange={() => {}} disabled />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Remove Badges</span>
-          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
-        </label>
-
         <h3 className="settings-label">Wikipedia</h3>
         <label className="option-label">
           <span className="option-text">Link Popup</span>

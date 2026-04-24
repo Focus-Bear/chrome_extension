@@ -27,17 +27,9 @@
     "message": "Blur You Menu",
     "description": "Option to blur You Menu"
   },
-  "blur_PYMK": {
-    "message": "Blur Connection Recommendations (coming soon)",
-    "description": "Option to blur (People you may know)"
-  },
   "blur_news": {
     "message": "Blur News",
     "description": "Option to blur trending news"
-  },
-  "blur_jobs": {
-    "message": "Blur Job Suggestions (coming soon)",
-    "description": "Option to blur LinkedIn job suggestions"
   },
   "intention_label": {
     "message": "Intention",
