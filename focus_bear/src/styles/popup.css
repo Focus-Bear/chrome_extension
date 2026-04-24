@@ -160,7 +160,8 @@ button.close-button:disabled {
 
 /* Session Cards Container */
 .session-list {
-  max-height: 160px; /* fits 2–3 cards depending on content */
+  max-height: 160px;
+  /* fits 2–3 cards depending on content */
   overflow-y: auto;
   margin-top: 20px;
 }
@@ -436,4 +437,128 @@ img.settings-icon {
   border-color: #aaa;
   color: #666;
   cursor: not-allowed;
+}
+
+/*  Active Sessions */
+.active-sessions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.session-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-section-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #5a2c00;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e0b991;
+}
+
+/* Distinguish focus vs unfocus cards with a left accent bar */
+.focus-session-card {
+  border-left: 4px solid #e9902c;
+}
+
+.unfocus-session-card {
+  border-left: 4px solid #b68c5a;
+}
+
+/* Override session-list max-height in the active view — it's already scoped by parent */
+.active-sessions .session-list {
+  max-height: 220px;
+  margin-top: 0;
+}
+
+.session-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.session-card .session-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.session-task {
+  font-weight: 600;
+  color: #5a2c00;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-time {
+  font-family: monospace;
+  font-weight: 700;
+  color: #5a2c00;
+  font-size: 16px;
+}
+
+.session-intention {
+  color: #5a2c00;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phase-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #fffcf6;
+}
+
+.phase-focus {
+  background-color: #e9902c;
+}
+
+.phase-break {
+  background-color: #6aa36a;
+}
+
+.phase-paused {
+  background-color: #8a8a8a;
+}
+
+/* Count badge on the Active Sessions tab */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background-color: #e9902c;
+  color: #fffcf6;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.session-section .no-session {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #8a6640;
+  font-style: italic;
+  text-align: center;
 }

@@ -94,9 +94,9 @@ const IntentionPopup = () => {
       if (event.source !== window) return;
       if (event.data?.type !== "INIT_INTENTION_DATA") return;
 
-      const { lastIntention, lastFocusDuration } = event.data.payload;
-      if (lastIntention) setIntention(lastIntention);
-      if (typeof lastFocusDuration === "number") setTimer(lastFocusDuration);
+      const { lastUnfocusIntention, lastUnfocusDuration } = event.data.payload;
+      if (lastUnfocusIntention) setIntention(lastUnfocusIntention);
+      if (typeof lastUnfocusDuration === "number") setTimer(lastUnfocusDuration);
       setVisible(true);
       setRandomHeading(headings[Math.floor(Math.random() * headings.length)]);
       setRandomPrompt(prompts[Math.floor(Math.random() * prompts.length)]);
@@ -109,22 +109,22 @@ const IntentionPopup = () => {
   }, []);
 
   const handleSave = () => {
-    const focusDuration = timer;
-    const focusStart = Date.now();
+    const unfocusDuration = timer;
+    const unfocusStart = Date.now();
 
     window.postMessage(
       {
-        type: "STORE_FOCUS_DATA",
+        type: "STORE_UNFOCUS_DATA",
         payload: {
           domain: window.location.hostname,
-          focusStart,
-          focusDuration,
-          focusIntention: intention,
+          unfocusStart,
+          unfocusDuration,
+          unfocusIntention: intention,
         },
       },
       "*",
     );
-    window.postMessage({ type: "START_FOCUS_TIMER", payload: timer }, "*");
+    window.postMessage({ type: "START_UNFOCUS_TIMER", payload: timer }, "*");
 
     setVisible(false);
   };

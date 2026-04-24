@@ -14,15 +14,16 @@ chrome.runtime.onStartup.addListener(() => {
 function resetDefaults() {
   chrome.storage.local.remove(
     [
-      "focusStart",
-      "focusDuration",
-      "focusIntention",
-      "lastIntention",
-      "lastFocusDuration",
-      "focusData",
+      "unfocusStart",
+      "unfocusDuration",
+      "unfocusIntention",
+      "lastUnfocusIntention",
+      "lastUnfocusDuration",
+      "unfocusData",
+      "focusSessionState",
     ],
     () => {
-      console.log("Cleared focus session data");
+      console.log("Cleared focus & unfocus session data");
     },
   );
 
@@ -43,17 +44,18 @@ function resetDefaults() {
   );
 }
 
-// ------------------------------------------------ Pomodoro State Management ------------------------------------------------//
+// ------------------------------------------------ Focus Session State Management ------------------------------------------------//
+// The Focus Session is the primary, blocking focus state, activated by the Focus Timer.
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "startPomodoro") {
+  if (request.action === "startFocusSession") {
     const { workDuration, breakDuration, onBreak, task } = request;
 
     const startTime = Date.now();
     const duration = onBreak ? breakDuration : workDuration;
     const endTime = startTime + duration * 1000;
 
-    const pomodoroState = {
+    const focusSessionState = {
       task: task || "",
       workDuration,
       breakDuration,
@@ -64,17 +66,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       started: true,
     };
 
-    chrome.storage.local.set({ pomodoroState }, () => {
-      console.log("Pomodoro started:", pomodoroState);
+    chrome.storage.local.set({ focusSessionState }, () => {
+      console.log("Focus Session started:", focusSessionState);
     });
 
     sendResponse({ success: true });
     return true;
   }
 
-  if (request.action === "pausePomodoro") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      const state = data.pomodoroState;
+  if (request.action === "pauseFocusSession") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      const state = data.focusSessionState;
       if (state) {
         const remaining = Math.max(Math.floor((state.endTime - Date.now()) / 1000), 0);
         const updated = {
@@ -82,8 +84,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           isRunning: false,
           timeLeft: remaining,
         };
-        chrome.storage.local.set({ pomodoroState: updated }, () => {
-          console.log("Pomodoro paused:", updated);
+        chrome.storage.local.set({ focusSessionState: updated }, () => {
+          console.log("Focus Session paused:", updated);
         });
       }
       sendResponse({ success: true });
@@ -91,20 +93,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // keep channel open for async
   }
 
-  if (request.action === "resumePomodoro") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      const prev = data.pomodoroState;
+  if (request.action === "resumeFocusSession") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      const prev = data.focusSessionState;
       if (prev && !prev.isRunning && prev.timeLeft) {
         const startTime = Date.now();
         const endTime = startTime + prev.timeLeft * 1000;
-        const pomodoroState = {
+        const focusSessionState = {
           ...prev,
           startTime,
           endTime,
           isRunning: true,
         };
-        chrome.storage.local.set({ pomodoroState }, () => {
-          console.log("Pomodoro resumed:", pomodoroState);
+        chrome.storage.local.set({ focusSessionState }, () => {
+          console.log("Focus Session resumed:", focusSessionState);
         });
       }
       sendResponse({ success: true });
@@ -112,17 +114,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  if (request.action === "resetPomodoro") {
-    chrome.storage.local.remove("pomodoroState", () => {
-      console.log("Pomodoro reset");
+  if (request.action === "resetFocusSession") {
+    chrome.storage.local.remove("focusSessionState", () => {
+      console.log("Focus Session reset");
       sendResponse({ success: true });
     });
     return true;
   }
 
-  if (request.action === "getPomodoroState") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      sendResponse({ state: data.pomodoroState || null });
+  if (request.action === "getFocusSessionState") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      sendResponse({ state: data.focusSessionState || null });
     });
     return true;
   }

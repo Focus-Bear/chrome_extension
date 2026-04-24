@@ -32,8 +32,8 @@
   "time_left": {
     "message": "Tiempo restante"
   },
-  "no_focus_session": {
-    "message": "No hay una sesión de enfoque activa."
+  "no_unfocus_session": {
+    "message": "No hay una sesión de desenfoque activa."
   },
   "heading": {
     "message": "¡Hola! ¿Ya estás tramando travesuras?"
@@ -74,8 +74,8 @@
   "minute_30": {
     "message": "30 minutos"
   },
-  "settings_locked_during_session": {
-    "message": "⚠️ No se pueden configurar los ajustes durante una sesión"
+  "settings_locked_during_unfocus_session": {
+    "message": "⚠️ No se pueden configurar los ajustes durante una sesión de desenfoque"
   },
   "blur_linkedin_home": {
     "message": "Difuminar página principal de LinkedIn"

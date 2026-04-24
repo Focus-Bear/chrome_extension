@@ -5,7 +5,7 @@ import iconUrl from "../public/icons/bearLogo.png";
 import setIcon from "../public/icons/settingsIcon.png";
 
 import "@radix-ui/themes/styles.css";
-import PomodoroTimer from "./components/PomodoroTimer";
+import FocusTimer from "./components/FocusTimer";
 
 const Toggle = ({
   checked,
@@ -270,13 +270,20 @@ const App = () => {
   const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
   const [socialBlurEnabled, setSocialBlurEnabled] = useState(true);
 
-  const [currentTab, setCurrentTab] = useState<"pomodoro" | "focus">("pomodoro");
+  const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
 
   const [showBlocklist, setShowBlocklist] = useState(false);
 
-  const [allFocusSessions, setAllFocusSessions] = useState<
+  const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
   >({});
+
+  const [activeFocusSession, setActiveFocusSession] = useState<{
+    task: string;
+    phase: "focus" | "break";
+    timeLeft: number;
+    isRunning: boolean;
+  } | null>(null);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -374,12 +381,12 @@ const App = () => {
     });
   }, []);
 
-  const handleCompleteSession = (domain: string) => {
-    chrome.storage.local.get("focusData", ({ focusData }) => {
-      if (focusData && focusData[domain]) {
-        delete focusData[domain];
-        chrome.storage.local.set({ focusData }, async () => {
-          setAllFocusSessions((prev) => {
+  const handleCompleteUnfocusSession = (domain: string) => {
+    chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
+      if (unfocusData && unfocusData[domain]) {
+        delete unfocusData[domain];
+        chrome.storage.local.set({ unfocusData }, async () => {
+          setAllUnfocusSessions((prev) => {
             const updated = { ...prev };
             delete updated[domain];
             return updated;
@@ -388,7 +395,7 @@ const App = () => {
           allTabs.forEach((tab) => {
             if (tab.id && tab.url && tab.url.includes(domain)) {
               chrome.tabs.sendMessage(tab.id, {
-                type: "COMPLETE_SESSION",
+                type: "COMPLETE_UNFOCUS_SESSION",
                 payload: { domain },
               });
             }
@@ -398,32 +405,56 @@ const App = () => {
     });
   };
 
+  const handleCompleteFocusSession = () => {
+    chrome.runtime.sendMessage({ action: "resetFocusSession" }, () => {
+      setActiveFocusSession(null);
+    });
+  };
+
   useEffect(() => {
     const updateSessions = () => {
-      chrome.storage.local.get("focusData", ({ focusData }) => {
+      chrome.storage.local.get(["unfocusData", "focusSessionState"], (data) => {
+        const { unfocusData, focusSessionState } = data;
         const sessions: Record<string, { intention: string; timeLeft: number }> = {};
         const now = Date.now();
 
-        if (focusData) {
-          Object.entries(focusData).forEach(([domain, data]: [string, any]) => {
-            const { focusStart, focusDuration, focusIntention } = data;
-            const end = focusStart + focusDuration * 60 * 1000;
+        if (unfocusData) {
+          Object.entries(unfocusData).forEach(([domain, data]: [string, any]) => {
+            const { unfocusStart, unfocusDuration, unfocusIntention } = data;
+            const end = unfocusStart + unfocusDuration * 60 * 1000;
             const timeLeft = Math.floor((end - now) / 1000);
 
             if (timeLeft > 0) {
               sessions[domain] = {
-                intention: focusIntention,
+                intention: unfocusIntention,
                 timeLeft,
               };
             }
           });
         }
 
-        setAllFocusSessions(sessions);
+        setAllUnfocusSessions(sessions);
+
+        // Derive active Focus Session display state
+        if (focusSessionState && focusSessionState.started) {
+          const { task, workDuration, breakDuration, endTime, isRunning, onBreak } =
+            focusSessionState;
+          const phaseDuration = onBreak ? breakDuration : workDuration;
+          const timeLeft = isRunning
+            ? Math.max(Math.floor((endTime - now) / 1000), 0)
+            : (focusSessionState.timeLeft ?? phaseDuration);
+          setActiveFocusSession({
+            task: task || "",
+            phase: onBreak ? "break" : "focus",
+            timeLeft,
+            isRunning: !!isRunning,
+          });
+        } else {
+          setActiveFocusSession(null);
+        }
       });
     };
 
-    console.log("sessions", allFocusSessions);
     updateSessions(); // first load
     const interval = setInterval(updateSessions, 1000); // update every second
     return () => clearInterval(interval);
@@ -652,49 +683,92 @@ const App = () => {
       {/* Tab buttons */}
       <div className="tab-buttons">
         <button
-          className={`tab-button ${currentTab === "pomodoro" ? "active" : ""}`}
-          onClick={() => setCurrentTab("pomodoro")}
+          className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
+          onClick={() => setCurrentTab("timer")}
         >
-          Pomodoro
+          Focus Timer
         </button>
         <button
-          className={`tab-button ${currentTab === "focus" ? "active" : ""}`}
-          onClick={() => setCurrentTab("focus")}
+          className={`tab-button ${currentTab === "active" ? "active" : ""}`}
+          onClick={() => setCurrentTab("active")}
         >
-          Focus Sessions
+          Active Sessions
+          {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length > 0 && (
+            <span className="tab-badge">
+              {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
+            </span>
+          )}
         </button>
       </div>
       {/* Tab content */}
-      {currentTab === "pomodoro" && (
-        <div className="pomodoro_player" style={{ backgroundColor: "#fffcf6" }}>
-          <PomodoroTimer />
+      {currentTab === "timer" && (
+        <div className="focus_session_player" style={{ backgroundColor: "#fffcf6" }}>
+          <FocusTimer />
         </div>
       )}
-      `
-      {currentTab === "focus" && (
-        <div>
-          {Object.keys(allFocusSessions).length > 0 ? (
-            <div className="session-list">
-              {Object.entries(allFocusSessions).map(([domain, session]) => (
-                <div key={domain} className="session-card">
-                  <strong className="domain">{domain}</strong>
-                  <br />
-                  <span className="label">{t("time_left")}</span> {formatTime(session.timeLeft)}
-                  <br />
-                  <span className="label">{t("intention_label")}</span> {session.intention}
-                  <br />
-                  <button
-                    className="complete-session-btn"
-                    onClick={() => handleCompleteSession(domain)}
-                  >
-                    ✓ Complete Session
-                  </button>
+      {currentTab === "active" && (
+        <div className="active-sessions">
+          <section className="session-section">
+            <h3 className="session-section-title">Focus Session</h3>
+            {activeFocusSession ? (
+              <div className="session-card focus-session-card">
+                <div className="session-card-header">
+                  <span className={`phase-badge phase-${activeFocusSession.phase}`}>
+                    {activeFocusSession.phase === "focus" ? "Focusing" : "On Break"}
+                  </span>
+                  {!activeFocusSession.isRunning && (
+                    <span className="phase-badge phase-paused">Paused</span>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-session">{t("no_focus_session")}</p>
-          )}
+                {activeFocusSession.task && (
+                  <div className="session-row">
+                    <span className="label">Task:</span>
+                    <span className="session-task">{activeFocusSession.task}</span>
+                  </div>
+                )}
+                <div className="session-row">
+                  <span className="label">{t("time_left")}</span>
+                  <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                </div>
+                <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
+                  ✓ Complete Session
+                </button>
+              </div>
+            ) : (
+              <p className="no-session">No focus session running</p>
+            )}
+          </section>
+
+          <section className="session-section">
+            <h3 className="session-section-title">Unfocus Sessions</h3>
+            {Object.keys(allUnfocusSessions).length > 0 ? (
+              <div className="session-list">
+                {Object.entries(allUnfocusSessions).map(([domain, session]) => (
+                  <div key={domain} className="session-card unfocus-session-card">
+                    <div className="session-card-header">
+                      <strong className="domain">{domain}</strong>
+                    </div>
+                    <div className="session-row">
+                      <span className="label">{t("time_left")}</span>
+                      <span className="session-time">{formatTime(session.timeLeft)}</span>
+                    </div>
+                    <div className="session-row">
+                      <span className="label">{t("intention_label")}</span>
+                      <span className="session-intention">{session.intention}</span>
+                    </div>
+                    <button
+                      className="complete-session-btn"
+                      onClick={() => handleCompleteUnfocusSession(domain)}
+                    >
+                      ✓ Complete Session
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-session">{t("no_unfocus_session")}</p>
+            )}
+          </section>
         </div>
       )}
       <img
@@ -702,7 +776,7 @@ const App = () => {
         alt="Settings Icon"
         className="settings-icon"
         onClick={() => {
-          if (currentDomain && allFocusSessions[currentDomain]) {
+          if (currentDomain && allUnfocusSessions[currentDomain]) {
             setSettingsBlockedMessage(true);
             setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
           } else {
@@ -711,7 +785,7 @@ const App = () => {
         }}
       />
       {settingsBlockedMessage && (
-        <p className="settings-warning">{t("settings_locked_during_session")}</p>
+        <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}
     </div>
   );

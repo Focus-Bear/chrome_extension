@@ -39,10 +39,10 @@ async function checkBlocklist(blocklist: string[], relaxlist: string[], hours: A
   const isBlocked = blocklist.some((site) => domain.includes(site));
   const isRelaxed = relaxlist.some((site) => domain.includes(site));
 
-  const { pomodoroState } = await chrome.storage.local.get("pomodoroState");
-  const onBreak = pomodoroState?.onBreak === true;
+  const { focusSessionState } = await chrome.storage.local.get("focusSessionState");
+  const onBreak = focusSessionState?.onBreak === true;
 
-  // If on relaxlist, don't blur during pomodoro breaks
+  // If on relaxlist, don't blur during Focus Session breaks
   if (isRelaxed && onBreak) {
     removeGlobalBlur();
     return;
@@ -77,14 +77,14 @@ function runCheck() {
 // run once
 runCheck();
 
-// listen for Pomodoro timer changes
+// listen for Focus Session timer changes
 chrome.storage.onChanged.addListener(async (changes, areaName) => {
   if (areaName !== "local") return;
 
   let shouldRerun = false;
 
-  // Rerun if Pomodoro state changes
-  if (changes.pomodoroState) shouldRerun = true;
+  // Rerun if Focus Session state changes
+  if (changes.focusSessionState) shouldRerun = true;
 
   // Also rerun if blocklist, relaxlist, or activeHours change
   if (changes.blocklist || changes.relaxlist || changes.activeHours) shouldRerun = true;

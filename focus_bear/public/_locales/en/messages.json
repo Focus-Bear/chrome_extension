@@ -47,8 +47,8 @@
     "message": "Time Left",
     "description": "Label for remaining focus session time"
   },
-  "no_focus_session": {
-    "message": "No active focus session."
+  "no_unfocus_session": {
+    "message": "No active unfocus session."
   },
   "headings": {
     "message": "Hello there! Up to mischief are we?|Caught you lurking again, didn't I?|Planning trouble, or just thinking about it?|Back for more fun, are we?|Sneaky little visit, hmm?|Stirring up chaos, or just passing through?|Oh look, it’s the mastermind again!|Plotting something brilliant... or ridiculous?|Should I be worried, or just impressed?",
@@ -102,9 +102,9 @@
     "message": "30 minutes",
     "description": "30-minute duration option"
   },
-  "settings_locked_during_session": {
-    "message": "⚠️ Settings cannot be configured during an active session.",
-    "description": "Alert shown when trying to open settings during a focus session"
+  "settings_locked_during_unfocus_session": {
+    "message": "⚠️ Settings cannot be configured during an active unfocus session.",
+    "description": "Alert shown when trying to open settings during an unfocus session"
   },
   "blur_linkedin_home": {
     "message": "Blur LinkedIn Home (coming soon)",
