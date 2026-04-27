@@ -31,6 +31,10 @@
     "message": "Blur News",
     "description": "Option to blur trending news"
   },
+  "remove_badges": {
+    "message": "Remove Notifications",
+    "description": "Option to remove LinkedIn notification badges"
+  },
   "intention_label": {
     "message": "Intention",
     "description": "Label for user intention input"
