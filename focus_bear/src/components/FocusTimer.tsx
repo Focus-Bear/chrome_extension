@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import CircularSlider from "./CircularSlider";
 import { IMaskInput } from "react-imask";
-import "./PomodoroTimer.css";
+import "./FocusTimer.css";
 
 const DEFAULT_WORK = 25 * 60;
 const DEFAULT_BREAK = 5 * 60;
 
-const PomodoroTimer: React.FC = () => {
+const FocusTimer: React.FC = () => {
   const [task, setTask] = useState("");
   const [workDuration, setWorkDuration] = useState(DEFAULT_WORK);
   const [breakDuration, setBreakDuration] = useState(DEFAULT_BREAK);
@@ -20,9 +20,9 @@ const PomodoroTimer: React.FC = () => {
 
   const intervalRef = useRef<number | null>(null);
 
-  // Load persisted state
+  // Load persisted Focus Session state
   useEffect(() => {
-    chrome.runtime.sendMessage({ action: "getPomodoroState" }, (response) => {
+    chrome.runtime.sendMessage({ action: "getFocusSessionState" }, (response) => {
       const saved = response?.state;
       if (saved) {
         const { task, workDuration, breakDuration, endTime, isRunning, onBreak, started } = saved;
@@ -39,6 +39,53 @@ const PomodoroTimer: React.FC = () => {
         setTimeLeft(remaining);
       }
     });
+  }, []);
+
+  // Sync with external changes to focusSessionState — e.g. when the user
+  // completes the session from the Active Sessions tab, the stored state is
+  // cleared and this listener resets the timer UI back to the setup view.
+  useEffect(() => {
+    const handler = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName !== "local" || !changes.focusSessionState) return;
+      const next = changes.focusSessionState.newValue;
+      if (!next) {
+        // Session was cleared externally (reset/completed from Active Sessions tab)
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        setIsRunning(false);
+        setStarted(false);
+        setOnBreak(false);
+        setManualBreakEdit(false);
+        setWorkDuration((wd) => {
+          setTimeLeft(wd);
+          const autoBreak = Math.floor(wd / 5);
+          setBreakDuration(autoBreak);
+          setBreakInput(formatTime(autoBreak));
+          return wd;
+        });
+      } else {
+        // Session state was updated externally (e.g., background phase change)
+        const { task, workDuration, breakDuration, endTime, isRunning, onBreak, started } = next;
+        const remaining = isRunning
+          ? Math.max(Math.floor((endTime - Date.now()) / 1000), 0)
+          : (next.timeLeft ?? workDuration);
+        setTask(task);
+        setWorkDuration(workDuration);
+        setBreakDuration(breakDuration);
+        setBreakInput(formatTime(breakDuration));
+        setIsRunning(isRunning);
+        setStarted(started);
+        setOnBreak(onBreak);
+        setTimeLeft(remaining);
+      }
+    };
+    chrome.storage.onChanged.addListener(handler);
+    return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
 
   // Auto update break duration based on workDuration if user hasn't edited manually
@@ -98,15 +145,15 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handlePause = () => {
-    chrome.runtime.sendMessage({ action: "pausePomodoro" }, () => setIsRunning(false));
+    chrome.runtime.sendMessage({ action: "pauseFocusSession" }, () => setIsRunning(false));
   };
 
   const handleResume = () => {
-    chrome.runtime.sendMessage({ action: "resumePomodoro" }, () => setIsRunning(true));
+    chrome.runtime.sendMessage({ action: "resumeFocusSession" }, () => setIsRunning(true));
   };
 
   const handleReset = () => {
-    chrome.runtime.sendMessage({ action: "resetPomodoro" }, () => {
+    chrome.runtime.sendMessage({ action: "resetFocusSession" }, () => {
       setIsRunning(false);
       setOnBreak(false);
       setStarted(false);
@@ -121,7 +168,13 @@ const PomodoroTimer: React.FC = () => {
   const handleStart = () => {
     const finalBreak = commitBreakInput();
     chrome.runtime.sendMessage(
-      { action: "startPomodoro", workDuration, breakDuration: finalBreak, task, onBreak: false },
+      {
+        action: "startFocusSession",
+        workDuration,
+        breakDuration: finalBreak,
+        task,
+        onBreak: false,
+      },
       () => {
         setIsRunning(true);
         setStarted(true);
@@ -135,8 +188,8 @@ const PomodoroTimer: React.FC = () => {
   const progress = onBreak ? 1 - timeLeft / breakDuration : 1 - timeLeft / workDuration;
 
   return (
-    <div className="pomodoro-container">
-      <div className="pomodoro-content">
+    <div className="focus-timer-container">
+      <div className="focus-timer-content">
         <div className="task-input-container">
           <input
             type="text"
@@ -242,4 +295,4 @@ const PomodoroTimer: React.FC = () => {
   );
 };
 
-export default PomodoroTimer;
+export default FocusTimer;
