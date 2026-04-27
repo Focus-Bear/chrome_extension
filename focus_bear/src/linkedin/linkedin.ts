@@ -51,10 +51,7 @@
       let current: HTMLElement | null = node;
       for (let i = 0; i < 8 && current; i += 1) {
         const text = (current.textContent || "").toLowerCase();
-        if (
-          isLikelyNewsCard(current) &&
-          evidenceTerms.some((term) => text.includes(term))
-        ) {
+        if (isLikelyNewsCard(current) && evidenceTerms.some((term) => text.includes(term))) {
           candidates.push(current);
           break;
         }
@@ -90,9 +87,7 @@
   };
 
   const setBlurNews = (enabled: boolean) => {
-    const current = Array.from(
-      document.querySelectorAll<HTMLElement>(`[${NEWS_MARKER}="1"]`),
-    );
+    const current = Array.from(document.querySelectorAll<HTMLElement>(`[${NEWS_MARKER}="1"]`));
     if (!enabled) {
       if (current.length > 0) clearNewsBlur();
       return;
