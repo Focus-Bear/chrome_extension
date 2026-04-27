@@ -33,27 +33,27 @@
     return rightSide && cardLikeSize;
   };
 
-  /** Find only the LinkedIn News card in the right rail (not the whole page/sidebar). */
-  const findNewsContainer = (): HTMLElement | null => {
-    if (!isHomeFeed()) return null;
+  const findRailCardsByHeading = (headings: string[], evidenceTerms: string[]) => {
+    if (!isHomeFeed()) return [] as HTMLElement[];
 
-    // Text-first targeting: find nodes whose own textContent contains "LinkedIn News".
+    // Text-first targeting in right rail; then walk up to nearest card-like ancestor.
     const baseNodes = Array.from(
       document.querySelectorAll<HTMLElement>("div, section, aside"),
-    ).filter((el) => (el.textContent || "").includes("LinkedIn News"));
-    if (baseNodes.length === 0) return null;
+    ).filter((el) => {
+      const text = (el.textContent || "").toLowerCase();
+      return headings.some((heading) => text.includes(heading));
+    });
+    if (baseNodes.length === 0) return [] as HTMLElement[];
 
     const candidates: HTMLElement[] = [];
     baseNodes.forEach((node) => {
-      // Walk up to a card-like ancestor and keep the first good match.
+      // Walk up to a card-like ancestor and keep the first good match for this text node.
       let current: HTMLElement | null = node;
-      for (let i = 0; i < 6 && current; i += 1) {
+      for (let i = 0; i < 8 && current; i += 1) {
         const text = (current.textContent || "").toLowerCase();
         if (
           isLikelyNewsCard(current) &&
-          (text.includes("top stories") ||
-            text.includes("show more news") ||
-            text.includes("today's puzzles"))
+          evidenceTerms.some((term) => text.includes(term))
         ) {
           candidates.push(current);
           break;
@@ -62,10 +62,24 @@
       }
     });
 
-    if (candidates.length === 0) return null;
-    return candidates.sort(
-      (a, b) => a.clientWidth * a.clientHeight - b.clientWidth * b.clientHeight,
-    )[0];
+    if (candidates.length === 0) return [] as HTMLElement[];
+
+    // De-dupe by element identity and sort to keep output stable.
+    const unique = Array.from(new Set(candidates));
+    return unique.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+  };
+
+  /** Find right-rail modules blurred by "Blur News": LinkedIn News + Today's puzzles. */
+  const findNewsTargets = (): HTMLElement[] => {
+    const newsCards = findRailCardsByHeading(
+      ["linkedin news"],
+      ["linkedin news", "top stories", "show more news"],
+    );
+    const puzzleCards = findRailCardsByHeading(
+      ["today's puzzles", "todays puzzles"],
+      ["today's puzzles", "todays puzzles", "patches #", "zip #", "mini sudoku #", "tango #"],
+    );
+    return Array.from(new Set([...newsCards, ...puzzleCards]));
   };
 
   const clearNewsBlur = () => {
@@ -76,22 +90,33 @@
   };
 
   const setBlurNews = (enabled: boolean) => {
-    const current = document.querySelector<HTMLElement>(`[${NEWS_MARKER}="1"]`);
+    const current = Array.from(
+      document.querySelectorAll<HTMLElement>(`[${NEWS_MARKER}="1"]`),
+    );
     if (!enabled) {
-      if (current) clearNewsBlur();
+      if (current.length > 0) clearNewsBlur();
       return;
     }
 
-    const node = findNewsContainer();
-    if (!node) return;
-
-    // Keep blur stable: only switch DOM state if target changed.
-    if (current && current !== node) {
-      current.classList.remove(BLUR_CLASS);
-      current.removeAttribute(NEWS_MARKER);
+    const targets = findNewsTargets();
+    if (targets.length === 0) {
+      // Avoid stale blur when LinkedIn re-renders or route changes.
+      if (current.length > 0) clearNewsBlur();
+      return;
     }
-    if (!node.classList.contains(BLUR_CLASS)) node.classList.add(BLUR_CLASS);
-    if (node.getAttribute(NEWS_MARKER) !== "1") node.setAttribute(NEWS_MARKER, "1");
+
+    const targetSet = new Set(targets);
+    current.forEach((node) => {
+      if (!targetSet.has(node)) {
+        node.classList.remove(BLUR_CLASS);
+        node.removeAttribute(NEWS_MARKER);
+      }
+    });
+
+    targets.forEach((node) => {
+      if (!node.classList.contains(BLUR_CLASS)) node.classList.add(BLUR_CLASS);
+      if (node.getAttribute(NEWS_MARKER) !== "1") node.setAttribute(NEWS_MARKER, "1");
+    });
   };
 
   const clearBadges = () => {
@@ -242,6 +267,3 @@
     start();
   }
 })();
-//
-// This section of code for blurring linkedIn news section helped with cursor + removing badge notifications
-
