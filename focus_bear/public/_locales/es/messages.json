@@ -23,6 +23,9 @@
   "blur_news": {
     "message": "Noticias borrosas"
   },
+  "remove_badges": {
+    "message": "Quitar notificaciones"
+  },
   "blur_jobs": {
     "message": "Difuminar sugerencias de empleo"
   },

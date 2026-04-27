@@ -551,38 +551,31 @@ const App = () => {
     }
   };
 
-  const handleLinkedinNewsToggle = async () => {
-    const newValue = !linkedinBlurNews;
-    setLinkedinBlurNews(newValue);
-    await chrome.storage.local.set({ linkedinBlurNews: newValue });
-
+  const sendLinkedinToggleToActiveTab = async (type: string, payload: boolean) => {
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
     });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_NEWS",
-        payload: newValue,
-      });
+    if (!tab?.id || !tab.url?.includes("linkedin.com")) return;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type, payload });
+    } catch {
+      // Content script may not be ready yet; storage listener in linkedin.ts will still apply.
     }
+  };
+
+  const handleLinkedinNewsToggle = async () => {
+    const newValue = !linkedinBlurNews;
+    setLinkedinBlurNews(newValue);
+    await chrome.storage.local.set({ linkedinBlurNews: newValue });
+    await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_NEWS", newValue);
   };
 
   const handleLinkedinBadgeToggle = async () => {
     const newValue = !linkedinRemoveBadges;
     setLinkedinRemoveBadges(newValue);
     await chrome.storage.local.set({ linkedinRemoveBadges: newValue });
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_BADGES",
-        payload: newValue,
-      });
-    }
+    await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_BADGES", newValue);
   };
 
   const handleWikipediaLinkPopupToggle = async () => {
@@ -826,7 +819,7 @@ const App = () => {
           <Toggle checked={false} onChange={() => {}} disabled />
         </label>
         <label className="option-label">
-          <span className="option-text">Remove Notifications</span>
+          <span className="option-text">{t("remove_badges")}</span>
           <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
         </label>
         <label className="option-label">
