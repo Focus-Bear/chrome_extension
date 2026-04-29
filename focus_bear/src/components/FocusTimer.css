@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
-.pomodoro-container {
+.focus-timer-container {
   display: flex;
   justify-content: center;
   align-items: flex-start; /* stick content to the top */
@@ -9,7 +9,7 @@
   padding: 1rem 0; /* optional: keep a little breathing room */
 }
 
-.pomodoro-content {
+.focus-timer-content {
   width: 100%;
   max-width: 600px;
 }
@@ -43,7 +43,7 @@
 
 .task-input::placeholder {
   color: #535250; /* or any color you like */
-  opacity: 0.5; /* makes sure the color isn’t faded by default */
+  opacity: 0.5; /* makes sure the color isn't faded by default */
 }
 
 .breakduration-input {

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-interface FocusSession {
-  focusStart: number;
-  focusDuration: number; // in minutes
-  focusIntention: string;
+interface UnfocusSession {
+  unfocusStart: number;
+  unfocusDuration: number; // in minutes
+  unfocusIntention: string;
 }
 
-export const useFocusTimer = () => {
+export const useUnfocusTimer = () => {
   const [intention, setIntention] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
@@ -14,18 +14,18 @@ export const useFocusTimer = () => {
 
   const restoreFromStorage = () => {
     chrome.storage.local.get(
-      ["focusStart", "focusDuration", "focusIntention"],
-      (result: FocusSession) => {
-        const { focusStart, focusDuration, focusIntention } = result;
+      ["unfocusStart", "unfocusDuration", "unfocusIntention"],
+      (result: UnfocusSession) => {
+        const { unfocusStart, unfocusDuration, unfocusIntention } = result;
 
-        if (!focusStart || !focusDuration) return;
+        if (!unfocusStart || !unfocusDuration) return;
 
-        const elapsed = Math.floor((Date.now() - focusStart) / 1000);
-        const totalSeconds = focusDuration * 60;
+        const elapsed = Math.floor((Date.now() - unfocusStart) / 1000);
+        const totalSeconds = unfocusDuration * 60;
         const remaining = totalSeconds - elapsed;
 
         if (remaining > 0) {
-          setIntention(focusIntention || "");
+          setIntention(unfocusIntention || "");
           setTimeLeft(remaining);
           setTimerActive(true);
 
@@ -35,7 +35,11 @@ export const useFocusTimer = () => {
               if (prev <= 1) {
                 clearInterval(intervalRef.current!);
                 setTimerActive(false);
-                chrome.storage.local.remove(["focusStart", "focusDuration", "focusIntention"]);
+                chrome.storage.local.remove([
+                  "unfocusStart",
+                  "unfocusDuration",
+                  "unfocusIntention",
+                ]);
                 return 0;
               }
               return prev - 1;
