@@ -29,7 +29,8 @@ export default defineConfig({
         background: resolve(__dirname, 'src/background.ts'),
         content: resolve(__dirname, 'src/content.ts'),
         youtube: resolve(__dirname, 'src/youtube/youtube.ts'),
-        linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts')
+        linkedin: resolve(__dirname, 'src/linkedin/linkedin.ts'),
+        tts: resolve(__dirname, 'src/textToSpeech.ts')
       },
       output: {
         entryFileNames: '[name].js'
