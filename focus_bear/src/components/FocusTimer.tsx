@@ -187,111 +187,111 @@ const FocusTimer: React.FC = () => {
 
   const progress = onBreak ? 1 - timeLeft / breakDuration : 1 - timeLeft / workDuration;
 
-  return (
-    <div className="focus-timer-container">
-      <div className="focus-timer-content">
-        <div className="task-input-container">
-          <input
-            type="text"
-            value={task}
-            placeholder="Task to be completed"
-            onChange={(e) => setTask(e.target.value)}
-            className="task-input"
-            maxLength={30}
-          />
-        </div>
+  return (<></>
+    // <div className="focus-timer-container">
+    //   <div className="focus-timer-content">
+    //     <div className="task-input-container">
+    //       <input
+    //         type="text"
+    //         value={task}
+    //         placeholder="Task to be completed"
+    //         onChange={(e) => setTask(e.target.value)}
+    //         className="task-input"
+    //         maxLength={30}
+    //       />
+    //     </div>
 
-        {!started ? (
-          <div className="sliders-section">
-            <CircularSlider
-              value={workDuration}
-              min={60}
-              max={60 * 60}
-              onChange={(val) => {
-                setWorkDuration(val);
-                setManualBreakEdit(false);
-              }}
-              label="Work Duration"
-            />
+    //     {!started ? (
+    //       <div className="sliders-section">
+    //         <CircularSlider
+    //           value={workDuration}
+    //           min={60}
+    //           max={60 * 60}
+    //           onChange={(val) => {
+    //             setWorkDuration(val);
+    //             setManualBreakEdit(false);
+    //           }}
+    //           label="Work Duration"
+    //         />
 
-            {/* Break Duration with react-input-mask */}
-            <div className="breakduration-input">
-              <label className="break-title">Break Duration:</label>
-              <IMaskInput
-                mask="00:00"
-                value={breakInput}
-                unmask={false}
-                onAccept={(value: string) => setBreakInput(value)}
-                onBlur={commitBreakInput}
-                placeholder="MM:SS"
-                className="break-input"
-              />
-            </div>
+    //         {/* Break Duration with react-input-mask */}
+    //         <div className="breakduration-input">
+    //           <label className="break-title">Break Duration:</label>
+    //           <IMaskInput
+    //             mask="00:00"
+    //             value={breakInput}
+    //             unmask={false}
+    //             onAccept={(value: string) => setBreakInput(value)}
+    //             onBlur={commitBreakInput}
+    //             placeholder="MM:SS"
+    //             className="break-input"
+    //           />
+    //         </div>
 
-            <div
-              className="home-controls"
-              style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
-            >
-              <button onClick={handleStart} className="control-button">
-                <Play size={32} fill="#fffcf6" stroke="#fffcf6" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="timer-section">
-            <div className="timer-message">
-              {onBreak ? "Make sure to take a break!" : "Keep focused!"}
-            </div>
+    //         <div
+    //           className="home-controls"
+    //           style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
+    //         >
+    //           <button onClick={handleStart} className="control-button">
+    //             <Play size={32} fill="#fffcf6" stroke="#fffcf6" />
+    //           </button>
+    //         </div>
+    //       </div>
+    //     ) : (
+    //       <div className="timer-section">
+    //         <div className="timer-message">
+    //           {onBreak ? "Make sure to take a break!" : "Keep focused!"}
+    //         </div>
 
-            <svg className="timer-svg">
-              <circle cx="96" cy="96" r="90" stroke="#ffe4c6" strokeWidth="15" fill="none" />
-              <circle
-                cx="96"
-                cy="96"
-                r="90"
-                stroke="#e9902c"
-                strokeWidth="15"
-                fill="none"
-                strokeDasharray={2 * Math.PI * 90}
-                strokeDashoffset={(1 - progress) * 2 * Math.PI * 90}
-                strokeLinecap="round"
-              />
-              <text
-                x="96"
-                y="96"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="timer-text"
-                transform="rotate(90, 96, 96)"
-                fontWeight="bold"
-                fontSize="large"
-              >
-                {formatTime(timeLeft)}
-              </text>
-            </svg>
+    //         <svg className="timer-svg">
+    //           <circle cx="96" cy="96" r="90" stroke="#ffe4c6" strokeWidth="15" fill="none" />
+    //           <circle
+    //             cx="96"
+    //             cy="96"
+    //             r="90"
+    //             stroke="#e9902c"
+    //             strokeWidth="15"
+    //             fill="none"
+    //             strokeDasharray={2 * Math.PI * 90}
+    //             strokeDashoffset={(1 - progress) * 2 * Math.PI * 90}
+    //             strokeLinecap="round"
+    //           />
+    //           <text
+    //             x="96"
+    //             y="96"
+    //             textAnchor="middle"
+    //             dominantBaseline="middle"
+    //             className="timer-text"
+    //             transform="rotate(90, 96, 96)"
+    //             fontWeight="bold"
+    //             fontSize="large"
+    //           >
+    //             {formatTime(timeLeft)}
+    //           </text>
+    //         </svg>
 
-            <div
-              className="timer-controls"
-              style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", width: "100%" }}
-            >
-              {isRunning ? (
-                <button onClick={handlePause} className="control-button">
-                  <Pause size={32} stroke="white" strokeWidth={1} fill="white" />
-                </button>
-              ) : (
-                <button onClick={handleResume} className="control-button">
-                  <Play size={32} stroke="white" strokeWidth={1} fill="white" />
-                </button>
-              )}
+    //         <div
+    //           className="timer-controls"
+    //           style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", width: "100%" }}
+    //         >
+    //           {isRunning ? (
+    //             <button onClick={handlePause} className="control-button">
+    //               <Pause size={32} stroke="white" strokeWidth={1} fill="white" />
+    //             </button>
+    //           ) : (
+    //             <button onClick={handleResume} className="control-button">
+    //               <Play size={32} stroke="white" strokeWidth={1} fill="white" />
+    //             </button>
+    //           )}
 
-              <button onClick={handleReset} className="control-button">
-                <RotateCcw size={32} stroke="white" strokeWidth={3} />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    //           <button onClick={handleReset} className="control-button">
+    //             <RotateCcw size={32} stroke="white" strokeWidth={3} />
+    //           </button>
+    //         </div>
+    //       </div>
+    //     )}
+    //   </div>
+    // </div>
   );
 };
 
