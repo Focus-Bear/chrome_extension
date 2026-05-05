@@ -41,9 +41,7 @@ const FocusTimer: React.FC = () => {
     });
   }, []);
 
-  // Sync with external changes to focusSessionState — e.g. when the user
-  // completes the session from the Active Sessions tab, the stored state is
-  // cleared and this listener resets the timer UI back to the setup view.
+  // Sync with external changes to focusSessionState.
   useEffect(() => {
     const handler = (
       changes: { [key: string]: chrome.storage.StorageChange },
@@ -52,7 +50,7 @@ const FocusTimer: React.FC = () => {
       if (areaName !== "local" || !changes.focusSessionState) return;
       const next = changes.focusSessionState.newValue;
       if (!next) {
-        // Session was cleared externally (reset/completed from Active Sessions tab)
+        // Session was cleared (reset, or break phase ended via background alarm)
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -69,7 +67,7 @@ const FocusTimer: React.FC = () => {
           return wd;
         });
       } else {
-        // Session state was updated externally (e.g., background phase change)
+        // Session state was updated externally
         const { task, workDuration, breakDuration, endTime, isRunning, onBreak, started } = next;
         const remaining = isRunning
           ? Math.max(Math.floor((endTime - Date.now()) / 1000), 0)
@@ -88,7 +86,7 @@ const FocusTimer: React.FC = () => {
     return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
 
-  // Auto update break duration based on workDuration if user hasn't edited manually
+  // Auto update break duration based on workDuration if user has not edited manually
   useEffect(() => {
     if (!manualBreakEdit) {
       const auto = Math.floor(workDuration / 5);
@@ -98,18 +96,20 @@ const FocusTimer: React.FC = () => {
   }, [workDuration]);
 
   // Countdown
+  // When the local counter reaches 0, stop ticking;
+  // the background alarm updates focusSessionState in storage, and the
+  // onChanged listener above syncs all UI state automatically.
   useEffect(() => {
     if (!isRunning) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev > 0) return prev - 1;
-        if (!onBreak) {
-          setOnBreak(true);
-          return breakDuration;
-        } else {
-          handleReset();
-          return workDuration;
+        // transition the phase and update storage.
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+        return 0;
       });
     }, 1000);
     return () => clearInterval(intervalRef.current!);
@@ -118,7 +118,7 @@ const FocusTimer: React.FC = () => {
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    return m.toString().padStart(2, "0") + ":" + s.toString().padStart(2, "0");
   };
 
   const parseTime = (val: string): number | null => {
@@ -214,7 +214,6 @@ const FocusTimer: React.FC = () => {
               label="Work Duration"
             />
 
-            {/* Break Duration with react-input-mask */}
             <div className="breakduration-input">
               <label className="break-title">Break Duration:</label>
               <IMaskInput
