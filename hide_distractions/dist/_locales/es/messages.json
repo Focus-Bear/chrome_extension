@@ -1,0 +1,84 @@
+{
+  "home_title": {
+    "message": "Sesiones de enfoque"
+  },
+  "settings_title": {
+    "message": "Configuración"  
+  },
+  "blur_home": {
+    "message": "Difuminar página principal"
+  },
+  "blur_distractions": {
+    "message": "Difuminar distracciones"
+  },
+  "hide_comments": {
+    "message": "Ocultar comentarios"
+  },
+  "blur_shorts": {
+    "message": "Difuminar Shorts"
+  },
+  "blur_PYMK": {
+    "message": "Recomendaciones de Blur Connection"
+  },
+  "blur_news": {
+    "message": "Noticias borrosas"
+  },
+  "blur_jobs": {
+    "message": "Difuminar sugerencias de empleo"
+  },
+  "intention_label": {
+    "message": "Intención"
+  },
+  "time_left": {
+    "message": "Tiempo restante"
+  },
+  "no_focus_session": {
+    "message": "No hay una sesión de enfoque activa."
+  },
+  "heading": {
+    "message": "¡Hola! ¿Ya estás tramando travesuras?"
+  },
+  "prompt": {
+    "message": "¿Qué planes tienes o debería decir osos?"
+  },
+  "placeholder": {
+    "message": "Escribe..."
+  },
+  "warning": {
+    "message": "¡Eso es mucho tiempo! Un motivo más reflexivo ayudaría a mantener el enfoque. (15+ caracteres)."
+  },
+  "duration": {
+    "message": "¿Cuánto tiempo deberíamos mirar juntos?"
+  },
+  "button": {
+    "message": "¡Vamos allá!"
+  },
+  "close_button": {
+    "message": "Cerca"
+  },
+  "time_default": {
+    "message": "Tiempo..."
+  },
+  "minute_1": {
+    "message": "1 minuto"
+  },
+  "minute_5": {
+    "message": "5 minutos"
+  },
+  "minute_10": {
+    "message": "10 minutos"
+  },
+  "minute_15": {
+    "message": "15 minutos"
+  },
+  "minute_30": {
+    "message": "30 minutos"
+  },
+  "settings_locked_during_session": 
+  {
+  "message": "⚠️ No se pueden configurar los ajustes durante una sesión"
+  },
+  "blur_linkedin_home": {
+    "message": "Difuminar página principal de LinkedIn"
+  }
+}

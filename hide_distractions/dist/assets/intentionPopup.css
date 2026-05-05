@@ -1,0 +1,252 @@
+/* Overlay backdrop */
+.focus-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+/* Popup box */
+.focus-popup-box {
+  position: relative;
+  padding: 30px;
+  border-radius: 50px;
+  background-color: #FFE4C6;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.focus-popup-box p {
+  text-align: left;
+}
+
+/* Logo */
+.focus-logo {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 32px;
+  height: auto;
+  z-index: 1;
+}
+
+/* Heading inside popup */
+.focus-popup-box h2 {
+  font-size: 2rem;
+  margin-bottom: 24px;
+  color: #663300;
+}
+
+.focus-popup-box textarea.focus-input {
+  height: 100px;
+}
+
+/* Paragraphs inside popup */
+.focus-popup-box p {
+  font-size: 18px;
+}
+
+/* Warning text */
+.focus-warning {
+  color: #990000;
+  font-size: 16px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Textarea & select */
+.focus-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 18px;
+  box-sizing: border-box;
+}
+
+/* Button container */
+.focus-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Proceed button */
+.focus-button {
+  padding: 10px 15px;
+  border-radius: 6px;
+  width: 225px;
+  height: auto;
+  transition: background-color 0.2s;
+  text-align: center;
+}
+
+.focus-button:disabled {
+  background-color: #CCCCCC;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.focus-button:not(:disabled) {
+  background-color: #FFFCF6;
+  color: #F3A650;
+  border: 2px solid #F3A650;
+  cursor: pointer;
+}
+
+/* Add these responsive styles at the bottom of the file */
+
+/* Tablet devices */
+@media screen and (max-width: 768px) {
+  .focus-popup-box {
+    max-width: 90%;
+    padding: 25px;
+    margin: 10px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.75rem;
+  }
+
+  .focus-popup-box p {
+    font-size: 16px;
+  }
+
+  .focus-input {
+    font-size: 16px;
+  }
+
+  .focus-button {
+    width: 200px;
+  }
+}
+
+/* iPad specific adjustments - Add this before the mobile queries */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .focus-popup {
+    align-items: flex-start;
+    padding-top: 15vh; /* Moves popup up by starting 15% from top */
+  }
+
+  .focus-popup-box {
+    margin-top: 0;
+    max-height: 80vh; /* Ensures popup doesn't exceed viewport */
+    overflow-y: auto; /* Adds scroll if content is too long */
+  }
+}
+
+/* Mobile devices */
+@media screen and (max-width: 480px) {
+  .focus-popup-box {
+    max-width: 95%;
+    padding: 20px;
+    border-radius: 30px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    margin-left: 36px;
+  }
+
+  .focus-logo {
+    width: 24px;
+    top: 16px;
+    left: 16px;
+  }
+
+  .focus-popup-box textarea.focus-input {
+    height: 80px;
+  }
+
+  .focus-button {
+    width: 175px;
+    padding: 8px 12px;
+  }
+
+  .focus-warning {
+    font-size: 14px;
+  }
+}
+
+/* Small mobile devices */
+@media screen and (max-width: 320px) {
+  .focus-popup-box {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 1.25rem;
+    margin-left: 36px;
+  }
+
+  .focus-popup-box p {
+    font-size: 14px;
+  }
+
+  .focus-button {
+    width: 150px;
+  }
+}
+
+/* Height-based media queries */
+@media screen and (max-height: 600px) {
+  .focus-popup-box {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .focus-popup-box textarea.focus-input {
+    height: 60px;
+  }
+}
+
+/* High-DPI screens */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+  .focus-popup-box {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Ensure minimum touch target sizes */
+@media (pointer: coarse) {
+  .focus-button,
+  .focus-input,
+  select.focus-input {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+  }
+}
+
+/* Ensure proper display on ultra-wide screens */
+@media screen and (min-width: 1400px) {
+  .focus-popup-box {
+    max-width: 600px;
+  }
+
+  .focus-popup-box h2 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .focus-popup {
+    background: none;
+    position: static;
+  }
+
+  .focus-popup-box {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

@@ -39,11 +39,15 @@ body {
 }
 
 /* Titles */
-h1.popup-title,
+h1.popup-title {
+  color: black;
+  text-align: center;
+}
+
 h2.settings-title {
   font-size: 2rem;
-  margin: 0 0 10px;
-  color: #000000;
+  margin: 0 0 20px;
+  color: black;
   text-align: center;
   position: relative;
   top: -4px;
@@ -90,10 +94,18 @@ p.no-session {
 
 /* Settings icon */
 img.settings-icon {
-  display: block;
-  width: 38px;
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  width: 32px;
   height: auto;
   cursor: pointer;
+  z-index: 10;
+  padding: 4px;
+}
+
+img.settings-icon:hover {
+  transform: translateY(-1px);
 }
 
 /* Setting group names */
@@ -270,11 +282,6 @@ button.settings-action-button {
 
 .complete-session-btn:active {
   background-color: #1e8449;
-}
-
-/* Fix gear icon position relative to scrollable area */
-img.settings-icon {
-  z-index: 10;
 }
 
 .settings-warning {
