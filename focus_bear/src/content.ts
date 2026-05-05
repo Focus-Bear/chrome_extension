@@ -1,253 +1,199 @@
-console.log("Content script injected at", location.href);
+(() => {
+  console.log("Content script injected at", location.href);
 
-const domain = window.location.hostname.replace(/^www\./, "");
+  const domain = window.location.hostname.replace(/^www\./, "");
 
-const translations = {
-  heading: chrome.i18n.getMessage("heading"),
-  prompt: chrome.i18n.getMessage("prompt"),
-  placeholder: chrome.i18n.getMessage("placeholder"),
-  warning: chrome.i18n.getMessage("warning"),
-  duration: chrome.i18n.getMessage("duration"),
-  button: chrome.i18n.getMessage("button"),
-  time_default: chrome.i18n.getMessage("time_default"),
-  minute_1: chrome.i18n.getMessage("minute_1"),
-  minute_5: chrome.i18n.getMessage("minute_5"),
-  minute_10: chrome.i18n.getMessage("minute_10"),
-  minute_15: chrome.i18n.getMessage("minute_15"),
-  minute_30: chrome.i18n.getMessage("minute_30"),
-};
+  const translations = {
+    heading: chrome.i18n.getMessage("heading"),
+    prompt: chrome.i18n.getMessage("prompt"),
+    placeholder: chrome.i18n.getMessage("placeholder"),
+    warning: chrome.i18n.getMessage("warning"),
+    duration: chrome.i18n.getMessage("duration"),
+    button: chrome.i18n.getMessage("button"),
+    time_default: chrome.i18n.getMessage("time_default"),
+    minute_1: chrome.i18n.getMessage("minute_1"),
+    minute_5: chrome.i18n.getMessage("minute_5"),
+    minute_10: chrome.i18n.getMessage("minute_10"),
+    minute_15: chrome.i18n.getMessage("minute_15"),
+    minute_30: chrome.i18n.getMessage("minute_30"),
+  };
 
-// Send translations initially
-window.postMessage(
-  {
-    type: "FOCUSBEAR_TRANSLATIONS",
-    payload: translations,
-  },
-  "*",
-);
-console.log("[FocusBear] Translation message sent");
+  // Send translations initially
+  window.postMessage({ type: "FOCUSBEAR_TRANSLATIONS", payload: translations }, "*");
 
-// Respond if popup requests translations again
-window.addEventListener("message", (event) => {
-  if (event.data?.type === "REQUEST_TRANSLATIONS") {
-    console.log("[FocusBear] Popup requested translations, resending...");
-    window.postMessage(
-      {
-        type: "FOCUSBEAR_TRANSLATIONS",
-        payload: translations,
-      },
-      "*",
-    );
-  }
-});
+  console.log("[FocusBear] Translation message sent");
 
-// Inject popup on first visit if no domain session exists
-chrome.storage.local.get(["focusData"], ({ focusData }) => {
-  const session = focusData?.[domain];
-  if (!session) {
-    console.log(`[Content] No session found for ${domain}, injecting popup`);
-    if (!document.getElementById("intention-popup-script")) {
-      const script = document.createElement("script");
-      script.src = chrome.runtime.getURL("floatingPopup.js");
-      script.id = "intention-popup-script";
-      script.type = "module";
-      script.onload = () => {
-        window.postMessage(
-          {
-            type: "INIT_INTENTION_DATA",
-            payload: {
-              lastIntention: "",
-              lastFocusDuration: 0,
+  // Respond if popup requests translations again
+  window.addEventListener("message", (event) => {
+    if (event.data?.type === "REQUEST_TRANSLATIONS") {
+      window.postMessage({ type: "FOCUSBEAR_TRANSLATIONS", payload: translations }, "*");
+    }
+  });
+
+  // Inject popup on first visit if no domain Unfocus Session exists.
+  chrome.storage.local.get(["unfocusData"], ({ unfocusData }) => {
+    const session = unfocusData?.[domain];
+    if (!session) {
+      if (!document.getElementById("intention-popup-script")) {
+        const script = document.createElement("script");
+        script.src = chrome.runtime.getURL("floatingPopup.js");
+        script.id = "intention-popup-script";
+        script.type = "module";
+        script.onload = () => {
+          window.postMessage(
+            {
+              type: "INIT_INTENTION_DATA",
+              payload: {
+                lastUnfocusIntention: "",
+                lastUnfocusDuration: 0,
+              },
             },
-          },
-          "*",
-        );
-      };
-      document.body.appendChild(script);
+            "*",
+          );
+        };
+        document.body.appendChild(script);
+      }
     }
-  } else {
-    console.log(`[Content] Session already exists for ${domain}, no popup needed.`);
-  }
-});
+  });
 
-// Domain-specific timer scheduling
-chrome.storage.local.get(["focusData"], ({ focusData }) => {
-  const session = focusData?.[domain];
-
-  if (session?.focusStart && session?.focusDuration) {
-    const elapsed = Date.now() - session.focusStart;
-    const totalMs = session.focusDuration * 60 * 1000;
-    const remaining = totalMs - elapsed;
-
-    if (remaining > 0) {
-      console.log(`[Content] [${domain}] Scheduling re-popup in ${remaining}ms`);
-      setTimeout(() => {
-        const currentDomain = window.location.hostname.replace(/^www\./, "");
-        if (currentDomain === domain) {
-          console.log(`[Content] [${domain}] Timer expired → showing popup`);
-          window.dispatchEvent(new CustomEvent("show-popup-again"));
-        } else {
-          console.log(`[Content] Skipping popup: tab is on ${currentDomain}, not ${domain}`);
-        }
-      }, remaining);
-    } else {
-      console.log(`[Content] [${domain}] Timer already expired — showing popup now`);
-      window.dispatchEvent(new CustomEvent("show-popup-again"));
-    }
-  }
-});
-
-// 5) In your show-popup-again listener, to see if you ever get this event:
-window.addEventListener("show-popup-again", () => {
-  console.log("[Content] show-popup-again event fired, attempting reinjection…");
-});
-
-let focusTimer: ReturnType<typeof setTimeout> | null = null;
-// oxlint-disable-next-line no-unused-vars
-let isBlurEnabled = true;
-
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
-
-  if (event.data.type === "SAVE_INTENTION") {
-    const intention = event.data.payload;
-    const customEvent = new CustomEvent("intention-saved", { detail: intention });
-    window.dispatchEvent(customEvent);
-  }
-
-  if (event.data.type === "STORE_FOCUS_DATA") {
-    const { focusStart, focusDuration, focusIntention } = event.data.payload;
-    chrome.storage.local.set(
-      {
-        focusStart,
-        focusDuration,
-        focusIntention,
-        showIntentionPopup: false,
-        lastIntention: focusIntention,
-        lastFocusDuration: focusDuration,
-      },
-      () => {
-        console.log("Stored focus session & hid popup permanently");
-
-        // ─── schedule the popup in this tab right now ───
-        const elapsed = Date.now() - focusStart;
-        const totalMs = focusDuration * 60 * 1000;
-        const remaining = totalMs - elapsed;
-
-        if (remaining > 0) {
-          console.log(`[Content] [STORE] Scheduling re-popup in ${remaining}ms`);
-          setTimeout(() => {
-            const currentDomain = window.location.hostname.replace(/^www\./, "");
-            if (currentDomain === domain) {
-              console.log(`[STORE] Timer expired for ${domain} → showing popup`);
-              window.dispatchEvent(new CustomEvent("show-popup-again"));
-            } else {
-              console.log(
-                `[STORE] Timer expired for ${domain}, but user is on ${currentDomain} → ignoring`,
-              );
-            }
-          }, remaining);
-        } else {
-          console.log("[Content] [STORE] Timer already expired; showing now");
-          window.dispatchEvent(new CustomEvent("show-popup-again"));
-        }
-      },
-    );
-  }
-});
-
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
-
-  if (event.data.type === "SAVE_INTENTION") {
-    const intention = event.data.payload;
-    const customEvent = new CustomEvent("intention-saved", {
-      detail: intention,
-    });
-    window.dispatchEvent(customEvent);
-  }
-
-  if (event.data.type === "START_FOCUS_TIMER") {
-    const durationInMinutes = event.data.payload;
-
-    if (focusTimer) clearTimeout(focusTimer);
-
-    console.log(`Starting focus timer for ${durationInMinutes} minutes.`);
-    focusTimer = setTimeout(
-      () => {
-        console.log("Focus timer ended. Dispatching SHOW_POPUP event.");
+  chrome.storage.local.get(["unfocusData"], ({ unfocusData }) => {
+    const session = unfocusData?.[domain];
+    if (session?.unfocusStart && session?.unfocusDuration) {
+      const elapsed = Date.now() - session.unfocusStart;
+      const totalMs = session.unfocusDuration * 60 * 1000;
+      const remaining = totalMs - elapsed;
+      if (remaining > 0) {
+        setTimeout(() => {
+          const currentDomain = window.location.hostname.replace(/^www\./, "");
+          if (currentDomain === domain) {
+            window.dispatchEvent(new CustomEvent("show-popup-again"));
+          }
+        }, remaining);
+      } else {
         window.dispatchEvent(new CustomEvent("show-popup-again"));
-      },
-      durationInMinutes * 60 * 1000,
-    );
-  }
+      }
+    }
+  });
 
-  // NEW: Save focus data to chrome.storage.local
-  if (event.data.type === "STORE_FOCUS_DATA") {
-    const { focusStart, focusDuration, focusIntention } = event.data.payload;
-    const domain = window.location.hostname.replace(/^www\./, "");
-    console.log(`[STORE_FOCUS_DATA] domain: ${domain}`);
+  window.addEventListener("show-popup-again", () => {
+    console.log("[Content] show-popup-again event fired, attempting reinjection...");
+  });
 
-    chrome.storage.local.get(["focusData"], (result) => {
-      const focusData = result.focusData || {};
+  let unfocusTimer: ReturnType<typeof setTimeout> | null = null;
+  // oxlint-disable-next-line no-unused-vars
+  let isBlurEnabled = true;
 
-      focusData[domain] = {
-        focusStart,
-        focusDuration,
-        focusIntention,
-      };
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
 
-      chrome.storage.local.set({ focusData }, () => {
-        console.log(`✅ Stored focus session for ${domain}`);
-        console.log("focusData is now:", focusData);
+    if (event.data.type === "SAVE_INTENTION") {
+      const intention = event.data.payload;
+      const customEvent = new CustomEvent("intention-saved", { detail: intention });
+      window.dispatchEvent(customEvent);
+    }
+
+    if (event.data.type === "STORE_UNFOCUS_DATA") {
+      const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
+      chrome.storage.local.set(
+        {
+          unfocusStart,
+          unfocusDuration,
+          unfocusIntention,
+          showIntentionPopup: false,
+          lastUnfocusIntention: unfocusIntention,
+          lastUnfocusDuration: unfocusDuration,
+        },
+        () => {
+          const elapsed = Date.now() - unfocusStart;
+          const totalMs = unfocusDuration * 60 * 1000;
+          const remaining = totalMs - elapsed;
+          if (remaining > 0) {
+            setTimeout(() => {
+              const currentDomain = window.location.hostname.replace(/^www\./, "");
+              if (currentDomain === domain) {
+                window.dispatchEvent(new CustomEvent("show-popup-again"));
+              }
+            }, remaining);
+          } else {
+            window.dispatchEvent(new CustomEvent("show-popup-again"));
+          }
+        },
+      );
+    }
+  });
+
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+
+    if (event.data.type === "SAVE_INTENTION") {
+      const intention = event.data.payload;
+      const customEvent = new CustomEvent("intention-saved", { detail: intention });
+      window.dispatchEvent(customEvent);
+    }
+
+    if (event.data.type === "START_UNFOCUS_TIMER") {
+      const durationInMinutes = event.data.payload;
+      if (unfocusTimer) clearTimeout(unfocusTimer);
+      unfocusTimer = setTimeout(
+        () => {
+          window.dispatchEvent(new CustomEvent("show-popup-again"));
+        },
+        durationInMinutes * 60 * 1000,
+      );
+    }
+
+    if (event.data.type === "STORE_UNFOCUS_DATA") {
+      const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
+      const localDomain = window.location.hostname.replace(/^www\./, "");
+      chrome.storage.local.get(["unfocusData"], (result) => {
+        const unfocusData = result.unfocusData || {};
+        unfocusData[localDomain] = {
+          unfocusStart,
+          unfocusDuration,
+          unfocusIntention,
+        };
+        chrome.storage.local.set({ unfocusData });
       });
-    });
-  }
-});
+    }
+  });
 
-window.addEventListener("show-popup-again", () => {
-  // fetch only the data we need for pre-filling the form:
-  chrome.storage.local.get(
-    ["lastIntention", "lastFocusDuration"],
-    ({ lastIntention, lastFocusDuration }) => {
-      // never inject twice
-      if (document.getElementById("intention-popup-script")) {
-        return;
-      }
-
-      // inject the popup script
-      const script = document.createElement("script");
-      script.src = chrome.runtime.getURL("floatingPopup.js");
-      script.id = "intention-popup-script";
-      script.type = "module";
-
-      script.onload = () => {
-        // send it its saved data
-        window.postMessage(
-          {
-            type: "INIT_INTENTION_DATA",
-            payload: { lastIntention, lastFocusDuration },
-          },
-          "*",
-        );
-      };
-
-      document.body.appendChild(script);
-    },
-  );
-});
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === "COMPLETE_SESSION") {
-    chrome.storage.local.get("focusData", ({ focusData }) => {
-      if (focusData) {
-        const domain = message.payload?.domain;
-        if (domain && focusData[domain]) {
-          delete focusData[domain];
-          chrome.storage.local.set({ focusData });
+  window.addEventListener("show-popup-again", () => {
+    chrome.storage.local.get(
+      ["lastUnfocusIntention", "lastUnfocusDuration"],
+      ({ lastUnfocusIntention, lastUnfocusDuration }) => {
+        if (document.getElementById("intention-popup-script")) {
+          return;
         }
-      }
-    });
-    window.postMessage({ type: "SESSION_COMPLETE" }, "*");
-  }
-});
+        const script = document.createElement("script");
+        script.src = chrome.runtime.getURL("floatingPopup.js");
+        script.id = "intention-popup-script";
+        script.type = "module";
+        script.onload = () => {
+          window.postMessage(
+            {
+              type: "INIT_INTENTION_DATA",
+              payload: { lastUnfocusIntention, lastUnfocusDuration },
+            },
+            "*",
+          );
+        };
+        document.body.appendChild(script);
+      },
+    );
+  });
+
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === "COMPLETE_UNFOCUS_SESSION") {
+      chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
+        if (unfocusData) {
+          const msgDomain = message.payload?.domain;
+          if (msgDomain && unfocusData[msgDomain]) {
+            delete unfocusData[msgDomain];
+            chrome.storage.local.set({ unfocusData });
+          }
+        }
+      });
+      window.postMessage({ type: "UNFOCUS_SESSION_COMPLETE" }, "*");
+    }
+  });
+})();

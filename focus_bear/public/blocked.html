@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Blocked - Focus Bear</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #ffe4c6;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #5a2c00;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .card {
+        background: #fffcf6;
+        padding: 40px 44px;
+        border-radius: 20px;
+        max-width: 460px;
+        box-shadow: 0 16px 48px rgba(102, 51, 0, 0.18);
+        border: 2px solid #f3a650;
+        text-align: center;
+      }
+
+      .card img {
+        width: 88px;
+        height: auto;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.8rem;
+        color: #663300;
+        line-height: 1.2;
+      }
+
+      .domain {
+        display: inline-block;
+        margin: 0 0 16px;
+        padding: 4px 12px;
+        background: #ffe4c6;
+        color: #5a2c00;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+        word-break: break-all;
+      }
+
+      p {
+        margin: 0 0 20px;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      button {
+        background: #f3a650;
+        color: #fffcf6;
+        border: none;
+        padding: 11px 22px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      button:hover {
+        background: #e9902c;
+      }
+
+      .hint {
+        margin-top: 22px;
+        font-size: 13px;
+        color: #8a6640;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <img src="icons/bearLogo.png" alt="Focus Bear" />
+      <h1>Blocked by your Focus Session</h1>
+      <div id="domain" class="domain"></div>
+      <p>This site is on your blocklist. Stay focused! You can come back when your session ends.</p>
+      <div class="actions">
+        <button id="back">Go back</button>
+      </div>
+      <div class="hint">
+        End your Focus Session from the Focus Bear popup if you really need access.
+      </div>
+    </div>
+    <script src="blocked.js"></script>
+  </body>
+</html>

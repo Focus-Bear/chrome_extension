@@ -1,14 +1,14 @@
 import React from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 
-interface PomodoroControlsProps {
+interface FocusControlsProps {
   isRunning: boolean;
   onPlayPause: () => void;
   onReset: () => void;
   onBreak: boolean;
 }
 
-const PomodoroControls: React.FC<PomodoroControlsProps> = ({
+const FocusControls: React.FC<FocusControlsProps> = ({
   isRunning,
   onPlayPause,
   onReset,
@@ -32,4 +32,4 @@ const PomodoroControls: React.FC<PomodoroControlsProps> = ({
   );
 };
 
-export default PomodoroControls;
+export default FocusControls;

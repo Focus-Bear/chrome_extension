@@ -1,7 +1,7 @@
 {
   "home_title": {
-    "message": "Focus Sessions",
-    "description": "Label for Focus Sessions section"
+    "message": "Focus Bear",
+    "description": "Label for Focus Bear Title"
   },
   "settings_title": {
     "message": "Settings",
@@ -27,17 +27,13 @@
     "message": "Blur You Menu",
     "description": "Option to blur You Menu"
   },
-  "blur_PYMK": {
-    "message": "Blur Connection Recommendations (coming soon)",
-    "description": "Option to blur (People you may know)"
-  },
   "blur_news": {
     "message": "Blur News",
     "description": "Option to blur trending news"
   },
-  "blur_jobs": {
-    "message": "Blur Job Suggestions (coming soon)",
-    "description": "Option to blur LinkedIn job suggestions"
+  "remove_badges": {
+    "message": "Remove Notifications",
+    "description": "Option to remove LinkedIn notification badges"
   },
   "intention_label": {
     "message": "Intention",
@@ -47,15 +43,15 @@
     "message": "Time Left",
     "description": "Label for remaining focus session time"
   },
-  "no_focus_session": {
-    "message": "No active focus session."
+  "no_unfocus_session": {
+    "message": "No active unfocus sessions"
   },
   "headings": {
-    "message": "Hello there! Up to mischief are we?|Caught you lurking again, didn't I?|Planning trouble, or just thinking about it?|Back for more fun, are we?|Sneaky little visit, hmm?|Stirring up chaos, or just passing through?|Oh look, it’s the mastermind again!|Plotting something brilliant... or ridiculous?|Should I be worried, or just impressed?",
+    "message": "Still here? Set your intention.|Caught you mid-scroll—what's up?|Real work—or rabbit hole?|Focus check: what's this for?|Sneak peek—or serious work?|Before the feed eats you…|Quick check—why this tab?|Scrolling—or here on purpose?|Honest—why open this tab?",
     "description": "Greeting heading for intention popup"
   },
   "prompts": {
-    "message": "What plans are brewing or should I say bearing?|What’s the big idea—or is that just your inner bear stirring?|Got something grizzly planned, or just hibernating on it?|Are we clawing toward success or just paw-sing for thought?|Is that a wild idea, or are you just bear-ly getting started?|Planning something bold, or just padding around the possibilities?|Are you bear-ing the weight of brilliance again?|Got a beary good plan, or is it still in hibernation mode?|Is that a growl of ambition I hear, or just your creativity waking up?|Plotting something fierce, or just feeling a bit fuzzy today?",
+    "message": "What's worth your honest attention on this visit?|Grizzly focus, or a quick paw through this page?|If you finish one thing here, what should it be?|Work brain fully on—or is curiosity driving?|What would make closing this tab feel like a win?|Something you're chasing—or still stirring the pot?|Deadline sprint, deep learning, or a mindful break?|What would productivity mean in the next few minutes?|Proud to log this as work—or honest about wandering?|In your own words: what are you actually doing here?",
     "description": "Prompt asking user for their intention"
   },
   "placeholder": {
@@ -71,7 +67,7 @@
     "description": "Prompt asking for focus duration"
   },
   "button": {
-    "message": "Let's dig in!",
+    "message": "Let's get started!",
     "description": "Label for submit button"
   },
   "close_button": {
@@ -79,7 +75,7 @@
     "description": "Label for close button in Settings Page"
   },
   "time_default": {
-    "message": "Time...",
+    "message": "Select Duration",
     "description": "Default option in time select"
   },
   "minute_1": {
@@ -102,12 +98,12 @@
     "message": "30 minutes",
     "description": "30-minute duration option"
   },
-  "settings_locked_during_session": {
-    "message": "⚠️ Settings cannot be configured during an active session.",
-    "description": "Alert shown when trying to open settings during a focus session"
+  "settings_locked_during_unfocus_session": {
+    "message": "⚠️ Settings cannot be configured during an active unfocus session.",
+    "description": "Alert shown when trying to open settings during an unfocus session"
   },
   "blur_linkedin_home": {
-    "message": "Blur LinkedIn Home (coming soon)",
+    "message": "Blur Home Page",
     "description": "Option to blur the LinkedIn home page"
   }
 }

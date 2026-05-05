@@ -5,7 +5,7 @@ import iconUrl from "../public/icons/bearLogo.png";
 import setIcon from "../public/icons/settingsIcon.png";
 
 import "@radix-ui/themes/styles.css";
-import PomodoroTimer from "./components/PomodoroTimer";
+import FocusTimer from "./components/FocusTimer";
 
 const Toggle = ({
   checked,
@@ -26,67 +26,45 @@ const Toggle = ({
   </div>
 );
 
-const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
+const BlocklistEditor = () => {
   const [blocklist, setBlocklist] = useState<string[]>([]);
   const [relaxlist, setRelaxlist] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
-  const [activeHours, setActiveHours] = useState<{ start: number; end: number }>({
-    start: 0,
-    end: 0,
-  });
-  const [isValid, setIsValid] = useState(true);
-  const [isBlockedNow, setIsBlockedNow] = useState(false);
-  const [currentTab, setCurrentTab] = useState<"blocklist" | "relaxlist">("blocklist");
+  const [inFocusSession, setInFocusSession] = useState(false);
+  const [innerTab, setInnerTab] = useState<"blocklist" | "relaxlist">("blocklist");
   const loadedOnce = useRef(false);
 
-  const checkIfBlockedNow = (hours: { start: number; end: number }) => {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const { start, end } = hours;
-    return start <= end
-      ? currentHour >= start && currentHour < end
-      : currentHour >= start || currentHour < end; // overnight
+  const computeInFocusSession = (state: any) => {
+    return !!(state && state.started === true && state.onBreak !== true);
   };
 
   useEffect(() => {
     if (loadedOnce.current) return;
-    chrome.storage.local.get(["blocklist", "relaxlist", "activeHours"], (data) => {
+    chrome.storage.local.get(["blocklist", "relaxlist", "focusSessionState"], (data) => {
       if (data.blocklist) setBlocklist(data.blocklist);
       if (data.relaxlist) setRelaxlist(data.relaxlist);
-      if (data.activeHours) setActiveHours(data.activeHours);
-      setIsBlockedNow(checkIfBlockedNow(data.activeHours || activeHours));
+      setInFocusSession(computeInFocusSession(data.focusSessionState));
       loadedOnce.current = true;
     });
+
+    const handler = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName !== "local") return;
+      if (changes.focusSessionState) {
+        setInFocusSession(computeInFocusSession(changes.focusSessionState.newValue));
+      }
+      if (changes.blocklist) {
+        setBlocklist(changes.blocklist.newValue || []);
+      }
+      if (changes.relaxlist) {
+        setRelaxlist(changes.relaxlist.newValue || []);
+      }
+    };
+    chrome.storage.onChanged.addListener(handler);
+    return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsBlockedNow(checkIfBlockedNow(activeHours));
-    }, 1000 * 60); // every minute
-    return () => clearInterval(interval);
-  }, [activeHours]);
-
-  const handleActiveHoursChange = (start: number, end: number) => {
-    const sanitizedStart = Math.max(0, Math.min(23, Math.floor(start)));
-    const sanitizedEnd = Math.max(0, Math.min(23, Math.floor(end)));
-    setActiveHours({ start: sanitizedStart, end: sanitizedEnd });
-
-    // Validation: must be within 0-23, start and end cannot be NaN
-    setIsValid(
-      !isNaN(sanitizedStart) &&
-        !isNaN(sanitizedEnd) &&
-        sanitizedStart >= 0 &&
-        sanitizedStart <= 23 &&
-        sanitizedEnd >= 0 &&
-        sanitizedEnd <= 23,
-    );
-  };
-
-  const saveActiveHours = () => {
-    if (!isValid) return;
-    chrome.storage.local.set({ activeHours });
-    setIsBlockedNow(checkIfBlockedNow(activeHours));
-  };
 
   const normalizeDomain = (input: string) => {
     let domain = input.trim().toLowerCase();
@@ -96,8 +74,12 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
   };
 
   const addSite = () => {
-    if (isBlockedNow || !newSite) return;
+    if (inFocusSession || !newSite.trim()) return;
     const formatted = normalizeDomain(newSite);
+    if (!formatted) {
+      setNewSite("");
+      return;
+    }
     if (!blocklist.includes(formatted)) {
       const updated = [...blocklist, formatted];
       setBlocklist(updated);
@@ -107,7 +89,7 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
   };
 
   const removeSite = (site: string) => {
-    if (isBlockedNow) return;
+    if (inFocusSession) return;
     const updatedBlock = blocklist.filter((s) => s !== site);
     setBlocklist(updatedBlock);
     chrome.storage.local.set({ blocklist: updatedBlock });
@@ -132,40 +114,44 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="blocklist-editor">
-      <h2 className="settings-title">Manage Websites</h2>
-
       <div className="tab-buttons">
         <button
-          className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
-          onClick={() => setCurrentTab("blocklist")}
+          className={`tab-button ${innerTab === "blocklist" ? "active" : ""}`}
+          onClick={() => setInnerTab("blocklist")}
         >
-          Blocklist
+          <span className="tab-label">Blocklist</span>
         </button>
         <button
-          className={`tab-button ${currentTab === "relaxlist" ? "active" : ""}`}
-          onClick={() => setCurrentTab("relaxlist")}
+          className={`tab-button ${innerTab === "relaxlist" ? "active" : ""}`}
+          onClick={() => setInnerTab("relaxlist")}
         >
-          Relaxlist
+          <span className="tab-label">Relaxlist</span>
         </button>
       </div>
 
-      {currentTab === "blocklist" && (
+      {innerTab === "blocklist" && (
         <>
-          <p className="blocklist-instructions">Enter a site to block during your active hours:</p>
+          <p className="blocklist-instructions">
+            Enter a site to block during your Focus Sessions:
+          </p>
           <div className="site-input-container">
             <input
               type="text"
               value={newSite}
-              placeholder="Enter site to block"
+              placeholder="e.g. youtube.com"
               onChange={(e) => setNewSite(e.target.value)}
-              disabled={isBlockedNow}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addSite();
+              }}
+              disabled={inFocusSession}
             />
-            <button onClick={addSite} disabled={isBlockedNow}>
+            <button onClick={addSite} disabled={inFocusSession}>
               Add
             </button>
           </div>
 
           <ul className="site-list">
+            {blocklist.length === 0 && <li>No sites in Blocklist</li>}
             {blocklist.map((site) => (
               <li key={site} className="site-card">
                 <span>{site}</span>
@@ -176,7 +162,7 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
                   >
                     {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
                   </button>
-                  <button onClick={() => removeSite(site)} disabled={isBlockedNow}>
+                  <button onClick={() => removeSite(site)} disabled={inFocusSession}>
                     Remove
                   </button>
                 </div>
@@ -184,49 +170,15 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
             ))}
           </ul>
 
-          <div className="active-hours-container">
-            <label>
-              Start Hour:
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={activeHours.start}
-                onChange={(e) => handleActiveHoursChange(+e.target.value, activeHours.end)}
-                disabled={isBlockedNow}
-                className="active-hours-input"
-              />
-            </label>
-            <label>
-              End Hour:
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={activeHours.end}
-                onChange={(e) => handleActiveHoursChange(activeHours.start, +e.target.value)}
-                disabled={isBlockedNow}
-                className="active-hours-input"
-              />
-            </label>
-            <button
-              className="save-hours-btn"
-              onClick={saveActiveHours}
-              disabled={!isValid || isBlockedNow}
-            >
-              Save
-            </button>
-          </div>
-
-          {isBlockedNow && (
-            <p className="settings-warning">Blocklist is locked during active hours</p>
+          {inFocusSession && (
+            <p className="settings-warning">Blocklist is locked during a Focus Session</p>
           )}
         </>
       )}
 
-      {currentTab === "relaxlist" && (
+      {innerTab === "relaxlist" && (
         <>
-          <p className="blocklist-instructions">These websites are accessable during your breaks</p>
+          <p className="blocklist-instructions">These websites are accessible during your breaks</p>
           <ul className="site-list">
             {relaxlist.length === 0 && <li>No sites in Relaxlist</li>}
             {relaxlist.map((site) => (
@@ -235,7 +187,7 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
                 <button
                   className="remove-button"
                   onClick={() => toggleRelaxlist(site)}
-                  disabled={isBlockedNow}
+                  disabled={inFocusSession}
                 >
                   Remove
                 </button>
@@ -244,10 +196,6 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
           </ul>
         </>
       )}
-
-      <button className="close-button" onClick={onClose}>
-        Back
-      </button>
     </div>
   );
 };
@@ -259,6 +207,7 @@ const App = () => {
   const [homeBlurEnabled, setHomeBlurEnabled] = useState(true);
   const [shortsBlurEnabled, setShortsBlurEnabled] = useState(true);
   const [youBlurEnabled, setYouBlurEnabled] = useState(true);
+  const [linkedinBlurHome, setLinkedinBlurHome] = useState(true);
   const [linkedinBlurNews, setLinkedinBlurNews] = useState(true);
   const [linkedinRemoveBadges, setLinkedinRemoveBadges] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -270,13 +219,18 @@ const App = () => {
   const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
   const [socialBlurEnabled, setSocialBlurEnabled] = useState(true);
 
-  const [currentTab, setCurrentTab] = useState<"pomodoro" | "focus">("pomodoro");
+  const [currentTab, setCurrentTab] = useState<"timer" | "active" | "blocklist">("timer");
 
-  const [showBlocklist, setShowBlocklist] = useState(false);
-
-  const [allFocusSessions, setAllFocusSessions] = useState<
+  const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
   >({});
+
+  const [activeFocusSession, setActiveFocusSession] = useState<{
+    task: string;
+    phase: "focus" | "break";
+    timeLeft: number;
+    isRunning: boolean;
+  } | null>(null);
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -296,6 +250,7 @@ const App = () => {
         "homePageBlurEnabled",
         "shortsBlurEnabled",
         "youMenuBlurEnabled",
+        "linkedinBlurHome",
         "linkedinBlurNews",
         "linkedinRemoveBadges",
         "wikiLinkPopupEnabled",
@@ -310,6 +265,7 @@ const App = () => {
         homePageBlurEnabled,
         shortsBlurEnabled,
         youMenuBlurEnabled,
+        linkedinBlurHome,
         linkedinBlurNews,
         linkedinRemoveBadges,
         wikiLinkPopupEnabled,
@@ -323,14 +279,10 @@ const App = () => {
         setHomeBlurEnabled(homePageBlurEnabled ?? true);
         setShortsBlurEnabled(shortsBlurEnabled ?? true);
         setYouBlurEnabled(youMenuBlurEnabled ?? true);
+        setLinkedinBlurHome(linkedinBlurHome ?? true);
         setLinkedinBlurNews(linkedinBlurNews ?? true);
         setLinkedinRemoveBadges(linkedinRemoveBadges ?? true);
-        // PYMK / Jobs / Home are not implemented yet: keep storage off so LinkedIn script does not apply them.
-        chrome.storage.local.set({
-          linkedinBlurPYMK: false,
-          linkedinBlurJobs: false,
-          linkedinBlurHome: false,
-        });
+        chrome.storage.local.set({ linkedinBlurJobs: false });
         setWikipediaLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
         setWikipediaMainBlur(wikipediaMainBlur ?? true);
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
@@ -338,6 +290,29 @@ const App = () => {
         setSocialBlurEnabled(socialBlurEnabled ?? true);
       },
     );
+  }, []);
+
+  useEffect(() => {
+    const onChanged = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: chrome.storage.AreaName,
+    ) => {
+      if (area !== "local") return;
+      if (changes.linkedinBlurHome) {
+        const v = changes.linkedinBlurHome.newValue;
+        setLinkedinBlurHome(v !== undefined ? !!v : true);
+      }
+      if (changes.linkedinBlurNews) {
+        const v = changes.linkedinBlurNews.newValue;
+        setLinkedinBlurNews(v !== undefined ? !!v : true);
+      }
+      if (changes.linkedinRemoveBadges) {
+        const v = changes.linkedinRemoveBadges.newValue;
+        setLinkedinRemoveBadges(v !== undefined ? !!v : true);
+      }
+    };
+    chrome.storage.onChanged.addListener(onChanged);
+    return () => chrome.storage.onChanged.removeListener(onChanged);
   }, []);
 
   // Live session timer update
@@ -357,12 +332,6 @@ const App = () => {
     chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled }) => {
       setYouBlurEnabled(youMenuBlurEnabled);
     });
-    chrome.storage.local.get({ linkedinBlurNews: true }, ({ linkedinBlurNews }) => {
-      setLinkedinBlurNews(linkedinBlurNews);
-    });
-    chrome.storage.local.get({ linkedinRemoveBadges: true }, ({ linkedinRemoveBadges }) => {
-      setLinkedinRemoveBadges(linkedinRemoveBadges);
-    });
     chrome.storage.local.get(
       { wikipediaLinkPopupEnabled: true },
       ({ wikipediaLinkPopupEnabled }) => {
@@ -374,12 +343,12 @@ const App = () => {
     });
   }, []);
 
-  const handleCompleteSession = (domain: string) => {
-    chrome.storage.local.get("focusData", ({ focusData }) => {
-      if (focusData && focusData[domain]) {
-        delete focusData[domain];
-        chrome.storage.local.set({ focusData }, async () => {
-          setAllFocusSessions((prev) => {
+  const handleCompleteUnfocusSession = (domain: string) => {
+    chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
+      if (unfocusData && unfocusData[domain]) {
+        delete unfocusData[domain];
+        chrome.storage.local.set({ unfocusData }, async () => {
+          setAllUnfocusSessions((prev) => {
             const updated = { ...prev };
             delete updated[domain];
             return updated;
@@ -388,7 +357,7 @@ const App = () => {
           allTabs.forEach((tab) => {
             if (tab.id && tab.url && tab.url.includes(domain)) {
               chrome.tabs.sendMessage(tab.id, {
-                type: "COMPLETE_SESSION",
+                type: "COMPLETE_UNFOCUS_SESSION",
                 payload: { domain },
               });
             }
@@ -398,32 +367,56 @@ const App = () => {
     });
   };
 
+  const handleCompleteFocusSession = () => {
+    chrome.runtime.sendMessage({ action: "resetFocusSession" }, () => {
+      setActiveFocusSession(null);
+    });
+  };
+
   useEffect(() => {
     const updateSessions = () => {
-      chrome.storage.local.get("focusData", ({ focusData }) => {
+      chrome.storage.local.get(["unfocusData", "focusSessionState"], (data) => {
+        const { unfocusData, focusSessionState } = data;
         const sessions: Record<string, { intention: string; timeLeft: number }> = {};
         const now = Date.now();
 
-        if (focusData) {
-          Object.entries(focusData).forEach(([domain, data]: [string, any]) => {
-            const { focusStart, focusDuration, focusIntention } = data;
-            const end = focusStart + focusDuration * 60 * 1000;
+        if (unfocusData) {
+          Object.entries(unfocusData).forEach(([domain, data]: [string, any]) => {
+            const { unfocusStart, unfocusDuration, unfocusIntention } = data;
+            const end = unfocusStart + unfocusDuration * 60 * 1000;
             const timeLeft = Math.floor((end - now) / 1000);
 
             if (timeLeft > 0) {
               sessions[domain] = {
-                intention: focusIntention,
+                intention: unfocusIntention,
                 timeLeft,
               };
             }
           });
         }
 
-        setAllFocusSessions(sessions);
+        setAllUnfocusSessions(sessions);
+
+        // Derive active Focus Session display state
+        if (focusSessionState && focusSessionState.started) {
+          const { task, workDuration, breakDuration, endTime, isRunning, onBreak } =
+            focusSessionState;
+          const phaseDuration = onBreak ? breakDuration : workDuration;
+          const timeLeft = isRunning
+            ? Math.max(Math.floor((endTime - now) / 1000), 0)
+            : (focusSessionState.timeLeft ?? phaseDuration);
+          setActiveFocusSession({
+            task: task || "",
+            phase: onBreak ? "break" : "focus",
+            timeLeft,
+            isRunning: !!isRunning,
+          });
+        } else {
+          setActiveFocusSession(null);
+        }
       });
     };
 
-    console.log("sessions", allFocusSessions);
     updateSessions(); // first load
     const interval = setInterval(updateSessions, 1000); // update every second
     return () => clearInterval(interval);
@@ -521,38 +514,38 @@ const App = () => {
     }
   };
 
-  const handleLinkedinNewsToggle = async () => {
-    const newValue = !linkedinBlurNews;
-    setLinkedinBlurNews(newValue);
-    await chrome.storage.local.set({ linkedinBlurNews: newValue });
-
+  const sendLinkedinToggleToActiveTab = async (type: string, payload: boolean) => {
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
     });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_NEWS",
-        payload: newValue,
-      });
+    if (!tab?.id || !tab.url?.includes("linkedin.com")) return;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type, payload });
+    } catch {
+      // Content script may not be ready yet; storage listener in linkedin.ts will still apply.
     }
+  };
+
+  const handleLinkedinNewsToggle = async () => {
+    const newValue = !linkedinBlurNews;
+    setLinkedinBlurNews(newValue);
+    await chrome.storage.local.set({ linkedinBlurNews: newValue });
+    await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_NEWS", newValue);
+  };
+
+  const handleLinkedinHomeToggle = async () => {
+    const newValue = !linkedinBlurHome;
+    setLinkedinBlurHome(newValue);
+    await chrome.storage.local.set({ linkedinBlurHome: newValue });
+    await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_HOME", newValue);
   };
 
   const handleLinkedinBadgeToggle = async () => {
     const newValue = !linkedinRemoveBadges;
     setLinkedinRemoveBadges(newValue);
     await chrome.storage.local.set({ linkedinRemoveBadges: newValue });
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_LINKEDIN_BADGES",
-        payload: newValue,
-      });
-    }
+    await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_BADGES", newValue);
   };
 
   const handleWikipediaLinkPopupToggle = async () => {
@@ -647,54 +640,110 @@ const App = () => {
 
   const mainView = (
     <div className="main-view">
-      <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-      <h1 className="popup-title">{t("home_title")}</h1>
+      <div className="main-header">
+        <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <h1 className="popup-title">{t("home_title")}</h1>
+      </div>
       {/* Tab buttons */}
       <div className="tab-buttons">
         <button
-          className={`tab-button ${currentTab === "pomodoro" ? "active" : ""}`}
-          onClick={() => setCurrentTab("pomodoro")}
+          className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
+          onClick={() => setCurrentTab("timer")}
         >
-          Pomodoro
+          <span className="tab-label">Focus Timer</span>
         </button>
         <button
-          className={`tab-button ${currentTab === "focus" ? "active" : ""}`}
-          onClick={() => setCurrentTab("focus")}
+          className={`tab-button ${currentTab === "active" ? "active" : ""}`}
+          onClick={() => setCurrentTab("active")}
         >
-          Focus Sessions
+          <span className="tab-label">Sessions</span>
+          {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length > 0 && (
+            <span className="tab-badge">
+              {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
+            </span>
+          )}
+        </button>
+        <button
+          className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
+          onClick={() => setCurrentTab("blocklist")}
+        >
+          <span className="tab-label">Blocklist</span>
         </button>
       </div>
       {/* Tab content */}
-      {currentTab === "pomodoro" && (
-        <div className="pomodoro_player" style={{ backgroundColor: "#fffcf6" }}>
-          <PomodoroTimer />
+      {currentTab === "timer" && (
+        <div className="focus_session_player" style={{ backgroundColor: "#fffcf6" }}>
+          <FocusTimer />
         </div>
       )}
-      `
-      {currentTab === "focus" && (
-        <div>
-          {Object.keys(allFocusSessions).length > 0 ? (
-            <div className="session-list">
-              {Object.entries(allFocusSessions).map(([domain, session]) => (
-                <div key={domain} className="session-card">
-                  <strong className="domain">{domain}</strong>
-                  <br />
-                  <span className="label">{t("time_left")}</span> {formatTime(session.timeLeft)}
-                  <br />
-                  <span className="label">{t("intention_label")}</span> {session.intention}
-                  <br />
-                  <button
-                    className="complete-session-btn"
-                    onClick={() => handleCompleteSession(domain)}
-                  >
-                    ✓ Complete Session
-                  </button>
+      {currentTab === "blocklist" && (
+        <div className="blocklist-tab">
+          <BlocklistEditor />
+        </div>
+      )}
+      {currentTab === "active" && (
+        <div className="active-sessions">
+          <section className="session-section">
+            <h3 className="session-section-title">Focus Session</h3>
+            {activeFocusSession ? (
+              <div className="session-card focus-session-card">
+                <div className="session-card-header">
+                  <span className={`phase-badge phase-${activeFocusSession.phase}`}>
+                    {activeFocusSession.phase === "focus" ? "Focusing" : "On Break"}
+                  </span>
+                  {!activeFocusSession.isRunning && (
+                    <span className="phase-badge phase-paused">Paused</span>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-session">{t("no_focus_session")}</p>
-          )}
+                {activeFocusSession.task && (
+                  <div className="session-row">
+                    <span className="label">Task:</span>
+                    <span className="session-task">{activeFocusSession.task}</span>
+                  </div>
+                )}
+                <div className="session-row">
+                  <span className="label">{t("time_left")}</span>
+                  <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                </div>
+                <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
+                  ✓ Complete Session
+                </button>
+              </div>
+            ) : (
+              <p className="no-session">No focus sessions running</p>
+            )}
+          </section>
+
+          <section className="session-section">
+            <h3 className="session-section-title">Unfocus Sessions</h3>
+            {Object.keys(allUnfocusSessions).length > 0 ? (
+              <div className="session-list">
+                {Object.entries(allUnfocusSessions).map(([domain, session]) => (
+                  <div key={domain} className="session-card unfocus-session-card">
+                    <div className="session-card-header">
+                      <strong className="domain">{domain}</strong>
+                    </div>
+                    <div className="session-row">
+                      <span className="label">{t("time_left")}</span>
+                      <span className="session-time">{formatTime(session.timeLeft)}</span>
+                    </div>
+                    <div className="session-row">
+                      <span className="label">{t("intention_label")}</span>
+                      <span className="session-intention">{session.intention}</span>
+                    </div>
+                    <button
+                      className="complete-session-btn"
+                      onClick={() => handleCompleteUnfocusSession(domain)}
+                    >
+                      ✓ Complete Session
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-session">{t("no_unfocus_session")}</p>
+            )}
+          </section>
         </div>
       )}
       <img
@@ -702,7 +751,7 @@ const App = () => {
         alt="Settings Icon"
         className="settings-icon"
         onClick={() => {
-          if (currentDomain && allFocusSessions[currentDomain]) {
+          if (currentDomain && allUnfocusSessions[currentDomain]) {
             setSettingsBlockedMessage(true);
             setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
           } else {
@@ -711,15 +760,17 @@ const App = () => {
         }}
       />
       {settingsBlockedMessage && (
-        <p className="settings-warning">{t("settings_locked_during_session")}</p>
+        <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}
     </div>
   );
 
   const settingsView = (
-    <div>
-      <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-      <h2 className="settings-title">{t("settings_title")}</h2>
+    <div className="settings-view">
+      <div className="settings-header">
+        <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <h2 className="settings-title">{t("settings_title")}</h2>
+      </div>
       <div className="options-container">
         <h3 className="settings-label">YouTube</h3>
         <label className="option-label">
@@ -749,26 +800,17 @@ const App = () => {
 
         <h3 className="settings-label">LinkedIn</h3>
         <label className="option-label">
-          <span className="option-text">{t("blur_PYMK")}</span>
-          <Toggle checked={false} onChange={() => {}} disabled />
+          <span className="option-text">{t("blur_linkedin_home")}</span>
+          <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
+        </label>
+        <label className="option-label">
+          <span className="option-text">{t("remove_badges")}</span>
+          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
         </label>
         <label className="option-label">
           <span className="option-text">{t("blur_news")}</span>
           <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
         </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_jobs")}</span>
-          <Toggle checked={false} onChange={() => {}} disabled />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_linkedin_home")}</span>
-          <Toggle checked={false} onChange={() => {}} disabled />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Remove Badges</span>
-          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
-        </label>
-
         <h3 className="settings-label">Wikipedia</h3>
         <label className="option-label">
           <span className="option-text">Link Popup</span>
@@ -794,27 +836,18 @@ const App = () => {
           <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
         </label>
       </div>
-      <button className="close-button" onClick={() => setShowBlocklist(true)}>
-        Edit Blocklist
-      </button>
-
-      <button className="close-button" onClick={() => setShowSettings(false)}>
-        {t("close_button")}
-      </button>
+      <div className="settings-action-row">
+        <button
+          className="close-button settings-action-button"
+          onClick={() => setShowSettings(false)}
+        >
+          {t("close_button")}
+        </button>
+      </div>
     </div>
   );
 
-  return (
-    <div className="popup-container">
-      {showBlocklist ? (
-        <BlocklistEditor onClose={() => setShowBlocklist(false)} />
-      ) : showSettings ? (
-        settingsView
-      ) : (
-        mainView
-      )}
-    </div>
-  );
+  return <div className="popup-container">{showSettings ? settingsView : mainView}</div>;
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

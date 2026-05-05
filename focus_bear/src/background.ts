@@ -14,15 +14,16 @@ chrome.runtime.onStartup.addListener(() => {
 function resetDefaults() {
   chrome.storage.local.remove(
     [
-      "focusStart",
-      "focusDuration",
-      "focusIntention",
-      "lastIntention",
-      "lastFocusDuration",
-      "focusData",
+      "unfocusStart",
+      "unfocusDuration",
+      "unfocusIntention",
+      "lastUnfocusIntention",
+      "lastUnfocusDuration",
+      "unfocusData",
+      "focusSessionState",
     ],
     () => {
-      console.log("Cleared focus session data");
+      console.log("Cleared focus & unfocus session data");
     },
   );
 
@@ -34,26 +35,26 @@ function resetDefaults() {
       commentsHidden: true,
       homePageBlurEnabled: true,
       shortsBlurEnabled: true,
-      linkedinBlurPYMK: true,
       linkedinBlurNews: true,
-      linkedinBlurJobs: true,
+      linkedinRemoveBadges: true,
       linkedinBlurHome: true,
     },
     () => console.log("Defaults reset on install/startup"),
   );
 }
 
-// ------------------------------------------------ Pomodoro State Management ------------------------------------------------//
+// ------------------------------------------------ Focus Session State Management ------------------------------------------------//
+// The Focus Session is the primary, blocking focus state, activated by the Focus Timer.
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "startPomodoro") {
+  if (request.action === "startFocusSession") {
     const { workDuration, breakDuration, onBreak, task } = request;
 
     const startTime = Date.now();
     const duration = onBreak ? breakDuration : workDuration;
     const endTime = startTime + duration * 1000;
 
-    const pomodoroState = {
+    const focusSessionState = {
       task: task || "",
       workDuration,
       breakDuration,
@@ -64,67 +65,131 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       started: true,
     };
 
-    chrome.storage.local.set({ pomodoroState }, () => {
-      console.log("Pomodoro started:", pomodoroState);
+    chrome.storage.local.set({ focusSessionState }, () => {
+      console.log("Focus Session started:", focusSessionState);
     });
 
     sendResponse({ success: true });
     return true;
   }
 
-  if (request.action === "pausePomodoro") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      const state = data.pomodoroState;
+  if (request.action === "pauseFocusSession") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      const state = data.focusSessionState;
       if (state) {
         const remaining = Math.max(Math.floor((state.endTime - Date.now()) / 1000), 0);
-        const updated = {
-          ...state,
-          isRunning: false,
-          timeLeft: remaining,
-        };
-        chrome.storage.local.set({ pomodoroState: updated }, () => {
-          console.log("Pomodoro paused:", updated);
-        });
+        const updated = { ...state, isRunning: false, timeLeft: remaining };
+        chrome.storage.local.set({ focusSessionState: updated });
       }
       sendResponse({ success: true });
     });
-    return true; // keep channel open for async
+    return true;
   }
 
-  if (request.action === "resumePomodoro") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      const prev = data.pomodoroState;
+  if (request.action === "resumeFocusSession") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      const prev = data.focusSessionState;
       if (prev && !prev.isRunning && prev.timeLeft) {
         const startTime = Date.now();
         const endTime = startTime + prev.timeLeft * 1000;
-        const pomodoroState = {
-          ...prev,
-          startTime,
-          endTime,
-          isRunning: true,
-        };
-        chrome.storage.local.set({ pomodoroState }, () => {
-          console.log("Pomodoro resumed:", pomodoroState);
-        });
+        const focusSessionState = { ...prev, startTime, endTime, isRunning: true };
+        chrome.storage.local.set({ focusSessionState });
       }
       sendResponse({ success: true });
     });
     return true;
   }
 
-  if (request.action === "resetPomodoro") {
-    chrome.storage.local.remove("pomodoroState", () => {
-      console.log("Pomodoro reset");
+  if (request.action === "resetFocusSession") {
+    chrome.storage.local.remove("focusSessionState", () => {
       sendResponse({ success: true });
     });
     return true;
   }
 
-  if (request.action === "getPomodoroState") {
-    chrome.storage.local.get("pomodoroState", (data) => {
-      sendResponse({ state: data.pomodoroState || null });
+  if (request.action === "getFocusSessionState") {
+    chrome.storage.local.get("focusSessionState", (data) => {
+      sendResponse({ state: data.focusSessionState || null });
     });
     return true;
+  }
+});
+
+// ----------------------------- Blocklist Enforcement ----------------------------- //
+// Hard redirect any url that matches blocklisted string while in a Focus Session
+// Redirects to blocked.html
+
+type FocusState = { started?: boolean; onBreak?: boolean } | undefined;
+
+const BLOCKED_PAGE = chrome.runtime.getURL("blocked.html");
+
+function isFocusActive(state: FocusState): boolean {
+  return !!(state && state.started === true && state.onBreak !== true);
+}
+
+function urlIsBlocklisted(
+  url: string,
+  blocklist: string[] | undefined,
+): { blocked: boolean; host: string } {
+  if (!blocklist || blocklist.length === 0) return { blocked: false, host: "" };
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return { blocked: false, host: parsed.hostname };
+    }
+    const host = parsed.hostname;
+    const blocked = blocklist.some((site) => site && host.includes(site));
+    return { blocked, host };
+  } catch {
+    return { blocked: false, host: "" };
+  }
+}
+
+function buildBlockedUrl(host: string): string {
+  return `${BLOCKED_PAGE}?d=${encodeURIComponent(host)}`;
+}
+
+function maybeBlockTab(tabId: number, url: string | undefined) {
+  if (!url) return;
+  if (url.startsWith(BLOCKED_PAGE)) return; // already blocked
+
+  chrome.storage.local.get(
+    ["focusSessionState", "blocklist"],
+    ({ focusSessionState, blocklist }) => {
+      if (!isFocusActive(focusSessionState)) return;
+      const { blocked, host } = urlIsBlocklisted(url, blocklist);
+      if (!blocked) return;
+      chrome.tabs.update(tabId, { url: buildBlockedUrl(host) }).catch((err) => {
+        console.warn("[FocusBear] failed to redirect blocked tab:", err);
+      });
+    },
+  );
+}
+
+// Catch new navigations as they happen.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  const candidate = changeInfo.url || (changeInfo.status === "loading" ? tab.url : undefined);
+  if (candidate) {
+    maybeBlockTab(tabId, candidate);
+  }
+});
+
+// When the focus session starts (or the blocklist changes mid-session), sweep
+// every open tab and redirect any that should now be blocked.
+function sweepAllTabs() {
+  chrome.tabs.query({}, (tabs) => {
+    for (const t of tabs) {
+      if (t.id !== undefined && t.url) {
+        maybeBlockTab(t.id, t.url);
+      }
+    }
+  });
+}
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local") return;
+  if (changes.focusSessionState || changes.blocklist) {
+    sweepAllTabs();
   }
 });
 

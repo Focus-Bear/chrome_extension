@@ -10,8 +10,8 @@ interface IntentionContextProps {
   setTimeLeft: (seconds: number) => void;
   timerActive: boolean;
   setTimerActive: (active: boolean) => void;
-  startFocusTimer: (minutes: number) => void;
-  stopFocusTimer: () => void;
+  startUnfocusTimer: (minutes: number) => void;
+  stopUnfocusTimer: () => void;
 }
 
 const IntentionContext = createContext<IntentionContextProps>({
@@ -24,8 +24,8 @@ const IntentionContext = createContext<IntentionContextProps>({
   setTimeLeft: () => {},
   timerActive: false,
   setTimerActive: () => {},
-  startFocusTimer: () => {},
-  stopFocusTimer: () => {},
+  startUnfocusTimer: () => {},
+  stopUnfocusTimer: () => {},
 });
 
 export const IntentionProvider = ({ children }: { children: ReactNode }) => {
@@ -56,7 +56,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const startFocusTimer = (minutes: number) => {
+  const startUnfocusTimer = (minutes: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     const totalSeconds = minutes * 60;
@@ -65,9 +65,9 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
     setTimerActive(true);
 
     chrome.storage.local.set({
-      focusStart: Date.now(),
-      focusDuration: minutes,
-      focusIntention: intention,
+      unfocusStart: Date.now(),
+      unfocusDuration: minutes,
+      unfocusIntention: intention,
     });
 
     intervalRef.current = setInterval(() => {
@@ -76,7 +76,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
           setTimerActive(false);
-          chrome.storage.local.remove(["focusStart", "focusDuration", "focusIntention"]);
+          chrome.storage.local.remove(["unfocusStart", "unfocusDuration", "unfocusIntention"]);
           window.dispatchEvent(new CustomEvent("show-popup-again"));
           return 0;
         }
@@ -85,7 +85,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
     }, 1000);
   };
 
-  const stopFocusTimer = () => {
+  const stopUnfocusTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -109,8 +109,8 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
         setTimeLeft,
         timerActive,
         setTimerActive,
-        startFocusTimer,
-        stopFocusTimer,
+        startUnfocusTimer,
+        stopUnfocusTimer,
       }}
     >
       {children}
