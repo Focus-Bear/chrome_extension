@@ -613,8 +613,27 @@ const App = () => {
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <div className="main-header-start">
+          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        </div>
         <h1 className="popup-title">{t("home_title")}</h1>
+        <div className="main-header-end">
+          <button
+            type="button"
+            className="settings-icon-button"
+            aria-label={t("settings_title")}
+            onClick={() => {
+              if (currentDomain && allUnfocusSessions[currentDomain]) {
+                setSettingsBlockedMessage(true);
+                setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
+              } else {
+                setShowSettings(true);
+              }
+            }}
+          >
+            <img src={setIcon} alt="" className="settings-icon" />
+          </button>
+        </div>
       </div>
       {/* Tab buttons */}
       <div className="tab-buttons">
@@ -624,17 +643,17 @@ const App = () => {
         >
           <span className="tab-label">Focus Timer</span>
         </button>
-        <button
-          className={`tab-button ${currentTab === "active" ? "active" : ""}`}
-          onClick={() => setCurrentTab("active")}
-        >
-          <span className="tab-label">Sessions</span>
-          {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length > 0 && (
+        {(activeFocusSession || Object.keys(allUnfocusSessions).length > 0) && (
+          <button
+            className={`tab-button ${currentTab === "active" ? "active" : ""}`}
+            onClick={() => setCurrentTab("active")}
+          >
+            <span className="tab-label">Sessions</span>
             <span className="tab-badge">
               {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
             </span>
-          )}
-        </button>
+          </button>
+        )}
         <button
           className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
           onClick={() => setCurrentTab("blocklist")}
@@ -718,19 +737,6 @@ const App = () => {
           </section>
         </div>
       )}
-      <img
-        src={setIcon}
-        alt="Settings Icon"
-        className="settings-icon"
-        onClick={() => {
-          if (currentDomain && allUnfocusSessions[currentDomain]) {
-            setSettingsBlockedMessage(true);
-            setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
-          } else {
-            setShowSettings(true);
-          }
-        }}
-      />
       {settingsBlockedMessage && (
         <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}

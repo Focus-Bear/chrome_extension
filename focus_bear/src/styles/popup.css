@@ -24,12 +24,27 @@ body {
   z-index: 1;
 }
 
+/* Bear (left) | title (centered in space between) | settings (right) */
 .main-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  column-gap: 10px;
+  margin: 4px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0b991;
+}
+
+.main-header-start {
+  display: flex;
   justify-content: flex-start;
-  gap: 14px;
-  margin: 8px 0 10px;
+  align-items: center;
+}
+
+.main-header-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .main-view .focus-logo {
@@ -40,6 +55,9 @@ body {
 
 /* Titles */
 h1.popup-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
   color: black;
   text-align: center;
 }
@@ -55,8 +73,9 @@ h2.settings-title {
 
 .main-header .popup-title {
   margin: 0;
-  top: 0;
-  text-align: left;
+  justify-self: center;
+  text-align: center;
+  min-width: 0;
 }
 
 .settings-header {
@@ -92,20 +111,28 @@ p.no-session {
   margin: 0 0 12px;
 }
 
-/* Settings icon */
-img.settings-icon {
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
-  width: 32px;
-  height: auto;
+/* Settings control — aligned in header, separated from title */
+button.settings-icon-button {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #e0b991;
+  border-radius: 10px;
+  background-color: #fffcf6;
   cursor: pointer;
-  z-index: 10;
-  padding: 4px;
 }
 
-img.settings-icon:hover {
-  transform: translateY(-1px);
+img.settings-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
 }
 
 /* Setting group names */
@@ -552,6 +579,7 @@ button.settings-action-button {
 
 .session-section-title {
   margin: 0 0 8px;
+  text-align: center;
   font-size: 14px;
   font-weight: 700;
   color: #000000;
