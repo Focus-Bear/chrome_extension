@@ -315,34 +315,6 @@ const App = () => {
     return () => chrome.storage.onChanged.removeListener(onChanged);
   }, []);
 
-  // Live session timer update
-  useEffect(() => {
-    chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
-      setBlurEnabled(blurEnabled);
-    });
-    chrome.storage.local.get({ commentsHidden: true }, ({ commentsHidden }) => {
-      setHidden(commentsHidden);
-    });
-    chrome.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
-      setHomeBlurEnabled(homePageBlurEnabled);
-    });
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
-      setShortsBlurEnabled(shortsBlurEnabled);
-    });
-    chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled }) => {
-      setYouBlurEnabled(youMenuBlurEnabled);
-    });
-    chrome.storage.local.get(
-      { wikipediaLinkPopupEnabled: true },
-      ({ wikipediaLinkPopupEnabled }) => {
-        setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled);
-      },
-    );
-    chrome.storage.local.get({ wikipediaMainBlur: true }, ({ wikipediaMainBlur }) => {
-      setWikipediaMainBlur(wikipediaMainBlur);
-    });
-  }, []);
-
   const handleCompleteUnfocusSession = (domain: string) => {
     chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
       if (unfocusData && unfocusData[domain]) {
