@@ -671,17 +671,17 @@ const App = () => {
         >
           <span className="tab-label">Focus Timer</span>
         </button>
-        <button
-          className={`tab-button ${currentTab === "active" ? "active" : ""}`}
-          onClick={() => setCurrentTab("active")}
-        >
-          <span className="tab-label">Sessions</span>
-          {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length > 0 && (
+        {(activeFocusSession || Object.keys(allUnfocusSessions).length > 0) && (
+          <button
+            className={`tab-button ${currentTab === "active" ? "active" : ""}`}
+            onClick={() => setCurrentTab("active")}
+          >
+            <span className="tab-label">Sessions</span>
             <span className="tab-badge">
               {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
             </span>
-          )}
-        </button>
+          </button>
+        )}
         <button
           className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
           onClick={() => setCurrentTab("blocklist")}
