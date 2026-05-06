@@ -1,6 +1,57 @@
 (() => {
   console.log("YouTube blur script injected at", location.href);
 
+  // ── Context-guard helpers ────────────────────────────────────────────────
+  // Chrome MV3 service workers can be terminated after ~30 s of inactivity.
+  // When they restart (e.g. because an unfocus session triggers storage writes)
+  // there is a brief window where chrome.* calls from content scripts throw
+  // "Extension context invalidated". The helpers below make every MutationObserver
+  // callback resilient to that race condition.
+
+  let isBlurEnabled = true;
+
+  /** Returns false when the extension context has been invalidated. */
+  function isContextValid(): boolean {
+    try {
+      return !!chrome.runtime.id;
+    } catch {
+      return false;
+    }
+  }
+
+  const allObservers: MutationObserver[] = [];
+
+  /** Creates a MutationObserver and registers it for bulk-disconnect. */
+  function makeObserver(callback: MutationCallback): MutationObserver {
+    const obs = new MutationObserver(callback);
+    allObservers.push(obs);
+    return obs;
+  }
+
+  /** Disconnects every registered observer (called when context is gone). */
+  function disconnectAllObservers(): void {
+    allObservers.forEach((o) => o.disconnect());
+  }
+
+  /**
+   * Safe wrapper around chrome.storage.local.get.
+   * If the extension context is already gone it disconnects all observers and
+   * returns without throwing. Any error during the call is also caught.
+   */
+  function safeGet(keys: object | string | string[], callback: (items: any) => void): void {
+    if (!isContextValid()) {
+      disconnectAllObservers();
+      return;
+    }
+    try {
+      chrome.storage.local.get(keys as any, callback);
+    } catch (err) {
+      console.warn("[FocusBear] chrome.storage.local.get failed:", err);
+      disconnectAllObservers();
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   const COMMENT_BLUR_ID = "focus-bear-comment-blur-style";
   const selectorsToHide = [
     "#comments",
@@ -374,26 +425,29 @@
     blurYouMenu();
   };
 
-  const sidebarObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
+  const sidebarObserver = makeObserver(() => {
+    safeGet({ blurEnabled: true }, ({ blurEnabled }) => {
       if (blurEnabled) applyBlurToSections();
-      else removeBlur(); // optional cleanup
+      else removeBlur();
     });
   });
 
-  const chipsObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
+  const chipsObserver = makeObserver(() => {
+    safeGet({ blurEnabled: true }, ({ blurEnabled }) => {
       if (blurEnabled) blurChipsBar();
-      else removeBlur(); // if such a function exists
+      else removeBlur();
     });
   });
-  const shortsmenuObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+
+  const shortsmenuObserver = makeObserver(() => {
+    safeGet({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
       if (shortsBlurEnabled) blurShortsMenu();
       else unblurShortsMenu();
     });
   });
-  const subscriptionsMenuObserver = new MutationObserver(() => {
+
+  const subscriptionsMenuObserver = makeObserver(() => {
+    if (!isContextValid()) { disconnectAllObservers(); return; }
     if (isBlurEnabled) {
       blurTopSubscriptionsMenu();
     } else {
@@ -401,8 +455,9 @@
     }
   });
 
-  const miniGuideObserver = new MutationObserver(() => {
+  const miniGuideObserver = makeObserver(() => {
     setTimeout(() => {
+      if (!isContextValid()) { disconnectAllObservers(); return; }
       if (isBlurEnabled) {
         blurLeftIconSubscriptions();
       } else {
@@ -411,22 +466,24 @@
     }, 100); // ⏱ small delay ensures the DOM element is ready
   });
 
-  const shortspageObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+  const shortspageObserver = makeObserver(() => {
+    safeGet({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
       if (isShortsPage()) {
         if (shortsBlurEnabled) blurShortsPage();
         else unblurShortsPage();
       }
     });
   });
-  const shortsshelfObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+
+  const shortsshelfObserver = makeObserver(() => {
+    safeGet({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
       if (shortsBlurEnabled) blurShortsShelf();
       else unblurShortsShelf();
     });
   });
-  const shortsMiniSidebarObserver = new MutationObserver(() => {
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
+
+  const shortsMiniSidebarObserver = makeObserver(() => {
+    safeGet({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
       if (shortsBlurEnabled) blurMiniSidebarShorts();
       else unblurMiniSidebarShorts();
     });
@@ -504,8 +561,8 @@
   }
 
   // on page load, read storage and blur if needed
-  const commentsObserver = new MutationObserver(() => {
-    chrome.storage.local.get("commentsHidden", ({ commentsHidden }) => {
+  const commentsObserver = makeObserver(() => {
+    safeGet("commentsHidden", ({ commentsHidden }) => {
       if (commentsHidden) applyCommentBlur();
     });
   });
@@ -548,9 +605,9 @@
   });
 
   // Create a separate observer for dynamic content on home page
-  const homePageContentObserver = new MutationObserver(() => {
+  const homePageContentObserver = makeObserver(() => {
     if (window.location.pathname === "/" || window.location.pathname === "/feed/subscriptions") {
-      chrome.storage.local.get(["homePageBlurEnabled"], ({ homePageBlurEnabled }) => {
+      safeGet(["homePageBlurEnabled"], ({ homePageBlurEnabled }) => {
         if (homePageBlurEnabled) {
           const homePageElements = document.querySelectorAll("#contents, ytd-rich-grid-renderer");
           homePageElements.forEach((element) => {
@@ -822,7 +879,7 @@
   };
 
   // Update the observer to be more specific
-  const recommendationsObserver = new MutationObserver((mutations) => {
+  const recommendationsObserver = makeObserver((mutations) => {
     if (isHomePageBlurEnabled) {
       // Check if the mutation includes video content
       const hasVideoContent = mutations.some((mutation) => {
