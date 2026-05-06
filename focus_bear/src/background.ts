@@ -51,7 +51,7 @@ function resetDefaults() {
 function showNotification(id: string, title: string, message: string) {
   chrome.notifications.create(id, {
     type: "basic",
-    iconUrl: "icons/bearLogo.png",
+    iconUrl: chrome.runtime.getURL("icons/bearLogo.png"),
     title,
     message,
     priority: 2,
@@ -87,9 +87,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       chrome.storage.local.set({ focusSessionState: updated }, () => {
         chrome.alarms.create(ALARM_FOCUS_BREAK, { when: breakEndTime });
         showNotification(
-          "focus_work_done",
+          "focus_work_done_" + Date.now(),
           "Work phase complete!",
-          "Nice work! Your break has started - step away from the screen.",
+          "Nice work! Your break has started, let's take a step away from the screen.",
         );
         console.log("[FocusBear] Work phase done; break started.");
       });
@@ -104,9 +104,9 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
       chrome.storage.local.remove("focusSessionState", () => {
         showNotification(
-          "focus_session_done",
+          "focus_session_done_" + Date.now(),
           "Focus session complete!",
-          "Break is over - great session! Time to plan your next move.",
+          "Break is over! Time to plan your next move.",
         );
         console.log("[FocusBear] Focus session fully complete.");
       });
@@ -120,7 +120,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
       if (!unfocusData?.[domain]) return;
       showNotification(
-        "unfocus_done_" + domain,
+        "unfocus_done_" + domain + "_" + Date.now(),
         "Unfocus time is up!",
         "Your allowed time on " + domain + " has ended. Time to refocus!",
       );
@@ -157,12 +157,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.alarms.clear(ALARM_FOCUS_BREAK);
 
     chrome.storage.local.set({ focusSessionState }, () => {
-      console.log("Focus Session started:", focusSessionState);
       const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
       chrome.alarms.create(alarmName, { when: endTime });
+      sendResponse({ success: true });
     });
 
-    sendResponse({ success: true });
     return true;
   }
 
