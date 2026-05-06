@@ -1,6 +1,7 @@
 const domain = window.location.hostname;
 if (domain.includes("facebook.com")) {
-  const BlurSection = "filter:blur(8px)!important; pointer-events:none!important; user-select:none!important;";
+  const BlurSection =
+    "filter:blur(8px)!important; pointer-events:none!important; user-select:none!important;";
   const hideFacebookDistractions = () => {
     const blurSelectors = [
       '[data-pagelet="FeedUnit"]',
@@ -14,11 +15,6 @@ if (domain.includes("facebook.com")) {
         el.style.cssText = BlurSection;
       });
     });
-    const messagingSelectors = [
-      '[data-pagelet="MercuryFixedBottomContainer"]',
-      '[aria-label="Messenger"]',
-      ".x9f619",
-    ];
   };
   hideFacebookDistractions();
   const observer = new MutationObserver(hideFacebookDistractions);
