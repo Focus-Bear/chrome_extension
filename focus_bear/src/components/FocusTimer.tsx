@@ -94,18 +94,20 @@ const FocusTimer: React.FC = () => {
   }, []);
 
   // Countdown
+  // When the local counter reaches 0, stop ticking;
+  // the background alarm updates focusSessionState in storage, and the
+  // onChanged listener above syncs all UI state automatically.
   useEffect(() => {
     if (!isRunning) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev > 0) return prev - 1;
-        if (!onBreak) {
-          setOnBreak(true);
-          return breakDuration;
-        } else {
-          handleReset();
-          return workDuration;
+        // transition the phase and update storage.
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+        return 0;
       });
     }, 1000);
     return () => clearInterval(intervalRef.current!);
