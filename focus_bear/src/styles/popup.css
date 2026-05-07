@@ -324,7 +324,7 @@ button.settings-action-button {
   border: 1px solid #f3a650;
 }
 
-/* Blocklist/Relaxlist */
+/* Blocklist */
 
 /* Tabs */
 .tab-buttons {
@@ -436,27 +436,6 @@ button.settings-action-button {
   color: #666;
   border-color: #aaa;
   cursor: not-allowed;
-}
-
-/* Special state for relaxlist toggle */
-.site-list li button.relax-active {
-  background-color: #e9902c;
-  color: white;
-  border-color: #e9902c;
-}
-
-/* Buttons */
-.relax-button {
-  background: grey;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.relax-button.active {
-  background: green;
 }
 
 .remove-button {

@@ -28,10 +28,8 @@ const Toggle = ({
 
 const BlocklistEditor = () => {
   const [blocklist, setBlocklist] = useState<string[]>([]);
-  const [relaxlist, setRelaxlist] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
   const [inFocusSession, setInFocusSession] = useState(false);
-  const [innerTab, setInnerTab] = useState<"blocklist" | "relaxlist">("blocklist");
   const loadedOnce = useRef(false);
 
   const computeInFocusSession = (state: any) => {
@@ -40,9 +38,8 @@ const BlocklistEditor = () => {
 
   useEffect(() => {
     if (loadedOnce.current) return;
-    chrome.storage.local.get(["blocklist", "relaxlist", "focusSessionState"], (data) => {
+    chrome.storage.local.get(["blocklist", "focusSessionState"], (data) => {
       if (data.blocklist) setBlocklist(data.blocklist);
-      if (data.relaxlist) setRelaxlist(data.relaxlist);
       setInFocusSession(computeInFocusSession(data.focusSessionState));
       loadedOnce.current = true;
     });
@@ -57,9 +54,6 @@ const BlocklistEditor = () => {
       }
       if (changes.blocklist) {
         setBlocklist(changes.blocklist.newValue || []);
-      }
-      if (changes.relaxlist) {
-        setRelaxlist(changes.relaxlist.newValue || []);
       }
     };
     chrome.storage.onChanged.addListener(handler);
@@ -93,108 +87,41 @@ const BlocklistEditor = () => {
     const updatedBlock = blocklist.filter((s) => s !== site);
     setBlocklist(updatedBlock);
     chrome.storage.local.set({ blocklist: updatedBlock });
-
-    if (relaxlist.includes(site)) {
-      const updatedRelax = relaxlist.filter((s) => s !== site);
-      setRelaxlist(updatedRelax);
-      chrome.storage.local.set({ relaxlist: updatedRelax });
-    }
-  };
-
-  const toggleRelaxlist = (site: string) => {
-    let updatedRelax: string[];
-    if (relaxlist.includes(site)) {
-      updatedRelax = relaxlist.filter((s) => s !== site);
-    } else {
-      updatedRelax = [...relaxlist, site];
-    }
-    setRelaxlist(updatedRelax);
-    chrome.storage.local.set({ relaxlist: updatedRelax });
   };
 
   return (
     <div className="blocklist-editor">
-      <div className="tab-buttons">
-        <button
-          className={`tab-button ${innerTab === "blocklist" ? "active" : ""}`}
-          onClick={() => setInnerTab("blocklist")}
-        >
-          <span className="tab-label">Blocklist</span>
-        </button>
-        <button
-          className={`tab-button ${innerTab === "relaxlist" ? "active" : ""}`}
-          onClick={() => setInnerTab("relaxlist")}
-        >
-          <span className="tab-label">Relaxlist</span>
+      <p className="blocklist-instructions">Enter a site to block during your Focus Sessions:</p>
+      <div className="site-input-container">
+        <input
+          type="text"
+          value={newSite}
+          placeholder="e.g. youtube.com"
+          onChange={(e) => setNewSite(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") addSite();
+          }}
+          disabled={inFocusSession}
+        />
+        <button onClick={addSite} disabled={inFocusSession}>
+          Add
         </button>
       </div>
 
-      {innerTab === "blocklist" && (
-        <>
-          <p className="blocklist-instructions">
-            Enter a site to block during your Focus Sessions:
-          </p>
-          <div className="site-input-container">
-            <input
-              type="text"
-              value={newSite}
-              placeholder="e.g. youtube.com"
-              onChange={(e) => setNewSite(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") addSite();
-              }}
-              disabled={inFocusSession}
-            />
-            <button onClick={addSite} disabled={inFocusSession}>
-              Add
+      <ul className="site-list">
+        {blocklist.length === 0 && <li>No sites in Blocklist</li>}
+        {blocklist.map((site) => (
+          <li key={site} className="site-card">
+            <span>{site}</span>
+            <button onClick={() => removeSite(site)} disabled={inFocusSession}>
+              Remove
             </button>
-          </div>
+          </li>
+        ))}
+      </ul>
 
-          <ul className="site-list">
-            {blocklist.length === 0 && <li>No sites in Blocklist</li>}
-            {blocklist.map((site) => (
-              <li key={site} className="site-card">
-                <span>{site}</span>
-                <div className="site-actions">
-                  <button
-                    className={relaxlist.includes(site) ? "active" : ""}
-                    onClick={() => toggleRelaxlist(site)}
-                  >
-                    {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
-                  </button>
-                  <button onClick={() => removeSite(site)} disabled={inFocusSession}>
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {inFocusSession && (
-            <p className="settings-warning">Blocklist is locked during a Focus Session</p>
-          )}
-        </>
-      )}
-
-      {innerTab === "relaxlist" && (
-        <>
-          <p className="blocklist-instructions">These websites are accessible during your breaks</p>
-          <ul className="site-list">
-            {relaxlist.length === 0 && <li>No sites in Relaxlist</li>}
-            {relaxlist.map((site) => (
-              <li key={site} className="site-card">
-                <span>{site}</span>
-                <button
-                  className="remove-button"
-                  onClick={() => toggleRelaxlist(site)}
-                  disabled={inFocusSession}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
+      {inFocusSession && (
+        <p className="settings-warning">Blocklist is locked during a Focus Session</p>
       )}
     </div>
   );
