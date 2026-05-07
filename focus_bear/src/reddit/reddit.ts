@@ -19,11 +19,7 @@
 
   // Blur the home feed posts
   const setBlurHomeFeed = (enabled: boolean) => {
-    const selectors = [
-      'shreddit-post',
-      '[data-testid="post-container"]',
-      '.Post',
-    ];
+    const selectors = ["shreddit-post", '[data-testid="post-container"]', ".Post"];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) {
@@ -39,9 +35,9 @@
   const setBlurCommunities = (enabled: boolean) => {
     const selectors = [
       '[aria-label="Communities"]',
-      'aside',
+      "aside",
       '[data-testid="subreddit-sidebar"]',
-      'shreddit-communities-list',
+      "shreddit-communities-list",
     ];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
@@ -56,11 +52,7 @@
 
   // Blur comments section
   const setBlurComments = (enabled: boolean) => {
-    const selectors = [
-      'shreddit-comment-tree',
-      '[data-testid="comment"]',
-      '.Comment',
-    ];
+    const selectors = ["shreddit-comment-tree", '[data-testid="comment"]', ".Comment"];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) {
@@ -106,11 +98,7 @@
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
-    if (
-      changes.redditBlurHomeFeed ||
-      changes.redditBlurCommunities ||
-      changes.redditBlurComments
-    ) {
+    if (changes.redditBlurHomeFeed || changes.redditBlurCommunities || changes.redditBlurComments) {
       applyFromStorage();
     }
   });

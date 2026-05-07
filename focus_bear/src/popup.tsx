@@ -817,17 +817,47 @@ const App = () => {
           <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
         </label>
         <h3 className="settings-label">Reddit</h3>
-          <label className="option-label">
-            <span className="option-text">Blur Home Feed</span>
-            <Toggle checked={redditBlurHomeFeed} onChange={async () => { const v = !redditBlurHomeFeed; setRedditBlurHomeFeed(v); await chrome.storage.local.set({ redditBlurHomeFeed: v }); const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); if (tab?.id) chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_HOME_FEED", payload: v }); }} />
+        <label className="option-label">
+          <span className="option-text">Blur Home Feed</span>
+          <Toggle
+            checked={redditBlurHomeFeed}
+            onChange={async () => {
+              const v = !redditBlurHomeFeed;
+              setRedditBlurHomeFeed(v);
+              await chrome.storage.local.set({ redditBlurHomeFeed: v });
+              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+              if (tab?.id)
+                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_HOME_FEED", payload: v });
+            }}
+          />
         </label>
         <label className="option-label">
-            <span className="option-text">Blur Communities</span>
-            <Toggle checked={redditBlurCommunities} onChange={async () => { const v = !redditBlurCommunities; setRedditBlurCommunities(v); await chrome.storage.local.set({ redditBlurCommunities: v }); const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); if (tab?.id) chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMUNITIES", payload: v }); }} />
+          <span className="option-text">Blur Communities</span>
+          <Toggle
+            checked={redditBlurCommunities}
+            onChange={async () => {
+              const v = !redditBlurCommunities;
+              setRedditBlurCommunities(v);
+              await chrome.storage.local.set({ redditBlurCommunities: v });
+              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+              if (tab?.id)
+                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMUNITIES", payload: v });
+            }}
+          />
         </label>
         <label className="option-label">
-            <span className="option-text">Blur Comments</span>
-            <Toggle checked={redditBlurComments} onChange={async () => { const v = !redditBlurComments; setRedditBlurComments(v); await chrome.storage.local.set({ redditBlurComments: v }); const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); if (tab?.id) chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMENTS", payload: v }); }} />
+          <span className="option-text">Blur Comments</span>
+          <Toggle
+            checked={redditBlurComments}
+            onChange={async () => {
+              const v = !redditBlurComments;
+              setRedditBlurComments(v);
+              await chrome.storage.local.set({ redditBlurComments: v });
+              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+              if (tab?.id)
+                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMENTS", payload: v });
+            }}
+          />
         </label>
       </div>
       <div className="settings-action-row">

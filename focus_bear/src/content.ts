@@ -80,8 +80,6 @@
   });
 
   let unfocusTimer: ReturnType<typeof setTimeout> | null = null;
-  // oxlint-disable-next-line no-unused-vars
-  let isBlurEnabled = true;
 
   window.addEventListener("message", (event) => {
     if (event.source !== window) return;
@@ -94,31 +92,39 @@
 
     if (event.data.type === "STORE_UNFOCUS_DATA") {
       const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
-      chrome.storage.local.set(
-        {
-          unfocusStart,
-          unfocusDuration,
-          unfocusIntention,
-          showIntentionPopup: false,
-          lastUnfocusIntention: unfocusIntention,
-          lastUnfocusDuration: unfocusDuration,
-        },
-        () => {
-          const elapsed = Date.now() - unfocusStart;
-          const totalMs = unfocusDuration * 60 * 1000;
-          const remaining = totalMs - elapsed;
-          if (remaining > 0) {
-            setTimeout(() => {
-              const currentDomain = window.location.hostname.replace(/^www\./, "");
-              if (currentDomain === domain) {
-                window.dispatchEvent(new CustomEvent("show-popup-again"));
-              }
-            }, remaining);
-          } else {
-            window.dispatchEvent(new CustomEvent("show-popup-again"));
-          }
-        },
-      );
+      try {
+        chrome.storage.local.set(
+          {
+            unfocusStart,
+            unfocusDuration,
+            unfocusIntention,
+            showIntentionPopup: false,
+            lastUnfocusIntention: unfocusIntention,
+            lastUnfocusDuration: unfocusDuration,
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.warn("[FocusBear] storage.set error:", chrome.runtime.lastError.message);
+              return;
+            }
+            const elapsed = Date.now() - unfocusStart;
+            const totalMs = unfocusDuration * 60 * 1000;
+            const remaining = totalMs - elapsed;
+            if (remaining > 0) {
+              setTimeout(() => {
+                const currentDomain = window.location.hostname.replace(/^www\./, "");
+                if (currentDomain === domain) {
+                  window.dispatchEvent(new CustomEvent("show-popup-again"));
+                }
+              }, remaining);
+            } else {
+              window.dispatchEvent(new CustomEvent("show-popup-again"));
+            }
+          },
+        );
+      } catch (err) {
+        console.warn("[FocusBear] Could not persist unfocus session (context invalid):", err);
+      }
     }
   });
 
@@ -145,41 +151,65 @@
     if (event.data.type === "STORE_UNFOCUS_DATA") {
       const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
       const localDomain = window.location.hostname.replace(/^www\./, "");
-      chrome.storage.local.get(["unfocusData"], (result) => {
-        const unfocusData = result.unfocusData || {};
-        unfocusData[localDomain] = {
-          unfocusStart,
-          unfocusDuration,
-          unfocusIntention,
-        };
-        chrome.storage.local.set({ unfocusData });
-      });
+      try {
+        chrome.storage.local.get(["unfocusData"], (result) => {
+          if (chrome.runtime.lastError) {
+            console.warn("[FocusBear] storage.get error:", chrome.runtime.lastError.message);
+            return;
+          }
+          const unfocusData = result.unfocusData || {};
+          unfocusData[localDomain] = {
+            unfocusStart,
+            unfocusDuration,
+            unfocusIntention,
+          };
+          try {
+            chrome.storage.local.set({ unfocusData });
+          } catch (err) {
+            console.warn("[FocusBear] Could not update unfocusData (context invalid):", err);
+          }
+        });
+      } catch (err) {
+        console.warn("[FocusBear] Could not read unfocusData (context invalid):", err);
+      }
     }
   });
 
   window.addEventListener("show-popup-again", () => {
-    chrome.storage.local.get(
-      ["lastUnfocusIntention", "lastUnfocusDuration"],
-      ({ lastUnfocusIntention, lastUnfocusDuration }) => {
-        if (document.getElementById("intention-popup-script")) {
-          return;
-        }
-        const script = document.createElement("script");
-        script.src = chrome.runtime.getURL("floatingPopup.js");
-        script.id = "intention-popup-script";
-        script.type = "module";
-        script.onload = () => {
-          window.postMessage(
-            {
-              type: "INIT_INTENTION_DATA",
-              payload: { lastUnfocusIntention, lastUnfocusDuration },
-            },
-            "*",
-          );
-        };
-        document.body.appendChild(script);
-      },
-    );
+    try {
+      chrome.storage.local.get(
+        ["lastUnfocusIntention", "lastUnfocusDuration"],
+        ({ lastUnfocusIntention, lastUnfocusDuration }) => {
+          if (chrome.runtime.lastError) {
+            console.warn("[FocusBear] storage.get error:", chrome.runtime.lastError.message);
+            return;
+          }
+          if (document.getElementById("intention-popup-script")) {
+            return;
+          }
+          try {
+            const script = document.createElement("script");
+            script.src = chrome.runtime.getURL("floatingPopup.js");
+            script.id = "intention-popup-script";
+            script.type = "module";
+            script.onload = () => {
+              window.postMessage(
+                {
+                  type: "INIT_INTENTION_DATA",
+                  payload: { lastUnfocusIntention, lastUnfocusDuration },
+                },
+                "*",
+              );
+            };
+            document.body.appendChild(script);
+          } catch (err) {
+            console.warn("[FocusBear] Could not inject popup script (context invalid):", err);
+          }
+        },
+      );
+    } catch (err) {
+      console.warn("[FocusBear] show-popup-again: context invalid:", err);
+    }
   });
 
   chrome.runtime.onMessage.addListener((message) => {
