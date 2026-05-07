@@ -158,7 +158,6 @@ const FocusTimer: React.FC = () => {
   return (
     <div className="focus-timer-container">
       <div className="focus-timer-content">
-
         {!started ? (
           // ─── SETUP VIEW ───────────────────────────────────────────────────
           <div className="setup-view">
@@ -244,9 +243,7 @@ const FocusTimer: React.FC = () => {
               <Play size={20} fill="currentColor" style={{ marginRight: 8 }} />
               Start Focus Session
             </button>
-            {!task.trim() && (
-              <p className="task-warning">Please enter a task to get started</p>
-            )}
+            {!task.trim() && <p className="task-warning">Please enter a task to get started</p>}
           </div>
         ) : (
           // ─── ACTIVE TIMER VIEW ────────────────────────────────────────────
@@ -269,10 +266,7 @@ const FocusTimer: React.FC = () => {
 
             {/* Circular progress ring */}
             <div className="ring-container">
-              <svg
-                className="timer-svg"
-                viewBox="0 0 200 200"
-              >
+              <svg className="timer-svg" viewBox="0 0 200 200">
                 {/* Background track */}
                 <circle
                   cx="100"

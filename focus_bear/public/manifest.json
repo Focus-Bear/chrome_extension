@@ -54,10 +54,10 @@
       "js": ["gmail.js"]
     },
     {
-       "matches": ["*://*.reddit.com/*"],
+      "matches": ["*://*.reddit.com/*"],
       "js": ["content.js", "reddit.js"],
       "css": ["assets/intentionPopup.css"]
-}
+    }
   ],
   "web_accessible_resources": [
     {

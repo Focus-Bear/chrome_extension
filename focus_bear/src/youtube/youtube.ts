@@ -2,12 +2,7 @@
   console.log("YouTube blur script injected at", location.href);
 
   // ── Context-guard helpers ────────────────────────────────────────────────
-  // Chrome MV3 service workers can be terminated after ~30 s of inactivity.
-  // When they restart (e.g. because an unfocus session triggers storage writes)
-  // there is a brief window where chrome.* calls from content scripts throw
-  // "Extension context invalidated". The helpers below make every MutationObserver
-  // callback resilient to that race condition.
-
+  // The helpers below make every MutationObserver handle service worker restarts (and inactivity)
   let isBlurEnabled = true;
 
   /** Returns false when the extension context has been invalidated. */
@@ -447,7 +442,10 @@
   });
 
   const subscriptionsMenuObserver = makeObserver(() => {
-    if (!isContextValid()) { disconnectAllObservers(); return; }
+    if (!isContextValid()) {
+      disconnectAllObservers();
+      return;
+    }
     if (isBlurEnabled) {
       blurTopSubscriptionsMenu();
     } else {
@@ -457,7 +455,10 @@
 
   const miniGuideObserver = makeObserver(() => {
     setTimeout(() => {
-      if (!isContextValid()) { disconnectAllObservers(); return; }
+      if (!isContextValid()) {
+        disconnectAllObservers();
+        return;
+      }
       if (isBlurEnabled) {
         blurLeftIconSubscriptions();
       } else {
