@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
 import iconUrl from "../public/icons/bearLogo.png";
 import setIcon from "../public/icons/settingsIcon.png";
+import { Home } from "lucide-react";
 
 import "@radix-ui/themes/styles.css";
 import FocusTimer from "./components/FocusTimer";
@@ -149,7 +150,8 @@ const App = () => {
   const [redditBlurCommunities, setRedditBlurCommunities] = useState(true);
   const [redditBlurComments, setRedditBlurComments] = useState(true);
 
-  const [currentTab, setCurrentTab] = useState<"timer" | "active" | "blocklist">("timer");
+  const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
+  const [settingsTab, setSettingsTab] = useState<"blurring" | "blocklist">("blurring");
 
   const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -584,22 +586,11 @@ const App = () => {
             </span>
           </button>
         )}
-        <button
-          className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
-          onClick={() => setCurrentTab("blocklist")}
-        >
-          <span className="tab-label">Blocklist</span>
-        </button>
       </div>
       {/* Tab content */}
       {currentTab === "timer" && (
         <div className="focus_session_player" style={{ backgroundColor: "#fffcf6" }}>
           <FocusTimer />
-        </div>
-      )}
-      {currentTab === "blocklist" && (
-        <div className="blocklist-tab">
-          <BlocklistEditor />
         </div>
       )}
       {currentTab === "active" && (
@@ -676,125 +667,169 @@ const App = () => {
   const settingsView = (
     <div className="settings-view">
       <div className="settings-header">
-        <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-        <h2 className="settings-title">{t("settings_title")}</h2>
-      </div>
-      <div className="options-container">
-        <h3 className="settings-label">YouTube</h3>
-        <label className="option-label">
-          <span className="option-text">{t("blur_home")}</span>
-          <Toggle checked={homeBlurEnabled} onChange={handleHomeBlurToggle} />
-        </label>
-        <div style={{ display: "none" }}>
-          <label className="option-label">
-            <span className="option-text">{t("blur_distractions")}</span>
-            <Toggle checked={blurEnabled} onChange={handleBlurToggle} />
-          </label>
+        <div className="settings-header-start">
+          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
         </div>
-        <label className="option-label">
-          <span className="option-text">{t("hide_comments")}</span>
-          <Toggle checked={hidden} onChange={handleCommentsToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">{t("blur_shorts")}</span>
-          <Toggle checked={shortsBlurEnabled} onChange={handleShortsBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">{t("blur_you_menu")}</span>
-          <Toggle checked={youBlurEnabled} onChange={handleYouBlurToggle} />
-        </label>
-
-        <h3 className="settings-label">LinkedIn</h3>
-        <label className="option-label">
-          <span className="option-text">{t("blur_linkedin_home")}</span>
-          <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("remove_badges")}</span>
-          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_news")}</span>
-          <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
-        </label>
-        <h3 className="settings-label">Wikipedia</h3>
-        <label className="option-label">
-          <span className="option-text">Link Popup</span>
-          <Toggle checked={wikipediaLinkPopupEnabled} onChange={handleWikipediaLinkPopupToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Main Page Blur</span>
-          <Toggle checked={wikipediaMainBlur} onChange={handleWikipediaMainBlurToggle} />
-        </label>
-        <h3 className="settings-label">Gmail</h3>
-        <label className="option-label">
-          <span className="option-text">Blur Gmail</span>
-          <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">Blur Promotions</span>
-          <Toggle checked={promotionBlurEnabled} onChange={handlePromotionBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">Blur Social and Updates</span>
-          <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
-        </label>
-        <h3 className="settings-label">Reddit</h3>
-        <label className="option-label">
-          <span className="option-text">Blur Home Feed</span>
-          <Toggle
-            checked={redditBlurHomeFeed}
-            onChange={async () => {
-              const v = !redditBlurHomeFeed;
-              setRedditBlurHomeFeed(v);
-              await chrome.storage.local.set({ redditBlurHomeFeed: v });
-              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-              if (tab?.id)
-                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_HOME_FEED", payload: v });
-            }}
-          />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Blur Communities</span>
-          <Toggle
-            checked={redditBlurCommunities}
-            onChange={async () => {
-              const v = !redditBlurCommunities;
-              setRedditBlurCommunities(v);
-              await chrome.storage.local.set({ redditBlurCommunities: v });
-              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-              if (tab?.id)
-                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMUNITIES", payload: v });
-            }}
-          />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Blur Comments</span>
-          <Toggle
-            checked={redditBlurComments}
-            onChange={async () => {
-              const v = !redditBlurComments;
-              setRedditBlurComments(v);
-              await chrome.storage.local.set({ redditBlurComments: v });
-              const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-              if (tab?.id)
-                chrome.tabs.sendMessage(tab.id, { type: "TOGGLE_REDDIT_COMMENTS", payload: v });
-            }}
-          />
-        </label>
-      </div>
-      <div className="settings-action-row">
+        <h2 className="settings-title">{t("settings_title")}</h2>
         <button
-          className="close-button settings-action-button"
+          type="button"
+          className="settings-icon-button"
+          aria-label={t("close_button")}
           onClick={() => setShowSettings(false)}
         >
-          {t("close_button")}
+          <Home aria-hidden="true" size={22} strokeWidth={3} />
         </button>
       </div>
+      <div className="tab-buttons settings-tabs">
+        <button
+          className={`tab-button ${settingsTab === "blurring" ? "active" : ""}`}
+          onClick={() => setSettingsTab("blurring")}
+        >
+          <span className="tab-label">Blurring</span>
+        </button>
+        <button
+          className={`tab-button ${settingsTab === "blocklist" ? "active" : ""}`}
+          onClick={() => setSettingsTab("blocklist")}
+        >
+          <span className="tab-label">Blocklist</span>
+        </button>
+      </div>
+      {settingsTab === "blurring" && (
+        <div className="options-container">
+          <details className="settings-accordion" open>
+            <summary>YouTube</summary>
+            <label className="option-label">
+              <span className="option-text">{t("blur_home")}</span>
+              <Toggle checked={homeBlurEnabled} onChange={handleHomeBlurToggle} />
+            </label>
+            <div style={{ display: "none" }}>
+              <label className="option-label">
+                <span className="option-text">{t("blur_distractions")}</span>
+                <Toggle checked={blurEnabled} onChange={handleBlurToggle} />
+              </label>
+            </div>
+            <label className="option-label">
+              <span className="option-text">{t("hide_comments")}</span>
+              <Toggle checked={hidden} onChange={handleCommentsToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_shorts")}</span>
+              <Toggle checked={shortsBlurEnabled} onChange={handleShortsBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_you_menu")}</span>
+              <Toggle checked={youBlurEnabled} onChange={handleYouBlurToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>LinkedIn</summary>
+            <label className="option-label">
+              <span className="option-text">{t("blur_linkedin_home")}</span>
+              <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("remove_badges")}</span>
+              <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_news")}</span>
+              <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>Wikipedia</summary>
+            <label className="option-label">
+              <span className="option-text">Link Popup</span>
+              <Toggle
+                checked={wikipediaLinkPopupEnabled}
+                onChange={handleWikipediaLinkPopupToggle}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Main Page Blur</span>
+              <Toggle checked={wikipediaMainBlur} onChange={handleWikipediaMainBlurToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>Gmail</summary>
+            <label className="option-label">
+              <span className="option-text">Blur Gmail</span>
+              <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Promotions</span>
+              <Toggle checked={promotionBlurEnabled} onChange={handlePromotionBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Social and Updates</span>
+              <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>Reddit</summary>
+            <label className="option-label">
+              <span className="option-text">Blur Home Feed</span>
+              <Toggle
+                checked={redditBlurHomeFeed}
+                onChange={async () => {
+                  const v = !redditBlurHomeFeed;
+                  setRedditBlurHomeFeed(v);
+                  await chrome.storage.local.set({ redditBlurHomeFeed: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_HOME_FEED",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Communities</span>
+              <Toggle
+                checked={redditBlurCommunities}
+                onChange={async () => {
+                  const v = !redditBlurCommunities;
+                  setRedditBlurCommunities(v);
+                  await chrome.storage.local.set({ redditBlurCommunities: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_COMMUNITIES",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Comments</span>
+              <Toggle
+                checked={redditBlurComments}
+                onChange={async () => {
+                  const v = !redditBlurComments;
+                  setRedditBlurComments(v);
+                  await chrome.storage.local.set({ redditBlurComments: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_COMMENTS",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+          </details>
+        </div>
+      )}
+      {settingsTab === "blocklist" && (
+        <div className="blocklist-tab">
+          <BlocklistEditor />
+        </div>
+      )}
     </div>
   );
 

@@ -24,7 +24,7 @@ body {
   z-index: 1;
 }
 
-/* Bear (left) | title (centered in space between) | settings (right) */
+/* Main heading bar */
 .main-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -79,11 +79,18 @@ h2.settings-title {
 }
 
 .settings-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  margin: 4px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0b991;
+}
+
+.settings-header-start {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 14px;
-  margin: 8px 0 10px;
 }
 
 .settings-view .focus-logo {
@@ -95,7 +102,8 @@ h2.settings-title {
 .settings-header .settings-title {
   margin: 0;
   top: 0;
-  text-align: left;
+  justify-self: center;
+  text-align: center;
 }
 
 /* Timer / no-session text */
@@ -111,7 +119,7 @@ p.no-session {
   margin: 0 0 12px;
 }
 
-/* Settings control — aligned in header, separated from title */
+/* Settings Icon */
 button.settings-icon-button {
   flex-shrink: 0;
   display: flex;
@@ -147,6 +155,35 @@ img.settings-icon {
   flex-direction: column;
   gap: 12px;
   margin-top: 0px;
+}
+
+.settings-tabs {
+  margin-bottom: 14px;
+}
+
+.settings-accordion {
+  background-color: #fffcf6;
+  border: 1px solid #e0b991;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.settings-accordion summary {
+  padding: 10px 12px;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  background-color: #ffe8c4;
+}
+
+.settings-accordion[open] summary {
+  border-bottom: 1px solid #e0b991;
+}
+
+.settings-accordion .option-label {
+  padding: 10px 12px;
+  margin: 0;
 }
 
 .option-label {
@@ -324,7 +361,7 @@ button.settings-action-button {
   border: 1px solid #f3a650;
 }
 
-/* Blocklist */
+/* Blocklist/Relaxlist */
 
 /* Tabs */
 .tab-buttons {
@@ -436,6 +473,27 @@ button.settings-action-button {
   color: #666;
   border-color: #aaa;
   cursor: not-allowed;
+}
+
+/* Special state for relaxlist toggle */
+.site-list li button.relax-active {
+  background-color: #e9902c;
+  color: white;
+  border-color: #e9902c;
+}
+
+/* Buttons */
+.relax-button {
+  background: grey;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.relax-button.active {
+  background: green;
 }
 
 .remove-button {
