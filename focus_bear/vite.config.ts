@@ -35,6 +35,7 @@ export default defineConfig({
         wikipedia: resolve(__dirname, "src/wikipedia/wikipedia.ts"),
         linkpopup: resolve(__dirname, "src/wikipedia/linkPopup.js"),
         gmail: resolve(__dirname, "src/gmail/gmail.ts"),
+        reddit: resolve(__dirname, "src/reddit/reddit.ts"),
       },
       output: {
         entryFileNames: "[name].js",

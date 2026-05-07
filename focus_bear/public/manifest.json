@@ -9,7 +9,8 @@
     "*://*.youtube.com/*",
     "*://*.linkedin.com/*",
     "*://*.wikipedia.org/*",
-    "*://mail.google.com/*"
+    "*://mail.google.com/*",
+    "*://*.reddit.com/*"
   ],
   "action": {
     "default_popup": "src/popup.html",
@@ -51,7 +52,12 @@
     {
       "matches": ["*://mail.google.com/*"],
       "js": ["gmail.js"]
-    }
+    },
+    {
+       "matches": ["*://*.reddit.com/*"],
+      "js": ["content.js", "reddit.js"],
+      "css": ["assets/intentionPopup.css"]
+}
   ],
   "web_accessible_resources": [
     {
