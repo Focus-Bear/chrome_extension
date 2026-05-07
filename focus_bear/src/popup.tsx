@@ -91,9 +91,7 @@ const BlocklistEditor = () => {
 
   return (
     <div className="blocklist-editor">
-      <p className="blocklist-instructions">
-        Enter a site to block during your Focus Sessions:
-      </p>
+      <p className="blocklist-instructions">Enter a site to block during your Focus Sessions:</p>
       <div className="site-input-container">
         <input
           type="text"
