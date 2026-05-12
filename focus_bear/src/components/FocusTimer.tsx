@@ -217,10 +217,7 @@ const FocusTimer: React.FC = () => {
 
             {/* Break duration presets */}
             <div className="duration-section">
-              <label className="input-label">
-                <Coffee size={16} style={{ display: "inline", marginRight: 6 }} />
-                Break Duration
-              </label>
+              <label className="input-label">Break Duration</label>
               <div className="preset-grid">
                 {BREAK_PRESETS.map((p) => (
                   <button
@@ -255,9 +252,7 @@ const FocusTimer: React.FC = () => {
                   <Coffee size={16} style={{ marginRight: 6 }} /> Break Time
                 </>
               ) : (
-                <>
-                  <span style={{ marginRight: 6 }}>🎯</span> Focus Mode
-                </>
+                <>Focus Mode</>
               )}
             </div>
 
@@ -311,22 +306,6 @@ const FocusTimer: React.FC = () => {
                   {onBreak ? "until break ends" : "remaining"}
                 </text>
               </svg>
-            </div>
-
-            {/* Progress bar */}
-            <div className="progress-bar-container">
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${(1 - progress) * 100}%`,
-                  backgroundColor: onBreak ? "#4CAF50" : "#e9902c",
-                  transition: "width 0.8s ease, background-color 0.5s ease",
-                }}
-              />
-            </div>
-            <div className="progress-labels">
-              <span>0:00</span>
-              <span>{formatTime(totalDuration)}</span>
             </div>
 
             {/* Controls */}
