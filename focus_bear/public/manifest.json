@@ -4,12 +4,13 @@
   "version": "1.1",
   "description": "Hide distractions using a clean Chrome Extension.",
   "default_locale": "en",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "notifications", "alarms"],
   "host_permissions": [
     "*://*.youtube.com/*",
     "*://*.linkedin.com/*",
     "*://*.wikipedia.org/*",
-    "*://mail.google.com/*"
+    "*://mail.google.com/*",
+    "*://*.reddit.com/*"
   ],
   "action": {
     "default_popup": "src/popup.html",
@@ -41,7 +42,8 @@
     },
     {
       "matches": ["<all_urls>"],
-      "js": ["blocklist.js"]
+      "js": ["blocklist.js"],
+      "run_at": "document_start"
     },
     {
       "matches": ["*://*.wikipedia.org/*"],
@@ -50,6 +52,11 @@
     {
       "matches": ["*://mail.google.com/*"],
       "js": ["gmail.js"]
+    },
+    {
+      "matches": ["*://*.reddit.com/*"],
+      "js": ["content.js", "reddit.js"],
+      "css": ["assets/intentionPopup.css"]
     }
     },
 
@@ -61,7 +68,7 @@
 
   "web_accessible_resources": [
     {
-      "resources": ["floatingPopup.js", "assets/*"],
+      "resources": ["floatingPopup.js", "blocked.html", "assets/*"],
       "matches": ["<all_urls>"]
     },
     {

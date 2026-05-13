@@ -4,7 +4,6 @@ import { resolve } from "path";
 import { fileURLToPath } from "url";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
-// ESM workaround to get __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = resolve(__filename, "..");
 
@@ -16,6 +15,8 @@ export default defineConfig({
         { src: "src/styles/*", dest: "assets" },
         { src: "public/manifest.json", dest: "." },
         { src: "public/icons/**/*", dest: "icons" },
+        { src: "public/blocked.html", dest: "." },
+        { src: "public/blocked.js", dest: "." },
       ],
     }),
   ],
@@ -34,6 +35,7 @@ export default defineConfig({
         wikipedia: resolve(__dirname, "src/wikipedia/wikipedia.ts"),
         linkpopup: resolve(__dirname, "src/wikipedia/linkPopup.js"),
         gmail: resolve(__dirname, "src/gmail/gmail.ts"),
+        reddit: resolve(__dirname, "src/reddit/reddit.ts"),
       },
       output: {
         entryFileNames: "[name].js",

@@ -8,28 +8,28 @@ import iconUrl from "../public/icons/bearLogo.png";
 const containerId = "focus-popup-container";
 
 const headings = [
-  "Hello there! Up to mischief are we?",
-  "Caught you lurking again, didn't I?",
-  "Planning trouble, or just thinking about it?",
-  "Back for more fun, are we?",
-  "Sneaky little visit, hmm?",
-  "Stirring up chaos, or just passing through?",
-  "Oh look, it’s the mastermind again!",
-  "Plotting something brilliant... or ridiculous?",
-  "Should I be worried, or just impressed?",
+  "Still here? Set your intention.",
+  "Caught you mid-scroll—what's up?",
+  "Real work—or rabbit hole?",
+  "Focus check: what's this for?",
+  "Sneak peek—or serious work?",
+  "Before the feed eats you…",
+  "Quick check—why this tab?",
+  "Scrolling—or here on purpose?",
+  "Honest—why open this tab?",
 ];
 
 const prompts = [
-  "What plans are brewing or should I say bearing?",
-  "What’s the big idea—or is that just your inner bear stirring?",
-  "Got something grizzly planned, or just hibernating on it?",
-  "Are we clawing toward success or just paw-sing for thought?",
-  "Is that a wild idea, or are you just bear-ly getting started?",
-  "Planning something bold, or just padding around the possibilities?",
-  "Are you bear-ing the weight of brilliance again?",
-  "Got a beary good plan, or is it still in hibernation mode?",
-  "Is that a growl of ambition I hear, or just your creativity waking up?",
-  "Plotting something fierce, or just feeling a bit fuzzy today?",
+  "What's worth your honest attention on this visit?",
+  "Grizzly focus, or a quick paw through this page?",
+  "If you finish one thing here, what should it be?",
+  "Work brain fully on—or is curiosity driving?",
+  "What would make closing this tab feel like a win?",
+  "Something you're chasing—or still stirring the pot?",
+  "Deadline sprint, deep learning, or a mindful break?",
+  "What would productivity mean in the next few minutes?",
+  "Proud to log this as work—or honest about wandering?",
+  "In your own words: what are you actually doing here?",
 ];
 
 const IntentionPopup = () => {
@@ -156,9 +156,11 @@ const IntentionPopup = () => {
   return (
     <div id="focus-popup" className="focus-popup">
       <div className="focus-popup-box">
-        <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-        <h2>{randomHeading}</h2>
-        <p>{randomPrompt}</p>
+        <div className="focus-popup-header">
+          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+          <h2>{randomHeading}</h2>
+        </div>
+        <p className="focus-popup-text">{randomPrompt}</p>
         <textarea
           value={intention}
           onChange={handleIntentionChange}
@@ -166,7 +168,7 @@ const IntentionPopup = () => {
           className="focus-input"
         />
         {showWarning && <p className="focus-warning">{localizedText.warning}</p>}
-        <p>{localizedText.duration}</p>
+        <p className="focus-popup-text focus-popup-duration-label">{localizedText.duration}</p>
         <select
           value={timer === 0 ? "" : timer.toString()}
           onChange={handleDurationChange}

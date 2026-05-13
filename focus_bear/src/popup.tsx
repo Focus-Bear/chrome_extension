@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
 import iconUrl from "../public/icons/bearLogo.png";
 import setIcon from "../public/icons/settingsIcon.png";
+import { Home } from "lucide-react";
 
 import "@radix-ui/themes/styles.css";
 import FocusTimer from "./components/FocusTimer";
@@ -26,67 +27,39 @@ const Toggle = ({
   </div>
 );
 
-const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
+const BlocklistEditor = () => {
   const [blocklist, setBlocklist] = useState<string[]>([]);
-  const [relaxlist, setRelaxlist] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
-  const [activeHours, setActiveHours] = useState<{ start: number; end: number }>({
-    start: 0,
-    end: 0,
-  });
-  const [isValid, setIsValid] = useState(true);
-  const [isBlockedNow, setIsBlockedNow] = useState(false);
-  const [currentTab, setCurrentTab] = useState<"blocklist" | "relaxlist">("blocklist");
+  const [inFocusSession, setInFocusSession] = useState(false);
   const loadedOnce = useRef(false);
 
-  const checkIfBlockedNow = (hours: { start: number; end: number }) => {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const { start, end } = hours;
-    return start <= end
-      ? currentHour >= start && currentHour < end
-      : currentHour >= start || currentHour < end; // overnight
+  const computeInFocusSession = (state: any) => {
+    return !!(state && state.started === true && state.onBreak !== true);
   };
 
   useEffect(() => {
     if (loadedOnce.current) return;
-    chrome.storage.local.get(["blocklist", "relaxlist", "activeHours"], (data) => {
+    chrome.storage.local.get(["blocklist", "focusSessionState"], (data) => {
       if (data.blocklist) setBlocklist(data.blocklist);
-      if (data.relaxlist) setRelaxlist(data.relaxlist);
-      if (data.activeHours) setActiveHours(data.activeHours);
-      setIsBlockedNow(checkIfBlockedNow(data.activeHours || activeHours));
+      setInFocusSession(computeInFocusSession(data.focusSessionState));
       loadedOnce.current = true;
     });
+
+    const handler = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName !== "local") return;
+      if (changes.focusSessionState) {
+        setInFocusSession(computeInFocusSession(changes.focusSessionState.newValue));
+      }
+      if (changes.blocklist) {
+        setBlocklist(changes.blocklist.newValue || []);
+      }
+    };
+    chrome.storage.onChanged.addListener(handler);
+    return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsBlockedNow(checkIfBlockedNow(activeHours));
-    }, 1000 * 60); // every minute
-    return () => clearInterval(interval);
-  }, [activeHours]);
-
-  const handleActiveHoursChange = (start: number, end: number) => {
-    const sanitizedStart = Math.max(0, Math.min(23, Math.floor(start)));
-    const sanitizedEnd = Math.max(0, Math.min(23, Math.floor(end)));
-    setActiveHours({ start: sanitizedStart, end: sanitizedEnd });
-
-    // Validation: must be within 0-23, start and end cannot be NaN
-    setIsValid(
-      !isNaN(sanitizedStart) &&
-        !isNaN(sanitizedEnd) &&
-        sanitizedStart >= 0 &&
-        sanitizedStart <= 23 &&
-        sanitizedEnd >= 0 &&
-        sanitizedEnd <= 23,
-    );
-  };
-
-  const saveActiveHours = () => {
-    if (!isValid) return;
-    chrome.storage.local.set({ activeHours });
-    setIsBlockedNow(checkIfBlockedNow(activeHours));
-  };
 
   const normalizeDomain = (input: string) => {
     let domain = input.trim().toLowerCase();
@@ -96,8 +69,12 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
   };
 
   const addSite = () => {
-    if (isBlockedNow || !newSite) return;
+    if (inFocusSession || !newSite.trim()) return;
     const formatted = normalizeDomain(newSite);
+    if (!formatted) {
+      setNewSite("");
+      return;
+    }
     if (!blocklist.includes(formatted)) {
       const updated = [...blocklist, formatted];
       setBlocklist(updated);
@@ -107,147 +84,46 @@ const BlocklistEditor = ({ onClose }: { onClose: () => void }) => {
   };
 
   const removeSite = (site: string) => {
-    if (isBlockedNow) return;
+    if (inFocusSession) return;
     const updatedBlock = blocklist.filter((s) => s !== site);
     setBlocklist(updatedBlock);
     chrome.storage.local.set({ blocklist: updatedBlock });
-
-    if (relaxlist.includes(site)) {
-      const updatedRelax = relaxlist.filter((s) => s !== site);
-      setRelaxlist(updatedRelax);
-      chrome.storage.local.set({ relaxlist: updatedRelax });
-    }
-  };
-
-  const toggleRelaxlist = (site: string) => {
-    let updatedRelax: string[];
-    if (relaxlist.includes(site)) {
-      updatedRelax = relaxlist.filter((s) => s !== site);
-    } else {
-      updatedRelax = [...relaxlist, site];
-    }
-    setRelaxlist(updatedRelax);
-    chrome.storage.local.set({ relaxlist: updatedRelax });
   };
 
   return (
     <div className="blocklist-editor">
-      <h2 className="settings-title">Manage Websites</h2>
-
-      <div className="tab-buttons">
-        <button
-          className={`tab-button ${currentTab === "blocklist" ? "active" : ""}`}
-          onClick={() => setCurrentTab("blocklist")}
-        >
-          Blocklist
-        </button>
-        <button
-          className={`tab-button ${currentTab === "relaxlist" ? "active" : ""}`}
-          onClick={() => setCurrentTab("relaxlist")}
-        >
-          Relaxlist
+      <p className="blocklist-instructions">Enter a site to block during your Focus Sessions:</p>
+      <div className="site-input-container">
+        <input
+          type="text"
+          value={newSite}
+          placeholder="e.g. youtube.com"
+          onChange={(e) => setNewSite(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") addSite();
+          }}
+          disabled={inFocusSession}
+        />
+        <button onClick={addSite} disabled={inFocusSession}>
+          Add
         </button>
       </div>
 
-      {currentTab === "blocklist" && (
-        <>
-          <p className="blocklist-instructions">Enter a site to block during your active hours:</p>
-          <div className="site-input-container">
-            <input
-              type="text"
-              value={newSite}
-              placeholder="Enter site to block"
-              onChange={(e) => setNewSite(e.target.value)}
-              disabled={isBlockedNow}
-            />
-            <button onClick={addSite} disabled={isBlockedNow}>
-              Add
+      <ul className="site-list">
+        {blocklist.length === 0 && <li>No sites in Blocklist</li>}
+        {blocklist.map((site) => (
+          <li key={site} className="site-card">
+            <span>{site}</span>
+            <button onClick={() => removeSite(site)} disabled={inFocusSession}>
+              Remove
             </button>
-          </div>
+          </li>
+        ))}
+      </ul>
 
-          <ul className="site-list">
-            {blocklist.map((site) => (
-              <li key={site} className="site-card">
-                <span>{site}</span>
-                <div className="site-actions">
-                  <button
-                    className={relaxlist.includes(site) ? "active" : ""}
-                    onClick={() => toggleRelaxlist(site)}
-                  >
-                    {relaxlist.includes(site) ? "Relax ✓" : "Add to Relax"}
-                  </button>
-                  <button onClick={() => removeSite(site)} disabled={isBlockedNow}>
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="active-hours-container">
-            <label>
-              Start Hour:
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={activeHours.start}
-                onChange={(e) => handleActiveHoursChange(+e.target.value, activeHours.end)}
-                disabled={isBlockedNow}
-                className="active-hours-input"
-              />
-            </label>
-            <label>
-              End Hour:
-              <input
-                type="number"
-                min={0}
-                max={23}
-                value={activeHours.end}
-                onChange={(e) => handleActiveHoursChange(activeHours.start, +e.target.value)}
-                disabled={isBlockedNow}
-                className="active-hours-input"
-              />
-            </label>
-            <button
-              className="save-hours-btn"
-              onClick={saveActiveHours}
-              disabled={!isValid || isBlockedNow}
-            >
-              Save
-            </button>
-          </div>
-
-          {isBlockedNow && (
-            <p className="settings-warning">Blocklist is locked during active hours</p>
-          )}
-        </>
+      {inFocusSession && (
+        <p className="settings-warning">Blocklist is locked during a Focus Session</p>
       )}
-
-      {currentTab === "relaxlist" && (
-        <>
-          <p className="blocklist-instructions">These websites are accessable during your breaks</p>
-          <ul className="site-list">
-            {relaxlist.length === 0 && <li>No sites in Relaxlist</li>}
-            {relaxlist.map((site) => (
-              <li key={site} className="site-card">
-                <span>{site}</span>
-                <button
-                  className="remove-button"
-                  onClick={() => toggleRelaxlist(site)}
-                  disabled={isBlockedNow}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      <button className="close-button" onClick={onClose}>
-        Back
-      </button>
     </div>
   );
 };
@@ -270,10 +146,12 @@ const App = () => {
   const [gmailBlurEnabled, setGmailBlurEnabled] = useState(true);
   const [promotionBlurEnabled, setPromotionBlurEnabled] = useState(true);
   const [socialBlurEnabled, setSocialBlurEnabled] = useState(true);
+  const [redditBlurHomeFeed, setRedditBlurHomeFeed] = useState(true);
+  const [redditBlurCommunities, setRedditBlurCommunities] = useState(true);
+  const [redditBlurComments, setRedditBlurComments] = useState(true);
 
   const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
-
-  const [showBlocklist, setShowBlocklist] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"blurring" | "blocklist">("blurring");
 
   const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -367,34 +245,6 @@ const App = () => {
     };
     chrome.storage.onChanged.addListener(onChanged);
     return () => chrome.storage.onChanged.removeListener(onChanged);
-  }, []);
-
-  // Live session timer update
-  useEffect(() => {
-    chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
-      setBlurEnabled(blurEnabled);
-    });
-    chrome.storage.local.get({ commentsHidden: true }, ({ commentsHidden }) => {
-      setHidden(commentsHidden);
-    });
-    chrome.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
-      setHomeBlurEnabled(homePageBlurEnabled);
-    });
-    chrome.storage.local.get({ shortsBlurEnabled: true }, ({ shortsBlurEnabled }) => {
-      setShortsBlurEnabled(shortsBlurEnabled);
-    });
-    chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled }) => {
-      setYouBlurEnabled(youMenuBlurEnabled);
-    });
-    chrome.storage.local.get(
-      { wikipediaLinkPopupEnabled: true },
-      ({ wikipediaLinkPopupEnabled }) => {
-        setWikipediaLinkPopupEnabled(wikipediaLinkPopupEnabled);
-      },
-    );
-    chrome.storage.local.get({ wikipediaMainBlur: true }, ({ wikipediaMainBlur }) => {
-      setWikipediaMainBlur(wikipediaMainBlur);
-    });
   }, []);
 
   const handleCompleteUnfocusSession = (domain: string) => {
@@ -694,27 +544,48 @@ const App = () => {
 
   const mainView = (
     <div className="main-view">
-      <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-      <h1 className="popup-title">{t("home_title")}</h1>
+      <div className="main-header">
+        <div className="main-header-start">
+          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        </div>
+        <h1 className="popup-title">{t("home_title")}</h1>
+        <div className="main-header-end">
+          <button
+            type="button"
+            className="settings-icon-button"
+            aria-label={t("settings_title")}
+            onClick={() => {
+              if (currentDomain && allUnfocusSessions[currentDomain]) {
+                setSettingsBlockedMessage(true);
+                setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
+              } else {
+                setShowSettings(true);
+              }
+            }}
+          >
+            <img src={setIcon} alt="" className="settings-icon" />
+          </button>
+        </div>
+      </div>
       {/* Tab buttons */}
       <div className="tab-buttons">
         <button
           className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
           onClick={() => setCurrentTab("timer")}
         >
-          Focus Timer
+          <span className="tab-label">Focus Timer</span>
         </button>
-        <button
-          className={`tab-button ${currentTab === "active" ? "active" : ""}`}
-          onClick={() => setCurrentTab("active")}
-        >
-          Active Sessions
-          {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length > 0 && (
+        {(activeFocusSession || Object.keys(allUnfocusSessions).length > 0) && (
+          <button
+            className={`tab-button ${currentTab === "active" ? "active" : ""}`}
+            onClick={() => setCurrentTab("active")}
+          >
+            <span className="tab-label">Sessions</span>
             <span className="tab-badge">
               {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
             </span>
-          )}
-        </button>
+          </button>
+        )}
       </div>
       {/* Tab content */}
       {currentTab === "timer" && (
@@ -751,7 +622,7 @@ const App = () => {
                 </button>
               </div>
             ) : (
-              <p className="no-session">No focus session running</p>
+              <p className="no-session">No focus sessions running</p>
             )}
           </section>
 
@@ -787,19 +658,6 @@ const App = () => {
           </section>
         </div>
       )}
-      <img
-        src={setIcon}
-        alt="Settings Icon"
-        className="settings-icon"
-        onClick={() => {
-          if (currentDomain && allUnfocusSessions[currentDomain]) {
-            setSettingsBlockedMessage(true);
-            setTimeout(() => setSettingsBlockedMessage(false), 3000); // hide after 3 sec
-          } else {
-            setShowSettings(true);
-          }
-        }}
-      />
       {settingsBlockedMessage && (
         <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}
@@ -807,95 +665,175 @@ const App = () => {
   );
 
   const settingsView = (
-    <div>
-      <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-      <h2 className="settings-title">{t("settings_title")}</h2>
-      <div className="options-container">
-        <h3 className="settings-label">YouTube</h3>
-        <label className="option-label">
-          <span className="option-text">{t("blur_home")}</span>
-          <Toggle checked={homeBlurEnabled} onChange={handleHomeBlurToggle} />
-        </label>
-        <div style={{ display: "none" }}>
-          <label className="option-label">
-            <span className="option-text">{t("blur_distractions")}</span>
-            <Toggle checked={blurEnabled} onChange={handleBlurToggle} />
-          </label>
+    <div className="settings-view">
+      <div className="settings-header">
+        <div className="settings-header-start">
+          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
         </div>
-        <label className="option-label">
-          <span className="option-text">{t("hide_comments")}</span>
-          <Toggle checked={hidden} onChange={handleCommentsToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">{t("blur_shorts")}</span>
-          <Toggle checked={shortsBlurEnabled} onChange={handleShortsBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">{t("blur_you_menu")}</span>
-          <Toggle checked={youBlurEnabled} onChange={handleYouBlurToggle} />
-        </label>
-
-        <h3 className="settings-label">LinkedIn</h3>
-        <label className="option-label">
-          <span className="option-text">{t("blur_linkedin_home")}</span>
-          <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("remove_badges")}</span>
-          <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">{t("blur_news")}</span>
-          <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
-        </label>
-        <h3 className="settings-label">Wikipedia</h3>
-        <label className="option-label">
-          <span className="option-text">Link Popup</span>
-          <Toggle checked={wikipediaLinkPopupEnabled} onChange={handleWikipediaLinkPopupToggle} />
-        </label>
-        <label className="option-label">
-          <span className="option-text">Main Page Blur</span>
-          <Toggle checked={wikipediaMainBlur} onChange={handleWikipediaMainBlurToggle} />
-        </label>
-        <h3 className="settings-label">Gmail</h3>
-        <label className="option-label">
-          <span className="option-text">Blur Gmail</span>
-          <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">Blur Promotions</span>
-          <Toggle checked={promotionBlurEnabled} onChange={handlePromotionBlurToggle} />
-        </label>
-
-        <label className="option-label">
-          <span className="option-text">Blur Social and Updates</span>
-          <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
-        </label>
+        <h2 className="settings-title">{t("settings_title")}</h2>
+        <button
+          type="button"
+          className="settings-icon-button"
+          aria-label={t("close_button")}
+          onClick={() => setShowSettings(false)}
+        >
+          <Home aria-hidden="true" size={22} strokeWidth={3} />
+        </button>
       </div>
-      <button className="close-button" onClick={() => setShowBlocklist(true)}>
-        Edit Blocklist
-      </button>
+      <div className="tab-buttons settings-tabs">
+        <button
+          className={`tab-button ${settingsTab === "blurring" ? "active" : ""}`}
+          onClick={() => setSettingsTab("blurring")}
+        >
+          <span className="tab-label">Blurring</span>
+        </button>
+        <button
+          className={`tab-button ${settingsTab === "blocklist" ? "active" : ""}`}
+          onClick={() => setSettingsTab("blocklist")}
+        >
+          <span className="tab-label">Blocklist</span>
+        </button>
+      </div>
+      {settingsTab === "blurring" && (
+        <div className="options-container">
+          <details className="settings-accordion" open>
+            <summary>YouTube</summary>
+            <label className="option-label">
+              <span className="option-text">{t("blur_home")}</span>
+              <Toggle checked={homeBlurEnabled} onChange={handleHomeBlurToggle} />
+            </label>
+            <div style={{ display: "none" }}>
+              <label className="option-label">
+                <span className="option-text">{t("blur_distractions")}</span>
+                <Toggle checked={blurEnabled} onChange={handleBlurToggle} />
+              </label>
+            </div>
+            <label className="option-label">
+              <span className="option-text">{t("hide_comments")}</span>
+              <Toggle checked={hidden} onChange={handleCommentsToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_shorts")}</span>
+              <Toggle checked={shortsBlurEnabled} onChange={handleShortsBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_you_menu")}</span>
+              <Toggle checked={youBlurEnabled} onChange={handleYouBlurToggle} />
+            </label>
+          </details>
 
-      <button className="close-button" onClick={() => setShowSettings(false)}>
-        {t("close_button")}
-      </button>
-    </div>
-  );
+          <details className="settings-accordion">
+            <summary>LinkedIn</summary>
+            <label className="option-label">
+              <span className="option-text">{t("blur_linkedin_home")}</span>
+              <Toggle checked={linkedinBlurHome} onChange={handleLinkedinHomeToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("remove_badges")}</span>
+              <Toggle checked={linkedinRemoveBadges} onChange={handleLinkedinBadgeToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">{t("blur_news")}</span>
+              <Toggle checked={linkedinBlurNews} onChange={handleLinkedinNewsToggle} />
+            </label>
+          </details>
 
-  return (
-    <div className="popup-container">
-      {showBlocklist ? (
-        <BlocklistEditor onClose={() => setShowBlocklist(false)} />
-      ) : showSettings ? (
-        settingsView
-      ) : (
-        mainView
+          <details className="settings-accordion">
+            <summary>Wikipedia</summary>
+            <label className="option-label">
+              <span className="option-text">Link Popup</span>
+              <Toggle
+                checked={wikipediaLinkPopupEnabled}
+                onChange={handleWikipediaLinkPopupToggle}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Main Page Blur</span>
+              <Toggle checked={wikipediaMainBlur} onChange={handleWikipediaMainBlurToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>Gmail</summary>
+            <label className="option-label">
+              <span className="option-text">Blur Gmail</span>
+              <Toggle checked={gmailBlurEnabled} onChange={handleGmailBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Promotions</span>
+              <Toggle checked={promotionBlurEnabled} onChange={handlePromotionBlurToggle} />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Social and Updates</span>
+              <Toggle checked={socialBlurEnabled} onChange={handleSocialBlurToggle} />
+            </label>
+          </details>
+
+          <details className="settings-accordion">
+            <summary>Reddit</summary>
+            <label className="option-label">
+              <span className="option-text">Blur Home Feed</span>
+              <Toggle
+                checked={redditBlurHomeFeed}
+                onChange={async () => {
+                  const v = !redditBlurHomeFeed;
+                  setRedditBlurHomeFeed(v);
+                  await chrome.storage.local.set({ redditBlurHomeFeed: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_HOME_FEED",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Communities</span>
+              <Toggle
+                checked={redditBlurCommunities}
+                onChange={async () => {
+                  const v = !redditBlurCommunities;
+                  setRedditBlurCommunities(v);
+                  await chrome.storage.local.set({ redditBlurCommunities: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_COMMUNITIES",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+            <label className="option-label">
+              <span className="option-text">Blur Comments</span>
+              <Toggle
+                checked={redditBlurComments}
+                onChange={async () => {
+                  const v = !redditBlurComments;
+                  setRedditBlurComments(v);
+                  await chrome.storage.local.set({ redditBlurComments: v });
+                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  if (tab?.id)
+                    chrome.tabs.sendMessage(tab.id, {
+                      type: "TOGGLE_REDDIT_COMMENTS",
+                      payload: v,
+                    });
+                }}
+              />
+            </label>
+          </details>
+        </div>
+      )}
+      {settingsTab === "blocklist" && (
+        <div className="blocklist-tab">
+          <BlocklistEditor />
+        </div>
       )}
     </div>
   );
+
+  return <div className="popup-container">{showSettings ? settingsView : mainView}</div>;
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
