@@ -1,313 +1,128 @@
 @import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
-/* ─── Container ─────────────────────────────────────────────────────── */
 .focus-timer-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  min-height: 100%;
+  align-items: flex-start; /* stick content to the top */
+  height: 100%; /* only take as much height as content */
   color: #e9902c;
-  padding: 1rem;
+  padding: 1rem 0; /* optional: keep a little breathing room */
 }
 
 .focus-timer-content {
   width: 100%;
-  max-width: 420px;
-}
-
-/* ─── Setup View ─────────────────────────────────────────────────────── */
-.setup-view {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.setup-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #e9902c;
-  text-align: center;
-  margin: 0;
-}
-
-.input-label {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #e9902c;
-  margin-bottom: 8px;
-}
-
-.input-label-sm {
-  font-size: 0.8rem;
-  color: #e9902c;
-  opacity: 0.8;
+  max-width: 600px;
 }
 
 .task-input-container {
-  display: flex;
-  flex-direction: column;
+  text-align: center;
+  margin-bottom: 20px;
+  margin-right: 20px;
 }
 
 .task-input {
   width: 100%;
-  padding: 10px 14px;
-  font-size: 1rem;
+  padding: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
   border-radius: 12px;
   border: 2px solid #e9902c;
   outline: none;
-  background-color: #fab363;
-  color: #fff;
-  box-sizing: border-box;
+  background-color: #f3a650; /* matches bg-neutral-800 */
+  color: #fffcf6;
+  text-align: center;
 }
 
-.task-input::placeholder {
-  color: rgba(255, 255, 255, 0.65);
+.task-input:hover {
+  background-color: #e9902c;
 }
 
 .task-input:focus {
   background-color: #e9902c;
 }
 
-/* ─── Duration Sections ──────────────────────────────────────────────── */
-.duration-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: rgba(233, 144, 44, 0.08);
-  border-radius: 12px;
-  padding: 14px;
-  border: 1px solid rgba(233, 144, 44, 0.2);
+.task-input::placeholder {
+  color: #535250; /* or any color you like */
+  opacity: 0.5; /* makes sure the color isn't faded by default */
 }
 
-.preset-grid {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.breakduration-input {
+  margin-bottom: 15px;
+  margin-right: 20px;
 }
 
-.preset-btn {
-  flex: 1;
-  min-width: 60px;
-  padding: 8px 4px;
-  border-radius: 8px;
-  border: 2px solid #e9902c;
-  background: transparent;
+.break-title {
   color: #e9902c;
-  font-size: 0.9rem;
+  font-size: large;
   font-weight: bold;
-  cursor: pointer;
-  transition: all 0.15s ease;
 }
 
-.preset-btn:hover {
-  background: #fab363;
-  color: #fff;
-}
-
-.preset-btn--active {
-  background: #e9902c;
-  color: #fff;
-}
-
-.custom-input-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.custom-time-input {
-  font-family: "Courier Prime", monospace;
-  font-size: 1.1rem;
-  font-weight: bold;
-  width: 90px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 2px solid #e9902c;
-  background: #fab363;
-  color: #fff;
-  text-align: center;
-  outline: none;
-}
-
-.custom-time-input:focus {
-  background: #e9902c;
-}
-
-/* ─── Start Button ───────────────────────────────────────────────────── */
-.start-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 14px;
+.break-input {
+  font-family: "Courier Prime", sans-serif;
+  font-weight: 200;
+  width: 20%;
+  padding: 7px;
+  font-size: 1.5rem;
   border-radius: 12px;
   border: none;
-  background: #e9902c;
+  outline: none;
+  background-color: #fab363; /* matches bg-neutral-800 */
   color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.start-btn:hover {
-  background: #d4821e;
-}
-
-.start-btn--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.task-warning {
   text-align: center;
-  font-size: 0.85rem;
-  color: #e9902c;
-  opacity: 0.7;
-  margin: 0;
+  margin-left: 10px;
 }
 
-/* ─── Active Timer View ──────────────────────────────────────────────── */
-.timer-view {
+.break-input:hover {
+  background-color: #e9902c; /* matches bg-neutral-800 */
+}
+
+.break-input:focus {
+  background-color: #e9902c; /* matches bg-neutral-800 */
+}
+
+.sliders-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.control-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fab363;
+  padding: 20px;
+  border-radius: 50%;
+  border: 2px solid #e9902c;
+  cursor: pointer;
+}
+
+.control-button:hover {
+  background-color: #e9902c;
+}
+
+.timer-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
 }
 
-.phase-badge {
-  display: flex;
-  align-items: center;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: bold;
-}
-
-.phase-badge--work {
-  background: rgba(233, 144, 44, 0.15);
-  color: #e9902c;
-  border: 1px solid #e9902c;
-}
-
-.phase-badge--break {
-  background: rgba(76, 175, 80, 0.15);
-  color: #4caf50;
-  border: 1px solid #4caf50;
-}
-
-.active-task {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #e9902c;
-  text-align: center;
-  margin: 0;
-  opacity: 0.85;
-}
-
-/* ─── Ring ───────────────────────────────────────────────────────────── */
-.ring-container {
-  width: 200px;
-  height: 200px;
-}
-
 .timer-svg {
-  width: 100%;
-  height: 100%;
+  width: 12rem;
+  height: 12rem;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.timer-svg circle:nth-of-type(2) {
+  transition: stroke-dashoffset 0.6s ease-in-out;
 }
 
 .timer-text {
   fill: #e9902c;
-  font-size: 2rem;
-  font-family: "Courier Prime", monospace;
-  font-weight: bold;
-}
-
-.timer-subtext {
-  fill: #e9902c;
-  font-size: 0.75rem;
-  font-family: sans-serif;
-  opacity: 0.65;
-}
-
-/* ─── Progress Bar ───────────────────────────────────────────────────── */
-.progress-bar-container {
-  width: 100%;
-  height: 8px;
-  background: #ffe4c6;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-}
-
-.progress-labels {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 0.75rem;
-  color: #e9902c;
-  opacity: 0.7;
-}
-
-/* ─── Controls ───────────────────────────────────────────────────────── */
-.timer-controls {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.control-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: none;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.control-btn--primary {
-  background: #e9902c;
-  color: #fff;
-}
-
-.control-btn--primary:hover {
-  background: #d4821e;
-}
-
-.control-btn--secondary {
-  background: #fab363;
-  color: #fff;
-}
-
-.control-btn--secondary:hover {
-  background: #e9902c;
-}
-
-.control-btn--danger {
-  background: transparent;
-  color: #e9902c;
-  border: 2px solid #e9902c;
-}
-
-.control-btn--danger:hover {
-  background: rgba(233, 144, 44, 0.1);
-}
-
-/* ─── Break Hint ─────────────────────────────────────────────────────── */
-.break-hint {
-  font-size: 0.8rem;
-  color: #e9902c;
-  opacity: 0.6;
-  text-align: center;
-  margin: 0;
+  font-size: 1.75rem;
+  font-family: monospace;
 }
