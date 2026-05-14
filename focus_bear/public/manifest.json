@@ -57,6 +57,10 @@
       "matches": ["*://*.reddit.com/*"],
       "js": ["content.js", "reddit.js"],
       "css": ["assets/intentionPopup.css"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["tts.js"]
     }
   ],
   "web_accessible_resources": [
