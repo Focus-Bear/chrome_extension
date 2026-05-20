@@ -47,11 +47,11 @@
     "message": "No active unfocus sessions"
   },
   "headings": {
-    "message": "Still here? Set your intention.|Caught you mid-scroll—what's up?|Real work—or rabbit hole?|Focus check: what's this for?|Sneak peek—or serious work?|Before the feed eats you…|Quick check—why this tab?|Scrolling—or here on purpose?|Honest—why open this tab?",
+    "message": "Still here? Set your intention.|Caught you mid scroll what's up?|Real work or a rabbit hole?|Focus check: what's this for?|Sneak peek or serious work?|Before the feed eats you…|Quick check why this tab?|Scrolling or here on purpose?|Honest why open this tab?",
     "description": "Greeting heading for intention popup"
   },
   "prompts": {
-    "message": "What's worth your honest attention on this visit?|Grizzly focus, or a quick paw through this page?|If you finish one thing here, what should it be?|Work brain fully on—or is curiosity driving?|What would make closing this tab feel like a win?|Something you're chasing—or still stirring the pot?|Deadline sprint, deep learning, or a mindful break?|What would productivity mean in the next few minutes?|Proud to log this as work—or honest about wandering?|In your own words: what are you actually doing here?",
+    "message": "What's worth your honest attention on this visit?|Grizzly focus, or a quick paw through this page?|If you finish one thing here, what should it be?|Work brain fully on or is curiosity driving?|What would make closing this tab feel like a win?|Something you're chasing or still stirring the pot?|Deadline sprint, deep learning, or a mindful break?|What would productivity mean in the next few minutes?|Proud to log this as work or honest about wandering?|What are you actually doing here?",
     "description": "Prompt asking user for their intention"
   },
   "placeholder": {
@@ -63,7 +63,7 @@
     "description": "Warning shown if intention is too short for long durations"
   },
   "duration": {
-    "message": "How long should we watch together for?",
+    "message": "How long should we be on this website for?",
     "description": "Prompt asking for focus duration"
   },
   "button": {
@@ -80,23 +80,23 @@
   },
   "minute_1": {
     "message": "1 minute",
-    "description": "1-minute duration option"
+    "description": "1 minute duration option"
   },
   "minute_5": {
     "message": "5 minutes",
-    "description": "5-minute duration option"
+    "description": "5 minute duration option"
   },
   "minute_10": {
     "message": "10 minutes",
-    "description": "10-minute duration option"
+    "description": "10 minute duration option"
   },
   "minute_15": {
     "message": "15 minutes",
-    "description": "15-minute duration option"
+    "description": "15 minute duration option"
   },
   "minute_30": {
     "message": "30 minutes",
-    "description": "30-minute duration option"
+    "description": "30 minute duration option"
   },
   "settings_locked_during_unfocus_session": {
     "message": "⚠️ Settings cannot be configured during an active unfocus session.",

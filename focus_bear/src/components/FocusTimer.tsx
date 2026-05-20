@@ -24,9 +24,12 @@ const formatTime = (secs: number) => {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 };
 
+const clampWorkMinutes = (n: number) => Math.min(999, Math.max(1, n));
+
 const FocusTimer: React.FC = () => {
   const [task, setTask] = useState("");
   const [workDuration, setWorkDuration] = useState(DEFAULT_WORK);
+  const [customWorkMins, setCustomWorkMins] = useState(String(DEFAULT_WORK / 60));
   const [breakDuration, setBreakDuration] = useState(DEFAULT_BREAK);
   const [timeLeft, setTimeLeft] = useState(DEFAULT_WORK);
   const [isRunning, setIsRunning] = useState(false);
@@ -46,6 +49,7 @@ const FocusTimer: React.FC = () => {
           : (saved.timeLeft ?? workDuration);
         setTask(task);
         setWorkDuration(workDuration);
+        setCustomWorkMins(String(Math.floor(workDuration / 60)));
         setBreakDuration(breakDuration);
         setIsRunning(isRunning);
         setStarted(started);
@@ -73,6 +77,7 @@ const FocusTimer: React.FC = () => {
         setOnBreak(false);
         setWorkDuration((wd) => {
           setTimeLeft(wd);
+          setCustomWorkMins(String(Math.floor(wd / 60)));
           return wd;
         });
       } else {
@@ -82,6 +87,7 @@ const FocusTimer: React.FC = () => {
           : (next.timeLeft ?? workDuration);
         setTask(task);
         setWorkDuration(workDuration);
+        setCustomWorkMins(String(Math.floor(workDuration / 60)));
         setBreakDuration(breakDuration);
         setIsRunning(isRunning);
         setStarted(started);
@@ -186,6 +192,7 @@ const FocusTimer: React.FC = () => {
                     className={`preset-btn ${workDuration === p.value ? "preset-btn--active" : ""}`}
                     onClick={() => {
                       setWorkDuration(p.value);
+                      setCustomWorkMins(String(p.value / 60));
                       setTimeLeft(p.value);
                     }}
                   >
@@ -193,23 +200,38 @@ const FocusTimer: React.FC = () => {
                   </button>
                 ))}
               </div>
-              {/* Custom work input */}
+              {/* Custom work: minutes only, max 3 digits, 1–999 min */}
               <div className="custom-input-row">
-                <label className="input-label-sm">Custom (MM:SS)</label>
+                <label className="input-label-sm">Custom (min)</label>
                 <input
                   type="text"
-                  defaultValue={formatTime(workDuration)}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={3}
+                  value={customWorkMins}
                   className="custom-time-input"
-                  placeholder="MM:SS"
-                  onBlur={(e) => {
-                    const [m, s] = e.target.value.split(":").map(Number);
-                    const total = (m || 0) * 60 + (s || 0);
-                    if (total >= 60 && total <= 3600) {
-                      setWorkDuration(total);
-                      setTimeLeft(total);
-                    } else {
-                      e.target.value = formatTime(workDuration);
+                  placeholder="e.g. 30"
+                  onFocus={() => setCustomWorkMins("")}
+                  onChange={(e) => {
+                    const next = e.target.value.replace(/\D/g, "").slice(0, 3);
+                    setCustomWorkMins(next);
+                    const n = parseInt(next, 10);
+                    if (next !== "" && !Number.isNaN(n)) {
+                      const mins = clampWorkMinutes(n);
+                      const sec = mins * 60;
+                      setWorkDuration(sec);
+                      setTimeLeft(sec);
                     }
+                  }}
+                  onBlur={() => {
+                    const n = parseInt(customWorkMins, 10);
+                    const mins = clampWorkMinutes(
+                      Number.isNaN(n) ? Math.floor(workDuration / 60) : n,
+                    );
+                    setCustomWorkMins(String(mins));
+                    const sec = mins * 60;
+                    setWorkDuration(sec);
+                    setTimeLeft(sec);
                   }}
                 />
               </div>
