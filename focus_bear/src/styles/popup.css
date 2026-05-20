@@ -1,3 +1,5 @@
+@import url("./typography.css");
+
 html,
 body {
   margin: 0;
@@ -11,7 +13,7 @@ body {
   height: fit-content;
   padding: 12px 12px 12px;
   background-color: #fff8e7;
-  font-family: sans-serif;
+  font-family: var(--font-body);
 }
 
 /* Logo */
@@ -55,9 +57,11 @@ body {
 
 /* Titles */
 h1.popup-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 100%;
+  letter-spacing: -6.5%;
+  text-transform: lowercase;
   color: black;
   text-align: center;
 }

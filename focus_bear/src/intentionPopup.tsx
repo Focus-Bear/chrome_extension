@@ -8,27 +8,28 @@ import iconUrl from "../public/icons/bearLogo.png";
 const containerId = "focus-popup-container";
 
 const headings = [
-  "Still here? Set your intention.",
-  "Caught you mid-scroll—what's up?",
-  "Real work—or rabbit hole?",
+  "Still here? What are you up to?",
+  "Caught you lacking, jk",
+  "Real work or a rabbit hole?",
   "Focus check: what's this for?",
-  "Sneak peek—or serious work?",
+  "Psuedo work or serious work?",
   "Before the feed eats you…",
-  "Quick check—why this tab?",
-  "Scrolling—or here on purpose?",
-  "Honest—why open this tab?",
+  "Quick check, why this tab?",
+  "Scrolling or here on purpose?",
+  "Do we need to open this tab?",
+  "The less tabs the better I say"
 ];
 
 const prompts = [
   "What's worth your honest attention on this visit?",
   "Grizzly focus, or a quick paw through this page?",
   "If you finish one thing here, what should it be?",
-  "Work brain fully on—or is curiosity driving?",
+  "Work brain fully on or is curiosity driving?",
   "What would make closing this tab feel like a win?",
-  "Something you're chasing—or still stirring the pot?",
+  "Something you're chasing or still stirring the pot?",
   "Deadline sprint, deep learning, or a mindful break?",
   "What would productivity mean in the next few minutes?",
-  "Proud to log this as work—or honest about wandering?",
+  "Proud to log this as work or honest about wandering?",
   "In your own words: what are you actually doing here?",
 ];
 
@@ -157,7 +158,7 @@ const IntentionPopup = () => {
     <div id="focus-popup" className="focus-popup">
       <div className="focus-popup-box">
         <div className="focus-popup-header">
-          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+          <img src={iconUrl} alt="Focus Bear" className="focus-logo" />
           <h2>{randomHeading}</h2>
         </div>
         <p className="focus-popup-text">{randomPrompt}</p>

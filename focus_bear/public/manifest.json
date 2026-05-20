@@ -61,7 +61,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["floatingPopup.js", "blocked.html", "assets/*"],
+      "resources": ["floatingPopup.js", "blocked.html", "assets/*", "fonts/*"],
       "matches": ["<all_urls>"]
     },
     {

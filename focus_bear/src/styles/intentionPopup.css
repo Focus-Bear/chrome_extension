@@ -1,3 +1,4 @@
+@import url("./typography.css");
 .focus-popup {
   position: fixed;
   inset: 0;
@@ -20,7 +21,8 @@
   background-color: #fff0d4;
   border: 3px solid #e9902c;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  font-family: sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
   text-align: left;
   box-sizing: border-box;
 }
@@ -44,7 +46,7 @@
 .focus-popup-header h2 {
   margin: 0;
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.2;
   color: #000000;
 }
