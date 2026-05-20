@@ -131,6 +131,11 @@
   outline: none;
 }
 
+.custom-time-input::placeholder {
+  color: #fff;
+  opacity: 1;
+}
+
 .custom-time-input:focus {
   background: #e9902c;
 }

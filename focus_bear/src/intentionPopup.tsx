@@ -9,26 +9,26 @@ const containerId = "focus-popup-container";
 
 const headings = [
   "Still here? Set your intention.",
-  "Caught you mid-scroll—what's up?",
-  "Real work—or rabbit hole?",
+  "Caught you scrolling what's up?",
+  "Real work or arabbit hole?",
   "Focus check: what's this for?",
-  "Sneak peek—or serious work?",
+  "Sneak peek or serious work?",
   "Before the feed eats you…",
-  "Quick check—why this tab?",
-  "Scrolling—or here on purpose?",
-  "Honest—why open this tab?",
+  "Question why this tab?",
+  "Scrolling or here on purpose?",
+  "Why are we opening this tab?",
 ];
 
 const prompts = [
   "What's worth your honest attention on this visit?",
   "Grizzly focus, or a quick paw through this page?",
   "If you finish one thing here, what should it be?",
-  "Work brain fully on—or is curiosity driving?",
+  "Work brain fully on or is curiosity driving?",
   "What would make closing this tab feel like a win?",
-  "Something you're chasing—or still stirring the pot?",
+  "Something you're chasing or still stirring the pot?",
   "Deadline sprint, deep learning, or a mindful break?",
   "What would productivity mean in the next few minutes?",
-  "Proud to log this as work—or honest about wandering?",
+  "Proud to log this as work or honest about wandering?",
   "In your own words: what are you actually doing here?",
 ];
 
