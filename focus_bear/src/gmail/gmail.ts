@@ -233,7 +233,10 @@ interface BlurToggleMessage {
 
   const observer = new MutationObserver(
     debounce(() => {
-      if (!isContextValid()) { tearDown(); return; }
+      if (!isContextValid()) {
+        tearDown();
+        return;
+      }
       try {
         chrome.storage.local.get(
           { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },

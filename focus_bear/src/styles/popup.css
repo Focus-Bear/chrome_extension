@@ -443,7 +443,9 @@ button.settings-action-button {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .site-input-container button:hover:not(:disabled) {
@@ -495,7 +497,9 @@ button.settings-action-button {
   background-color: #fffcf6;
   color: #e9902c;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .site-list li button:hover:not(:disabled) {
