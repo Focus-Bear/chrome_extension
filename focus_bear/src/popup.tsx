@@ -624,7 +624,7 @@ const App = () => {
             <div className="session-card focus-session-card">
               <div className="session-card-header">
                 <span className={`phase-badge phase-${activeFocusSession.phase}`}>
-                  {activeFocusSession.phase === "focus" ? "Focusing" : "On Break"}
+                  {activeFocusSession.phase === "focus" ? "Your Goal" : "On Break"}
                 </span>
                 {!activeFocusSession.isRunning && (
                   <span className="phase-badge phase-paused">Paused</span>
