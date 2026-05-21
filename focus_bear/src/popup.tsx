@@ -152,6 +152,7 @@ const App = () => {
 
   const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
   const [settingsTab, setSettingsTab] = useState<"blurring" | "blocklist">("blurring");
+  const [sessionsInitialized, setSessionsInitialized] = useState(false);
 
   const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -318,6 +319,8 @@ const App = () => {
         } else {
           setActiveFocusSession(null);
         }
+
+        setSessionsInitialized(true);
       });
     };
 
@@ -575,9 +578,17 @@ const App = () => {
           </button>
         </div>
       </div>
-      {/* Tab buttons — only shown when at least one session is active */}
-      {hasSessions && (
-        <div className="tab-buttons">
+      {/* Slot collapses to zero height when no session — no gap, no jump.
+          Ghost during the brief init window so height is already there
+          when a session is found on first load. */}
+      <div className={`tab-bar-slot${
+        sessionsInitialized && !hasSessions ? " tab-bar-slot--collapsed" : ""
+      }`}>
+        <div className={`tab-buttons${
+          !sessionsInitialized    ? " tab-buttons--ghost"
+          : hasSessions           ? " tab-buttons--visible"
+          :                         " tab-buttons--ghost"
+        }`}>
           <button
             className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
             onClick={() => setCurrentTab("timer")}
@@ -594,15 +605,12 @@ const App = () => {
             </span>
           </button>
         </div>
-      )}
-      {/* Tab content */}
-      {currentTab === "timer" && (
-        <div className="focus_session_player">
-          <FocusTimer />
-        </div>
-      )}
-      {currentTab === "active" && (
-        <div className="active-sessions">
+      </div>
+      {/* Tab content — always mounted to avoid remount flash; hidden via CSS */}
+      <div className={`focus_session_player${currentTab !== "timer" ? " tab-pane--hidden" : ""}`}>
+        <FocusTimer />
+      </div>
+      <div className={`active-sessions${currentTab !== "active" ? " tab-pane--hidden" : ""}`}>
           <section className="session-section">
             <h3 className="session-section-title">Focus Session</h3>
             {activeFocusSession ? (
@@ -665,7 +673,6 @@ const App = () => {
             )}
           </section>
         </div>
-      )}
       {settingsBlockedMessage && (
         <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}

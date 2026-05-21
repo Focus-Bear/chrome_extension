@@ -4,6 +4,12 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
+}
+
+/* Belt-and-suspenders scrollbar removal for Chrome */
+::-webkit-scrollbar {
+  display: none;
 }
 
 /* ─── Container ──────────────────────────────────────────────────────────── */
@@ -12,7 +18,7 @@ body {
   position: relative;
   width: 400px;
   height: fit-content;
-  padding: 12px;
+  padding: 10px;
   background-color: #fbf7ee;
   font-family: var(--font-body);
 }
@@ -234,6 +240,18 @@ img.settings-icon {
 
 /* ─── Tabs ───────────────────────────────────────────────────────────────── */
 
+/* Outer slot handles height — collapses to 0 when no session so no gap */
+.tab-bar-slot {
+  overflow: hidden;
+  max-height: 70px; /* safely above actual tab bar height */
+  transition: max-height 0.22s ease;
+}
+
+.tab-bar-slot--collapsed {
+  max-height: 0;
+}
+
+/* Inner visual bar */
 .tab-buttons {
   display: flex;
   margin: 0 0 18px;
@@ -243,6 +261,29 @@ img.settings-icon {
   border: 1px solid #e0b991;
   border-radius: 10px;
   box-shadow: inset 0 1px 2px rgba(102, 51, 0, 0.06);
+  transition: opacity 0.2s ease;
+}
+
+/* Invisible but occupies height — only used during the brief init window */
+.tab-buttons--ghost {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Fade in when a session becomes active */
+.tab-buttons--visible {
+  animation: tab-fade-in 0.2s ease;
+}
+
+@keyframes tab-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Hide tab pane content without unmounting it.
+   !important needed to beat the display:flex on .active-sessions */
+.tab-pane--hidden {
+  display: none !important;
 }
 
 .tab-button {

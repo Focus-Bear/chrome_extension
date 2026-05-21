@@ -82,6 +82,7 @@ const DurationSlider: React.FC<DurationSliderProps> = ({
 
 // ─── Focus Timer ──────────────────────────────────────────────────────
 const FocusTimer: React.FC = () => {
+  const [loading, setLoading] = useState(true);
   const [task, setTask] = useState("");
   const [workMin, setWorkMin] = useState(DEFAULT_WORK_MIN);
   const [breakMin, setBreakMin] = useState(DEFAULT_BREAK_MIN);
@@ -109,6 +110,7 @@ const FocusTimer: React.FC = () => {
         setOnBreak(!!onBreak);
         setTimeLeft(remaining);
       }
+      setLoading(false);
     });
   }, []);
 
@@ -207,8 +209,8 @@ const FocusTimer: React.FC = () => {
 
   return (
     <div className="ft-container">
-      <div className="ft-content">
-        {!started ? (
+      <div className={`ft-content${loading ? " ft-content--loading" : " ft-content--ready"}`}>
+        {!loading && !started ? (
           // ─── SETUP VIEW ─────────────────────────────────────────────
           <div className="ft-setup">
             <header className="ft-screen-head">
@@ -268,7 +270,7 @@ const FocusTimer: React.FC = () => {
             </button>
             {!task.trim() && <p className="ft-helper">Enter a task above to begin.</p>}
           </div>
-        ) : (
+        ) : !loading ? (
           // ─── ACTIVE TIMER VIEW ──────────────────────────────────────
           <div className="ft-active">
             <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
@@ -335,11 +337,11 @@ const FocusTimer: React.FC = () => {
             )}
             {!isRunning && (
               <p className="ft-active-hint">
-                Paused. Resume to keep your streak, or end the session.
+                Paused. Resume to keep your focus, or end the session.
               </p>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
