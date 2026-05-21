@@ -167,7 +167,7 @@ const IntentionPopup = () => {
   let actionHelp: string | null = null;
   if (!timer && !trimmed) actionHelp = "Add an intention and pick a duration to continue.";
   else if (!timer) actionHelp = "Choose how long you'll be on this site.";
-  else if (isShort) actionHelp = "Tell us a bit more — at least a few words.";
+  else if (isShort) actionHelp = "Tell us a bit more...";
 
   const helperText = isLongDuration
     ? "At least 15 characters for longer sessions"

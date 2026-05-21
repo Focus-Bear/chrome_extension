@@ -92,6 +92,9 @@ const FocusTimer: React.FC = () => {
   const [started, setStarted] = useState(false);
 
   const intervalRef = useRef<number | null>(null);
+  const [breakManuallySet, setBreakManuallySet] = useState(false);
+  const [breakJustStarted, setBreakJustStarted] = useState(false);
+  const prevOnBreakRef = useRef<boolean | null>(null);
 
   // Load persisted state
   useEffect(() => {
@@ -130,7 +133,9 @@ const FocusTimer: React.FC = () => {
         setIsRunning(false);
         setStarted(false);
         setOnBreak(false);
+        setBreakManuallySet(false);
         setWorkMin((wm) => {
+          setBreakMin(Math.max(1, Math.round(wm / 5)));
           setTimeLeft(wm * 60);
           return wm;
         });
@@ -168,6 +173,17 @@ const FocusTimer: React.FC = () => {
     return () => clearInterval(intervalRef.current!);
   }, [isRunning, onBreak, workMin, breakMin]);
 
+  // Detect work → break transition and show the break announcement banner
+  useEffect(() => {
+    if (prevOnBreakRef.current === false && onBreak) {
+      setBreakJustStarted(true);
+      const t = window.setTimeout(() => setBreakJustStarted(false), 5000);
+      prevOnBreakRef.current = onBreak;
+      return () => clearTimeout(t);
+    }
+    prevOnBreakRef.current = onBreak;
+  }, [onBreak]);
+
   const handlePause = () =>
     chrome.runtime.sendMessage({ action: "pauseFocusSession" }, () => setIsRunning(false));
 
@@ -179,6 +195,9 @@ const FocusTimer: React.FC = () => {
       setIsRunning(false);
       setOnBreak(false);
       setStarted(false);
+      setBreakJustStarted(false);
+      setBreakManuallySet(false);
+      setBreakMin(Math.max(1, Math.round(workMin / 5)));
       setTimeLeft(workMin * 60);
     });
 
@@ -248,6 +267,9 @@ const FocusTimer: React.FC = () => {
               onChange={(v) => {
                 setWorkMin(v);
                 setTimeLeft(v * 60);
+                if (!breakManuallySet) {
+                  setBreakMin(Math.max(1, Math.round(v / 5)));
+                }
               }}
             />
 
@@ -257,7 +279,10 @@ const FocusTimer: React.FC = () => {
               min={BREAK_MIN}
               max={BREAK_MAX}
               markers={BREAK_MARKERS}
-              onChange={(v) => setBreakMin(v)}
+              onChange={(v) => {
+                setBreakMin(v);
+                setBreakManuallySet(true);
+              }}
             />
 
             <button
@@ -273,9 +298,18 @@ const FocusTimer: React.FC = () => {
         ) : !loading ? (
           // ─── ACTIVE TIMER VIEW ──────────────────────────────────────
           <div className="ft-active">
+            {breakJustStarted && (
+              <div className="ft-break-announce" role="status" aria-live="assertive">
+                <span aria-hidden="true">☕</span>
+                <div className="ft-break-announce-text">
+                  <strong>Break time!</strong>
+                  <span>Step away for {breakMin} min</span>
+                </div>
+              </div>
+            )}
             <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
-              {/* <span className="ft-phase-dot" /> */}
-              <span>{onBreak ? "Break time" : "Your Goal:"}</span>
+              <span className="ft-phase-dot" />
+              <span>{onBreak ? "On break" : "Focusing"}</span>
             </div>
 
             <p className="ft-active-task" title={task}>
@@ -333,11 +367,14 @@ const FocusTimer: React.FC = () => {
             </div>
 
             {!onBreak && isRunning && (
-              <p className="ft-active-hint">Break starts automatically after {breakMin} min.</p>
+              <p className="ft-active-hint">Followed by a {breakMin}-min break</p>
+            )}
+            {onBreak && isRunning && (
+              <p className="ft-active-hint">Focus resumes automatically after this break</p>
             )}
             {!isRunning && (
               <p className="ft-active-hint">
-                Paused. Resume to keep your focus, or end the session.
+                Paused — resume to keep your focus, or end the session.
               </p>
             )}
           </div>

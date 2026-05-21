@@ -225,8 +225,7 @@
   border-color: var(--fp-gray-650);
 }
 .focus-textarea-shell:focus-within {
-  border-color: var(--fp-accent);
-  box-shadow: 0 0 0 3px rgba(233, 144, 44, 0.22);
+  border-color: var(--fp-gray-650);
 }
 .focus-textarea {
   width: 100%;
@@ -248,6 +247,12 @@
   color: var(--fp-text-meta);
   font-style: italic;
   opacity: 1;
+}
+/* The shell's border + left accent bar handle focus indication — suppress the
+   global focus-visible orange outline that fires on all text inputs */
+.focus-textarea:focus,
+.focus-textarea:focus-visible {
+  outline: none;
 }
 
 /* Help + count row */
