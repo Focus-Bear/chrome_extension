@@ -10,12 +10,12 @@ const containerId = "focus-popup-container";
 
 const headings = [
   "Still here? Set your intention.",
-  "Caught you scrolling what's up?",
-  "Real work or arabbit hole?",
+  "Caught you scrolling, what's up?",
+  "Real work, or a rabbit hole?",
   "Focus check: what's this for?",
   "Sneak peek or serious work?",
   "Before the feed eats you…",
-  "Question why this tab?",
+  "Question... why this tab?",
   "Scrolling or here on purpose?",
   "Why are we opening this tab?",
 ];

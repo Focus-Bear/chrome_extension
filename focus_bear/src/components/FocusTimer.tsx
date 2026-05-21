@@ -1,22 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, Square } from "lucide-react";
 import "./FocusTimer.css";
 
-const DEFAULT_WORK = 25 * 60;
-const DEFAULT_BREAK = 5 * 60;
-
-const WORK_PRESETS = [
-  { label: "15 min", value: 15 * 60 },
-  { label: "25 min", value: 25 * 60 },
-  { label: "45 min", value: 45 * 60 },
-  { label: "60 min", value: 60 * 60 },
-];
-
-const BREAK_PRESETS = [
-  { label: "5 min", value: 5 * 60 },
-  { label: "10 min", value: 10 * 60 },
-  { label: "15 min", value: 15 * 60 },
-];
+// ─── Constants ────────────────────────────────────────────────────────
+const DEFAULT_WORK_MIN = 25;
+const DEFAULT_BREAK_MIN = 5;
+const WORK_MIN = 5;
+const WORK_MAX = 120;
+const BREAK_MIN = 1;
+const BREAK_MAX = 30;
+const WORK_MARKERS = [15, 25, 45, 60, 90];
+const BREAK_MARKERS = [5, 10, 15, 20];
 
 const formatTime = (secs: number) => {
   const m = Math.floor(secs / 60);
@@ -24,21 +18,81 @@ const formatTime = (secs: number) => {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 };
 
-const clampWorkMinutes = (n: number) => Math.min(999, Math.max(1, n));
+// ─── Duration Slider ──────────────────────────────────────────────────
+interface DurationSliderProps {
+  label: string;
+  valueMin: number;
+  min: number;
+  max: number;
+  markers: number[];
+  onChange: (v: number) => void;
+}
 
+const DurationSlider: React.FC<DurationSliderProps> = ({
+  label,
+  valueMin,
+  min,
+  max,
+  markers,
+  onChange,
+}) => {
+  const pct = ((valueMin - min) / (max - min)) * 100;
+  return (
+    <section className="ft-card">
+      <div className="ft-card-head">
+        <span className="ft-card-title">{label}</span>
+        <span className="ft-value-pill" aria-live="polite">
+          <span className="ft-value-pill-num">{valueMin}</span>
+          <span className="ft-value-pill-unit">min</span>
+        </span>
+      </div>
+      <div className="ft-slider-wrap">
+        <div className="ft-slider-track-bg" />
+        <div className="ft-slider-track-fill" style={{ width: `${pct}%` }} />
+        <input
+          type="range"
+          className="ft-slider"
+          min={min}
+          max={max}
+          step={1}
+          value={valueMin}
+          onChange={(e) => onChange(parseInt(e.target.value, 10))}
+          aria-label={label}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={valueMin}
+        />
+      </div>
+      <div className="ft-slider-markers" role="presentation">
+        {markers.map((m) => (
+          <button
+            type="button"
+            key={m}
+            className={`ft-marker ${valueMin === m ? "ft-marker--active" : ""}`}
+            onClick={() => onChange(m)}
+            aria-label={`Set ${label.toLowerCase()} to ${m} minutes`}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// ─── Focus Timer ──────────────────────────────────────────────────────
 const FocusTimer: React.FC = () => {
   const [task, setTask] = useState("");
-  const [workDuration, setWorkDuration] = useState(DEFAULT_WORK);
-  const [customWorkMins, setCustomWorkMins] = useState(String(DEFAULT_WORK / 60));
-  const [breakDuration, setBreakDuration] = useState(DEFAULT_BREAK);
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_WORK);
+  const [workMin, setWorkMin] = useState(DEFAULT_WORK_MIN);
+  const [breakMin, setBreakMin] = useState(DEFAULT_BREAK_MIN);
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_WORK_MIN * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [onBreak, setOnBreak] = useState(false);
   const [started, setStarted] = useState(false);
 
   const intervalRef = useRef<number | null>(null);
 
-  // Load persisted Focus Session state
+  // Load persisted state
   useEffect(() => {
     chrome.runtime.sendMessage({ action: "getFocusSessionState" }, (response) => {
       const saved = response?.state;
@@ -47,13 +101,12 @@ const FocusTimer: React.FC = () => {
         const remaining = isRunning
           ? Math.max(Math.floor((endTime - Date.now()) / 1000), 0)
           : (saved.timeLeft ?? workDuration);
-        setTask(task);
-        setWorkDuration(workDuration);
-        setCustomWorkMins(String(Math.floor(workDuration / 60)));
-        setBreakDuration(breakDuration);
-        setIsRunning(isRunning);
-        setStarted(started);
-        setOnBreak(onBreak);
+        setTask(task ?? "");
+        setWorkMin(Math.floor(workDuration / 60));
+        setBreakMin(Math.floor(breakDuration / 60));
+        setIsRunning(!!isRunning);
+        setStarted(!!started);
+        setOnBreak(!!onBreak);
         setTimeLeft(remaining);
       }
     });
@@ -75,23 +128,21 @@ const FocusTimer: React.FC = () => {
         setIsRunning(false);
         setStarted(false);
         setOnBreak(false);
-        setWorkDuration((wd) => {
-          setTimeLeft(wd);
-          setCustomWorkMins(String(Math.floor(wd / 60)));
-          return wd;
+        setWorkMin((wm) => {
+          setTimeLeft(wm * 60);
+          return wm;
         });
       } else {
         const { task, workDuration, breakDuration, endTime, isRunning, onBreak, started } = next;
         const remaining = isRunning
           ? Math.max(Math.floor((endTime - Date.now()) / 1000), 0)
           : (next.timeLeft ?? workDuration);
-        setTask(task);
-        setWorkDuration(workDuration);
-        setCustomWorkMins(String(Math.floor(workDuration / 60)));
-        setBreakDuration(breakDuration);
-        setIsRunning(isRunning);
-        setStarted(started);
-        setOnBreak(onBreak);
+        setTask(task ?? "");
+        setWorkMin(Math.floor(workDuration / 60));
+        setBreakMin(Math.floor(breakDuration / 60));
+        setIsRunning(!!isRunning);
+        setStarted(!!started);
+        setOnBreak(!!onBreak);
         setTimeLeft(remaining);
       }
     };
@@ -99,7 +150,7 @@ const FocusTimer: React.FC = () => {
     return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
 
-  // Countdown — background alarm drives phase transitions; this just ticks the visible counter.
+  // Countdown — background alarm drives phase transitions
   useEffect(() => {
     if (!isRunning) return;
     intervalRef.current = setInterval(() => {
@@ -113,32 +164,29 @@ const FocusTimer: React.FC = () => {
       });
     }, 1000);
     return () => clearInterval(intervalRef.current!);
-  }, [isRunning, onBreak, workDuration, breakDuration]);
+  }, [isRunning, onBreak, workMin, breakMin]);
 
-  const handlePause = () => {
+  const handlePause = () =>
     chrome.runtime.sendMessage({ action: "pauseFocusSession" }, () => setIsRunning(false));
-  };
 
-  const handleResume = () => {
+  const handleResume = () =>
     chrome.runtime.sendMessage({ action: "resumeFocusSession" }, () => setIsRunning(true));
-  };
 
-  const handleReset = () => {
+  const handleEnd = () =>
     chrome.runtime.sendMessage({ action: "resetFocusSession" }, () => {
       setIsRunning(false);
       setOnBreak(false);
       setStarted(false);
-      setTimeLeft(workDuration);
+      setTimeLeft(workMin * 60);
     });
-  };
 
   const handleStart = () => {
     if (!task.trim()) return;
     chrome.runtime.sendMessage(
       {
         action: "startFocusSession",
-        workDuration,
-        breakDuration,
+        workDuration: workMin * 60,
+        breakDuration: breakMin * 60,
         task,
         onBreak: false,
       },
@@ -146,12 +194,12 @@ const FocusTimer: React.FC = () => {
         setIsRunning(true);
         setStarted(true);
         setOnBreak(false);
-        setTimeLeft(workDuration);
+        setTimeLeft(workMin * 60);
       },
     );
   };
 
-  const totalDuration = onBreak ? breakDuration : workDuration;
+  const totalDuration = (onBreak ? breakMin : workMin) * 60;
   const progress = totalDuration > 0 ? 1 - timeLeft / totalDuration : 0;
   const radius = 84;
   const circumference = 2 * Math.PI * radius;
@@ -161,109 +209,55 @@ const FocusTimer: React.FC = () => {
     <div className="ft-container">
       <div className="ft-content">
         {!started ? (
-          // ─── SETUP VIEW ───────────────────────────────────────────────
+          // ─── SETUP VIEW ─────────────────────────────────────────────
           <div className="ft-setup">
             <header className="ft-screen-head">
               <h2 className="ft-screen-title">Focus Session</h2>
               <p className="ft-screen-sub">Set an intention, then commit to the timer.</p>
             </header>
 
-            {/* Task input */}
             <div className="ft-field">
               <label className="ft-label" htmlFor="ft-task">
                 What are you working on?
               </label>
-              <input
-                id="ft-task"
-                type="text"
-                value={task}
-                placeholder="e.g. Write project report"
-                onChange={(e) => setTask(e.target.value)}
-                className="ft-input"
-                maxLength={60}
-              />
+              <div className="ft-input-shell">
+                <input
+                  id="ft-task"
+                  type="text"
+                  value={task}
+                  placeholder="Type your intention here…"
+                  onChange={(e) => setTask(e.target.value)}
+                  className="ft-input"
+                  maxLength={60}
+                  aria-describedby="ft-task-help"
+                />
+              </div>
+              <p id="ft-task-help" className="ft-help">
+                {task.length}/60 characters
+              </p>
             </div>
 
-            {/* Work duration card */}
-            <section className="ft-card">
-              <div className="ft-card-head">
-                <span className="ft-card-title">Work duration</span>
-                <span className="ft-card-meta">{Math.floor(workDuration / 60)} min</span>
-              </div>
-              <div className="ft-preset-grid ft-preset-grid--4">
-                {WORK_PRESETS.map((p) => (
-                  <button
-                    key={p.value}
-                    className={`ft-chip ${workDuration === p.value ? "ft-chip--active" : ""}`}
-                    onClick={() => {
-                      setWorkDuration(p.value);
-                      setCustomWorkMins(String(p.value / 60));
-                      setTimeLeft(p.value);
-                    }}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              <div className="ft-custom-row">
-                <span className="ft-custom-label">Custom</span>
-                <div className="ft-custom-input-wrap">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    maxLength={3}
-                    value={customWorkMins}
-                    className="ft-custom-input"
-                    placeholder="30"
-                    onFocus={() => setCustomWorkMins("")}
-                    onChange={(e) => {
-                      const next = e.target.value.replace(/\D/g, "").slice(0, 3);
-                      setCustomWorkMins(next);
-                      const n = parseInt(next, 10);
-                      if (next !== "" && !Number.isNaN(n)) {
-                        const mins = clampWorkMinutes(n);
-                        const sec = mins * 60;
-                        setWorkDuration(sec);
-                        setTimeLeft(sec);
-                      }
-                    }}
-                    onBlur={() => {
-                      const n = parseInt(customWorkMins, 10);
-                      const mins = clampWorkMinutes(
-                        Number.isNaN(n) ? Math.floor(workDuration / 60) : n,
-                      );
-                      setCustomWorkMins(String(mins));
-                      const sec = mins * 60;
-                      setWorkDuration(sec);
-                      setTimeLeft(sec);
-                    }}
-                  />
-                  <span className="ft-custom-unit">min</span>
-                </div>
-              </div>
-            </section>
+            <DurationSlider
+              label="Work duration"
+              valueMin={workMin}
+              min={WORK_MIN}
+              max={WORK_MAX}
+              markers={WORK_MARKERS}
+              onChange={(v) => {
+                setWorkMin(v);
+                setTimeLeft(v * 60);
+              }}
+            />
 
-            {/* Break duration card */}
-            <section className="ft-card">
-              <div className="ft-card-head">
-                <span className="ft-card-title">Break duration</span>
-                <span className="ft-card-meta">{Math.floor(breakDuration / 60)} min</span>
-              </div>
-              <div className="ft-preset-grid ft-preset-grid--3">
-                {BREAK_PRESETS.map((p) => (
-                  <button
-                    key={p.value}
-                    className={`ft-chip ${breakDuration === p.value ? "ft-chip--active" : ""}`}
-                    onClick={() => setBreakDuration(p.value)}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </section>
+            <DurationSlider
+              label="Break duration"
+              valueMin={breakMin}
+              min={BREAK_MIN}
+              max={BREAK_MAX}
+              markers={BREAK_MARKERS}
+              onChange={(v) => setBreakMin(v)}
+            />
 
-            {/* Start button */}
             <button
               onClick={handleStart}
               className={`ft-start ${!task.trim() ? "ft-start--disabled" : ""}`}
@@ -275,11 +269,11 @@ const FocusTimer: React.FC = () => {
             {!task.trim() && <p className="ft-helper">Enter a task above to begin.</p>}
           </div>
         ) : (
-          // ─── ACTIVE TIMER VIEW ────────────────────────────────────────
+          // ─── ACTIVE TIMER VIEW ──────────────────────────────────────
           <div className="ft-active">
             <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
-              <span className="ft-phase-dot" />
-              <span>{onBreak ? "Break time" : "Focus mode"}</span>
+              {/* <span className="ft-phase-dot" /> */}
+              <span>{onBreak ? "Break time" : "Your Goal:"}</span>
             </div>
 
             <p className="ft-active-task" title={task}>
@@ -323,20 +317,25 @@ const FocusTimer: React.FC = () => {
                   <span>Pause</span>
                 </button>
               ) : (
-                <button onClick={handleResume} className="ft-ctrl ft-ctrl--primary">
-                  <Play size={14} fill="currentColor" />
-                  <span>Resume</span>
-                </button>
+                <>
+                  <button onClick={handleResume} className="ft-ctrl ft-ctrl--primary">
+                    <Play size={14} fill="currentColor" />
+                    <span>Resume</span>
+                  </button>
+                  <button onClick={handleEnd} className="ft-ctrl ft-ctrl--ghost">
+                    <Square size={14} />
+                    <span>End Session</span>
+                  </button>
+                </>
               )}
-              <button onClick={handleReset} className="ft-ctrl ft-ctrl--ghost">
-                <RotateCcw size={14} />
-                <span>Reset</span>
-              </button>
             </div>
 
-            {!onBreak && (
+            {!onBreak && isRunning && (
+              <p className="ft-active-hint">Break starts automatically after {breakMin} min.</p>
+            )}
+            {!isRunning && (
               <p className="ft-active-hint">
-                Break starts automatically after {Math.floor(breakDuration / 60)} min.
+                Paused. Resume to keep your streak, or end the session.
               </p>
             )}
           </div>
