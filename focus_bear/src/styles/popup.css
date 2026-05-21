@@ -119,6 +119,11 @@ button.settings-icon-button {
   cursor: pointer;
 }
 
+button.settings-icon-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
 img.settings-icon {
   width: 22px;
   height: 22px;
@@ -162,6 +167,11 @@ img.settings-icon {
 
 .settings-accordion[open] summary {
   border-bottom: 1px solid #e0b991;
+}
+
+.settings-accordion summary:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: -2px;
 }
 
 .settings-accordion .option-label {
@@ -334,6 +344,11 @@ img.settings-icon {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
+.tab-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
 /* Count badge on the Sessions tab */
 .tab-badge {
   display: inline-flex;
@@ -346,7 +361,7 @@ img.settings-icon {
   border-radius: 999px;
   background-color: #0b0b0b;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
   transition:
@@ -395,6 +410,11 @@ button.close-button:disabled {
   background-color: #cccccc;
   color: #666;
   cursor: not-allowed;
+}
+
+button.close-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
 }
 
 .settings-action-row {
@@ -539,14 +559,14 @@ button.settings-action-button {
 }
 
 .session-section-title {
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: #606060;
-  text-transform: uppercase;
-  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #0b0b0b;
+  text-transform: none;
+  font-size: 13px;
   border-bottom: none;
   padding-bottom: 0;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   text-align: left;
 }
 
@@ -573,7 +593,7 @@ button.settings-action-button {
 }
 
 .unfocus-session-card {
-  border-left: 3px solid #757575;
+  border-left: 3px solid #474747;
 }
 
 .session-card-header {
@@ -592,9 +612,9 @@ button.settings-action-button {
 }
 
 .session-card .label {
-  font-weight: 500;
-  color: #606060;
-  font-size: 12px;
+  font-weight: 600;
+  color: #474747;
+  font-size: 13px;
 }
 
 .session-card .session-row {
@@ -660,14 +680,16 @@ button.settings-action-button {
   outline-offset: 2px;
 }
 
-/* Phase badges — pill with colored dot */
+/* Phase badges — pill with colored dot
+   Text stays dark (#0b0b0b) on all variants so it passes WCAG AA at any size.
+   State is communicated by the dot color only, not by text color. */
 .phase-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px 3px 8px;
+  padding: 4px 10px 4px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0;
@@ -678,32 +700,28 @@ button.settings-action-button {
 
 .phase-badge::before {
   content: "";
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: currentColor;
+  flex-shrink: 0;
+  background: #0b0b0b; /* default dot; overridden per variant below */
 }
 
-.phase-focus {
-  color: #e9902c;
-}
-
+/* Dot colors only — text stays dark for WCAG AA compliance */
 .phase-focus::before {
   background: #e9902c;
-}
-
-.phase-break {
-  color: #2f8c46;
+  box-shadow: 0 0 0 2px rgba(233, 144, 44, 0.2);
 }
 
 .phase-break::before {
   background: #2f8c46;
+  box-shadow: 0 0 0 2px rgba(47, 140, 70, 0.2);
 }
 
 .phase-paused {
   background: #efefef;
   border-color: #d6d6d6;
-  color: #606060;
+  color: #474747;
 }
 
 .phase-paused::before {

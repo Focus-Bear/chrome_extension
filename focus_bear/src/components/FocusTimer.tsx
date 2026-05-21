@@ -308,8 +308,7 @@ const FocusTimer: React.FC = () => {
               </div>
             )}
             <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
-              <span className="ft-phase-dot" />
-              <span>{onBreak ? "On break" : "Focusing"}</span>
+              <span>{"Your Goal:"}</span>
             </div>
 
             <p className="ft-active-task" title={task}>
