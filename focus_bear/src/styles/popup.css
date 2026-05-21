@@ -276,8 +276,12 @@ img.settings-icon {
 }
 
 @keyframes tab-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Hide tab pane content without unmounting it.
@@ -324,7 +328,7 @@ img.settings-icon {
   font-weight: 600;
   background-color: #ffffff;
   color: #0b0b0b;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Count badge on the Sessions tab */
@@ -726,7 +730,10 @@ button.settings-action-button {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .ses-info-btn:hover {
@@ -742,8 +749,8 @@ button.settings-action-button {
 
 .ses-tooltip {
   position: absolute;
-  right: 0;
-  top: 28px;
+  left: 0;
+  bottom: 28px;
   width: 240px;
   padding: 10px 12px;
   background: #0b0b0b;
@@ -772,8 +779,8 @@ button.settings-action-button {
 .ses-tooltip::before {
   content: "";
   position: absolute;
-  top: -5px;
-  right: 7px;
+  bottom: -5px;
+  left: 7px;
   width: 10px;
   height: 10px;
   background: #0b0b0b;
