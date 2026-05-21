@@ -1,190 +1,454 @@
-@import url("./typography.css");
+/* Fonts are injected by intentionPopup.tsx into the shadow root — no @import needed here */
+
+/* ─── Tokens — scoped to the popup so we don't bleed onto host pages ─ */
 .focus-popup {
+  --fp-brand-black: #0b0b0b;
+  --fp-brand-orange: #e9902c;
+
+  --fp-orange-800: #9a570a;
+  --fp-orange-700: #b66911;
+  --fp-orange-600: #d78119;
+  --fp-orange-500: #e9902c;
+  --fp-orange-300: #f5b96a;
+  --fp-orange-200: #f8ce94;
+  --fp-orange-100: #fce4c5;
+  --fp-orange-50: #fff1dc;
+
+  --fp-gray-900: #0b0b0b;
+  --fp-gray-650: #474747;
+  --fp-gray-600: #606060;
+  --fp-gray-500: #757575;
+  --fp-gray-350: #d6d6d6;
+  --fp-gray-200: #efefef;
+
+  --fp-surface-page: #fbf7ee;
+  --fp-surface-card: #ffffff;
+  --fp-surface-card-2: #fbf8f1;
+  --fp-border-soft: #e4dcc7;
+  --fp-border-strong: #c9bfa6;
+
+  --fp-disabled-bg: #e6e2d7;
+  --fp-disabled-text: #8a8576;
+  --fp-disabled-border: #d6d1c0;
+
+  --fp-text-primary: var(--fp-gray-900);
+  --fp-text-secondary: var(--fp-gray-650);
+  --fp-text-tertiary: var(--fp-gray-600);
+  --fp-text-meta: var(--fp-gray-500);
+
+  --fp-accent: var(--fp-brand-orange);
+  --fp-accent-hover: var(--fp-orange-600);
+  --fp-accent-press: var(--fp-orange-700);
+  --fp-accent-text-on: var(--fp-brand-black);
+
+  --fp-warn-bg: #fff4e0;
+  --fp-warn-text: #8a4d04;
+  --fp-warn-border: #f0cc8b;
+
+  --fp-font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --fp-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Overlay — covers the shadow host which is already fixed/full-screen */
   position: fixed;
   inset: 0;
-  background-color: rgba(255, 248, 231, 0.92);
+  pointer-events: auto;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 14, 4, 0.55) 0%,
+    rgba(20, 14, 4, 0.72) 100%
+  );
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-  padding: 16px;
+  padding: 24px;
   box-sizing: border-box;
+  font-family: var(--fp-font-sans);
+  color: var(--fp-text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  animation: fp-fade-in 0.24s ease;
+}
+@keyframes fp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-/* Popup box */
+/* ─── Card ────────────────────────────────────────────────────────── */
 .focus-popup-box {
   width: 100%;
   max-width: 520px;
-  padding: 24px;
+  background: var(--fp-surface-page);
   border-radius: 20px;
-  background-color: #fff0d4;
-  border: 3px solid #e9902c;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  font-family: var(--font-body);
-  font-weight: 400;
-  text-align: left;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 30px 80px -20px rgba(0, 0, 0, 0.5),
+    0 8px 24px -8px rgba(0, 0, 0, 0.3);
+  padding: 24px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   box-sizing: border-box;
+  animation: fp-slide-up 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+  text-align: left;
+}
+@keyframes fp-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* Focus popup box heading */
+/* Shadow DOM already isolates us, but keep box-sizing resets for safety */
+.focus-popup-box,
+.focus-popup-box * {
+  box-sizing: border-box;
+}
+.focus-popup *:focus {
+  outline: none;
+}
+.focus-popup *:focus-visible {
+  outline: 2px solid var(--fp-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
 .focus-popup-header {
   display: grid;
-  grid-template-columns: 36px 1fr;
-  gap: 10px;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
   align-items: center;
-  margin-bottom: 16px;
+  margin: 0;
 }
-
-/* Logo */
 .focus-popup-header .focus-logo {
-  width: 36px;
-  height: auto;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
   display: block;
 }
-
-.focus-popup-header h2 {
-  margin: 0;
-  font-size: 2.5rem;
-  font-weight: 400;
-  line-height: 1.2;
-  color: #000000;
+.focus-popup-header-text {
+  min-width: 0;
 }
-
-.focus-popup-text {
-  margin: 0 0 10px;
-  font-size: 18px;
-  line-height: 1.45;
-  font-weight: 400;
-  color: #262626;
-}
-
-.focus-popup-duration-label {
-  margin-top: 4px;
-  margin-bottom: 8px;
-}
-
-/* Warning text */
-.focus-popup-box textarea.focus-input {
-  height: 100px;
-}
-
-.focus-warning {
-  color: #990000;
-  background: #fffcf6;
-  border: 1px solid #f3a650;
-  border-radius: 6px;
-  font-size: 16px;
+.focus-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
   font-weight: 600;
-  margin: 12px 0;
-  padding: 8px 12px;
-  text-align: center;
+  color: var(--fp-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+.focus-domain {
+  font-family: var(--fp-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fp-text-primary);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.focus-popup-header .focus-heading,
+.focus-popup-box h2.focus-heading {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fp-brand-black);
+  font-family: var(--fp-font-sans);
+  text-wrap: balance;
 }
 
-/* Textarea & select */
-.focus-input {
+/* ─── Prompt ──────────────────────────────────────────────────────── */
+.focus-prompt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fp-text-secondary);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+/* ─── Field ──────────────────────────────────────────────────────── */
+.focus-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.focus-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fp-text-secondary);
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* Textarea shell — orange accent bar */
+.focus-textarea-shell {
+  position: relative;
+  background: var(--fp-surface-card);
+  border: 1.5px solid var(--fp-border-strong);
+  border-radius: 10px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.focus-textarea-shell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  background: var(--fp-accent);
+  border-radius: 2px;
+  opacity: 0.85;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+.focus-textarea-shell.is-filled::before {
+  opacity: 1;
+  background: var(--fp-orange-600);
+}
+.focus-textarea-shell:hover {
+  border-color: var(--fp-gray-650);
+}
+.focus-textarea-shell:focus-within {
+  border-color: var(--fp-accent);
+  box-shadow: 0 0 0 3px rgba(233, 144, 44, 0.22);
+}
+.focus-textarea {
   width: 100%;
-  padding: 10px 12px;
-  margin: 0 0 12px;
-  font-size: 18px;
+  padding: 12px 14px 12px 16px;
+  font-family: var(--fp-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fp-text-primary);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
   box-sizing: border-box;
-  border: 2px solid #e9902c;
-  border-radius: 8px;
-  background-color: #fffcf6;
-  color: #000000;
 }
-
-/* Button container */
-.focus-input::placeholder {
-  color: #000000;
+.focus-textarea::placeholder {
+  color: var(--fp-text-meta);
+  font-style: italic;
   opacity: 1;
 }
 
-select.focus-input,
-select.focus-input option {
-  color: #000000;
-}
-
-.focus-input:focus {
-  outline: none;
-}
-
-.focus-button-container {
+/* Help + count row */
+.focus-help-row {
   display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px;
+}
+.focus-help {
+  margin: 0;
+  font-size: 11px;
+  color: var(--fp-text-meta);
+  font-weight: 400;
+}
+.focus-count {
+  font-family: var(--fp-font-mono);
+  font-size: 11px;
+  color: var(--fp-text-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Warning inline */
+.focus-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--fp-warn-bg);
+  border: 1px solid var(--fp-warn-border);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--fp-warn-text);
+  font-weight: 500;
+  text-align: left;
+}
+.focus-warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── Duration chips ─────────────────────────────────────────────── */
+.focus-duration-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.focus-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  margin-top: 8px;
-}
-
-/* Proceed button */
-.focus-button {
-  width: 100%;
-  max-width: 280px;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 20px;
-  font-size: 18px;
-  font-weight: bold;
+  padding: 12px 6px;
+  background: var(--fp-surface-card);
+  border: 1.5px solid var(--fp-border-strong);
+  border-radius: 10px;
   cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+  font-family: var(--fp-font-sans);
 }
-
-.focus-button:disabled {
-  background: #cccccc;
-  color: #666;
-  cursor: not-allowed;
+.focus-chip:hover {
+  background: var(--fp-orange-50);
+  border-color: var(--fp-orange-300);
 }
-
-.focus-button:not(:disabled) {
-  background-color: #e9902c;
+.focus-chip.is-active,
+.focus-chip.is-active:hover {
+  background: var(--fp-brand-black);
+  border-color: var(--fp-brand-black);
+  color: #ffffff;
+}
+.focus-chip-num {
+  font-family: var(--fp-font-mono);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--fp-brand-black);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.focus-chip-unit {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--fp-text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.focus-chip.is-active .focus-chip-num,
+.focus-chip.is-active .focus-chip-unit {
   color: #ffffff;
 }
 
-.focus-button:not(:disabled):hover {
-  background-color: #d67f20;
+/* ─── Primary action ─────────────────────────────────────────────── */
+.focus-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.focus-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--fp-accent-press);
+  background: var(--fp-accent);
+  color: var(--fp-accent-text-on);
+  font-family: var(--fp-font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.05s ease,
+    box-shadow 0.15s ease;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 8px 18px -10px rgba(233, 144, 44, 0.7);
+}
+.focus-button:hover {
+  background: var(--fp-accent-hover);
+}
+.focus-button:active {
+  background: var(--fp-accent-press);
+  transform: translateY(1px);
+}
+.focus-button:focus-visible {
+  outline: 2px solid var(--fp-brand-black);
+  outline-offset: 2px;
+}
+.focus-button:disabled,
+.focus-button.is-disabled,
+.focus-button.is-disabled:hover,
+.focus-button.is-disabled:active {
+  background: var(--fp-disabled-bg);
+  color: var(--fp-disabled-text);
+  border-color: var(--fp-disabled-border);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.focus-action-help {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--fp-text-tertiary);
+  font-weight: 400;
 }
 
+/* ─── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .focus-popup {
-    padding: 12px;
     align-items: flex-start;
+    padding: 16px;
     padding-top: 24px;
   }
-
   .focus-popup-box {
-    padding: 18px;
+    padding: 20px;
+    gap: 14px;
   }
-
   .focus-popup-header {
-    grid-template-columns: 32px 1fr;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
   }
-
   .focus-popup-header .focus-logo {
-    width: 32px;
+    width: 36px;
+    height: 36px;
   }
-
-  .focus-popup-header h2 {
-    font-size: 2rem;
+  .focus-popup-header .focus-heading,
+  .focus-popup-box h2.focus-heading {
+    font-size: 19px;
   }
-
-  .focus-popup-text {
+  .focus-prompt {
+    font-size: 13px;
+  }
+  .focus-duration-grid {
+    gap: 6px;
+  }
+  .focus-chip {
+    padding: 10px 4px;
+  }
+  .focus-chip-num {
     font-size: 16px;
   }
-
-  .focus-input {
-    font-size: 16px;
-  }
-
-  .focus-popup-box textarea.focus-input {
-    height: 80px;
+  .focus-button {
+    font-size: 14px;
+    padding: 12px;
   }
 }
 
 @media (max-height: 600px) {
   .focus-popup-box {
-    max-height: 90vh;
+    max-height: calc(100vh - 48px);
     overflow-y: auto;
-  }
-
-  .focus-popup-box textarea.focus-input {
-    height: 64px;
   }
 }

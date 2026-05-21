@@ -6,7 +6,7 @@ import setIcon from "../public/icons/settingsIcon.png";
 import { Home, Info } from "lucide-react";
 
 import "@radix-ui/themes/styles.css";
-import FocusTimer from "./components/FocusTimer";
+import FocusTimer from "./components/FocusTimer.js";
 
 const Toggle = ({
   checked,
@@ -666,7 +666,7 @@ const App = () => {
               {showUnfocusTip && (
                 <div className="ses-tooltip" role="tooltip">
                   <strong>Unfocus Session</strong>
-                  <p>An timed allowance to visit a distracting site with intent.</p>
+                  <p>A timed allowance to visit a distracting site with intent.</p>
                 </div>
               )}
             </div>
@@ -679,12 +679,12 @@ const App = () => {
                     <strong className="domain">{domain}</strong>
                   </div>
                   <div className="session-row">
-                    <span className="label">{t("time_left")}</span>
-                    <span className="session-time">{formatTime(session.timeLeft)}</span>
-                  </div>
-                  <div className="session-row">
                     <span className="label">{t("intention_label")}</span>
                     <span className="session-intention">{session.intention}</span>
+                  </div>
+                  <div className="session-row">
+                    <span className="label">{t("time_left")}</span>
+                    <span className="session-time">{formatTime(session.timeLeft)}</span>
                   </div>
                   <button
                     className="complete-session-btn"

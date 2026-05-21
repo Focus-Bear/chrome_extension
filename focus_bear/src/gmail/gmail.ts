@@ -203,6 +203,25 @@ interface BlurToggleMessage {
     }, 1000);
   };
 
+  // ─── Context validity guard ───────────────────────────────────────────────
+  // When the extension is reloaded/updated the content script's chrome APIs
+  // become invalid. Any attempt to call chrome.storage / chrome.runtime then
+  // throws "Extension context invalidated." We detect this, tear down the
+  // observer and intervals, and swallow the error so nothing crashes.
+
+  const isContextValid = (): boolean => {
+    try {
+      return !!chrome.runtime?.id;
+    } catch {
+      return false;
+    }
+  };
+
+  const tearDown = (): void => {
+    observer.disconnect();
+    removeSocialBlur(); // also clears socialObserver + socialFallbackInterval
+  };
+
   // Debounce + Observer
   const debounce = <T extends (...args: any[]) => void>(fn: T, delay = 100): (() => void) => {
     let timer: number;
@@ -214,30 +233,36 @@ interface BlurToggleMessage {
 
   const observer = new MutationObserver(
     debounce(() => {
-      chrome.storage.local.get(
-        { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
-        (res) => {
-          if (res.gmailBlurEnabled) {
-            blurTitle();
-            applySidebarBlur();
-          } else {
-            removeSidebarBlur();
-          }
+      if (!isContextValid()) { tearDown(); return; }
+      try {
+        chrome.storage.local.get(
+          { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
+          (res) => {
+            if (chrome.runtime.lastError) return;
+            if (res.gmailBlurEnabled) {
+              blurTitle();
+              applySidebarBlur();
+            } else {
+              removeSidebarBlur();
+            }
 
-          if (res.promotionBlurEnabled) {
-            applyPromotionBlur();
-          } else {
-            removePromotionBlur();
-          }
+            if (res.promotionBlurEnabled) {
+              applyPromotionBlur();
+            } else {
+              removePromotionBlur();
+            }
 
-          const currentTab = getCurrentGmailCategory();
-          if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
-            applySocialBlur();
-          } else {
-            removeSocialBlur();
-          }
-        },
-      );
+            const currentTab = getCurrentGmailCategory();
+            if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
+              applySocialBlur();
+            } else {
+              removeSocialBlur();
+            }
+          },
+        );
+      } catch {
+        tearDown();
+      }
     }, 150),
   );
 
@@ -248,14 +273,20 @@ interface BlurToggleMessage {
     const target = e.target as HTMLElement;
     if (target.closest('[role="tab"]')) {
       setTimeout(() => {
+        if (!isContextValid()) return;
         const currentTab = getCurrentGmailCategory();
-        chrome.storage.local.get({ socialBlurEnabled: true }, (res) => {
-          if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
-            applySocialBlur();
-          } else {
-            removeSocialBlur();
-          }
-        });
+        try {
+          chrome.storage.local.get({ socialBlurEnabled: true }, (res) => {
+            if (chrome.runtime.lastError) return;
+            if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
+              applySocialBlur();
+            } else {
+              removeSocialBlur();
+            }
+          });
+        } catch {
+          // Extension context gone — nothing to do
+        }
       }, 500);
     }
   });
@@ -292,20 +323,25 @@ interface BlurToggleMessage {
   });
 
   // On Initial Load
-  chrome.storage.local.get(
-    { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
-    (res) => {
-      if (res.gmailBlurEnabled) {
-        blurTitle();
-        applySidebarBlur();
-      }
-      if (res.promotionBlurEnabled) {
-        applyPromotionBlur();
-      }
-      const currentTab = getCurrentGmailCategory();
-      if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
-        applySocialBlur();
-      }
-    },
-  );
+  try {
+    chrome.storage.local.get(
+      { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
+      (res) => {
+        if (chrome.runtime.lastError) return;
+        if (res.gmailBlurEnabled) {
+          blurTitle();
+          applySidebarBlur();
+        }
+        if (res.promotionBlurEnabled) {
+          applyPromotionBlur();
+        }
+        const currentTab = getCurrentGmailCategory();
+        if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
+          applySocialBlur();
+        }
+      },
+    );
+  } catch {
+    // Extension context not yet available on initial inject — safe to ignore
+  }
 })();

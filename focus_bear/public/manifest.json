@@ -29,8 +29,7 @@
         "https://*.wikipedia.org/*",
         "https://mail.google.com/*"
       ],
-      "js": ["content.js"],
-      "css": ["assets/intentionPopup.css"]
+      "js": ["content.js"]
     },
     {
       "matches": ["*://*.youtube.com/*"],
@@ -55,8 +54,7 @@
     },
     {
       "matches": ["*://*.reddit.com/*"],
-      "js": ["content.js", "reddit.js"],
-      "css": ["assets/intentionPopup.css"]
+      "js": ["content.js", "reddit.js"]
     }
   ],
   "web_accessible_resources": [

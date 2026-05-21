@@ -4,10 +4,13 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden; /* no horizontal bleed */
+  /* overflow-y left as auto so Chrome's popup window can scroll when
+     content is taller than the ~580px popup height limit.
+     The webkit-scrollbar rule below keeps the scrollbar invisible. */
 }
 
-/* Belt-and-suspenders scrollbar removal for Chrome */
+/* Hide the scrollbar track visually while keeping scroll functional */
 ::-webkit-scrollbar {
   display: none;
 }
@@ -173,11 +176,11 @@ img.settings-icon {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .option-text {
-  font-size: 18px;
+  font-size: 14px;
   color: #3f3f3f;
 }
 
@@ -359,16 +362,16 @@ img.settings-icon {
 /* ─── Warnings ───────────────────────────────────────────────────────────── */
 
 .settings-warning {
-  max-width: 75%;
+  max-width: 85%;
   margin: 10px auto;
   text-align: center;
-  color: #990000;
-  background: #fffcf6;
-  font-weight: bold;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  border: 1px solid #f3a650;
+  color: #7a3b02;
+  background: #fff4e0;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid #f0cc8b;
 }
 
 /* ─── Close / Action Buttons ─────────────────────────────────────────────── */
@@ -378,11 +381,12 @@ button.close-button {
   margin: 32px auto 0;
   width: 225px;
   padding: 10px 15px;
-  font-size: 18px;
-  color: #f3a650;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e9902c;
   background-color: #fffcf6;
-  border: 2px solid #f3a650;
-  border-radius: 6px;
+  border: 1.5px solid #e9902c;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -409,10 +413,10 @@ button.settings-action-button {
 /* ─── Blocklist Editor ───────────────────────────────────────────────────── */
 
 .blocklist-instructions {
-  font-size: 15px;
-  color: #000000;
+  font-size: 13px;
+  color: #474747;
   margin-bottom: 6px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .site-input-container {
@@ -433,18 +437,18 @@ button.settings-action-button {
 .site-input-container button {
   padding: 8px 14px;
   border-radius: 0 8px 8px 0;
-  border: 1px solid #f3a650;
+  border: 1px solid #e9902c;
   background-color: #fffcf6;
-  color: #f3a650;
+  color: #e9902c;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .site-input-container button:hover:not(:disabled) {
-  background-color: #f3a650;
-  color: #fffcf6;
+  background-color: #e9902c;
+  color: #0b0b0b;
 }
 
 .site-input-container button:disabled {
@@ -484,18 +488,19 @@ button.settings-action-button {
 .site-list li button {
   margin-left: 6px;
   padding: 4px 10px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   border-radius: 6px;
-  border: 2px solid #f3a650;
+  border: 1.5px solid #e9902c;
   background-color: #fffcf6;
-  color: #f3a650;
+  color: #e9902c;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .site-list li button:hover:not(:disabled) {
-  background-color: #f3a650;
-  color: #fffcf6;
+  background-color: #e9902c;
+  color: #0b0b0b;
 }
 
 .site-list li button:disabled {

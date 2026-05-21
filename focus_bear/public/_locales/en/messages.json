@@ -36,11 +36,11 @@
     "description": "Option to remove LinkedIn notification badges"
   },
   "intention_label": {
-    "message": "Intention",
+    "message": "Intention:",
     "description": "Label for user intention input"
   },
   "time_left": {
-    "message": "Time Left",
+    "message": "Time Left:",
     "description": "Label for remaining focus session time"
   },
   "no_unfocus_session": {
