@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import { IntentionProvider } from "./context/intentionPopupContext";
 import { useIntention } from "./context/intentionPopupContext";
 import "./styles/intentionPopup.css";
-import iconUrl from "../public/icons/bearLogo.png";
+
+const iconUrl = new URL("icons/bearLogo.png", import.meta.url).href;
 
 const containerId = "focus-popup-container";
 

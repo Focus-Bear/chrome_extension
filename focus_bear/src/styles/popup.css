@@ -334,7 +334,7 @@ button.settings-action-button {
   width: 100%;
   margin-top: 10px;
   padding: 8px 0;
-  background-color: #2ecc71;
+  background-color: #e9902c;
   color: white;
   border: none;
   border-radius: 6px;
@@ -345,11 +345,11 @@ button.settings-action-button {
 }
 
 .complete-session-btn:hover {
-  background-color: #27ae60;
+  background-color: #d17a1f;
 }
 
 .complete-session-btn:active {
-  background-color: #1e8449;
+  background-color: #c06f1a;
 }
 
 .settings-warning {

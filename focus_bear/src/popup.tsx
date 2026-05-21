@@ -542,6 +542,14 @@ const App = () => {
     return `${m}:${s}`;
   };
 
+  const hasSessions = !!(activeFocusSession || Object.keys(allUnfocusSessions).length > 0);
+
+  useEffect(() => {
+    if (!hasSessions && currentTab === "active") {
+      setCurrentTab("timer");
+    }
+  }, [hasSessions, currentTab]);
+
   const mainView = (
     <div className="main-view">
       <div className="main-header">
@@ -567,15 +575,15 @@ const App = () => {
           </button>
         </div>
       </div>
-      {/* Tab buttons */}
-      <div className="tab-buttons">
-        <button
-          className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
-          onClick={() => setCurrentTab("timer")}
-        >
-          <span className="tab-label">Focus Timer</span>
-        </button>
-        {(activeFocusSession || Object.keys(allUnfocusSessions).length > 0) && (
+      {/* Tab buttons — only shown when at least one session is active */}
+      {hasSessions && (
+        <div className="tab-buttons">
+          <button
+            className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
+            onClick={() => setCurrentTab("timer")}
+          >
+            <span className="tab-label">Focus Timer</span>
+          </button>
           <button
             className={`tab-button ${currentTab === "active" ? "active" : ""}`}
             onClick={() => setCurrentTab("active")}
@@ -585,11 +593,11 @@ const App = () => {
               {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
             </span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
       {/* Tab content */}
       {currentTab === "timer" && (
-        <div className="focus_session_player" style={{ backgroundColor: "#fffcf6" }}>
+        <div className="focus_session_player">
           <FocusTimer />
         </div>
       )}
@@ -618,7 +626,7 @@ const App = () => {
                   <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
                 </div>
                 <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
-                  ✓ Complete Session
+                  Complete Session
                 </button>
               </div>
             ) : (
@@ -647,7 +655,7 @@ const App = () => {
                       className="complete-session-btn"
                       onClick={() => handleCompleteUnfocusSession(domain)}
                     >
-                      ✓ Complete Session
+                      Complete Session
                     </button>
                   </div>
                 ))}

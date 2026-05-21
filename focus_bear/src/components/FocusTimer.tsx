@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, Coffee } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 import "./FocusTimer.css";
 
 const DEFAULT_WORK = 25 * 60;
@@ -99,16 +99,12 @@ const FocusTimer: React.FC = () => {
     return () => chrome.storage.onChanged.removeListener(handler);
   }, []);
 
-  // Countdown
-  // When the local counter reaches 0, stop ticking;
-  // the background alarm updates focusSessionState in storage, and the
-  // onChanged listener above syncs all UI state automatically.
+  // Countdown — background alarm drives phase transitions; this just ticks the visible counter.
   useEffect(() => {
     if (!isRunning) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev > 0) return prev - 1;
-        // transition the phase and update storage.
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -156,40 +152,49 @@ const FocusTimer: React.FC = () => {
   };
 
   const totalDuration = onBreak ? breakDuration : workDuration;
-  const progress = totalDuration > 0 ? timeLeft / totalDuration : 0;
-  const radius = 90;
+  const progress = totalDuration > 0 ? 1 - timeLeft / totalDuration : 0;
+  const radius = 84;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * progress;
+  const strokeDashoffset = circumference * (1 - progress);
 
   return (
-    <div className="focus-timer-container">
-      <div className="focus-timer-content">
+    <div className="ft-container">
+      <div className="ft-content">
         {!started ? (
-          // ─── SETUP VIEW ───────────────────────────────────────────────────
-          <div className="setup-view">
-            <h2 className="setup-title">Focus Session</h2>
+          // ─── SETUP VIEW ───────────────────────────────────────────────
+          <div className="ft-setup">
+            <header className="ft-screen-head">
+              <h2 className="ft-screen-title">Focus Session</h2>
+              <p className="ft-screen-sub">Set an intention, then commit to the timer.</p>
+            </header>
 
             {/* Task input */}
-            <div className="task-input-container">
-              <label className="input-label">What are you working on?</label>
+            <div className="ft-field">
+              <label className="ft-label" htmlFor="ft-task">
+                What are you working on?
+              </label>
               <input
+                id="ft-task"
                 type="text"
                 value={task}
                 placeholder="e.g. Write project report"
                 onChange={(e) => setTask(e.target.value)}
-                className="task-input"
+                className="ft-input"
                 maxLength={60}
               />
             </div>
 
-            {/* Work duration presets */}
-            <div className="duration-section">
-              <label className="input-label">Work Duration</label>
-              <div className="preset-grid">
+            {/* Work duration card */}
+            <section className="ft-card">
+              <div className="ft-card-head">
+                <span className="ft-card-title">Work duration</span>
+                <span className="ft-card-meta">{Math.floor(workDuration / 60)} min</span>
+              </div>
+              <div className="ft-preset-grid ft-preset-grid--4">
                 {WORK_PRESETS.map((p) => (
                   <button
                     key={p.value}
-                    className={`preset-btn ${workDuration === p.value ? "preset-btn--active" : ""}`}
+                    className={`ft-chip ${workDuration === p.value ? "ft-chip--active" : ""}`}
                     onClick={() => {
                       setWorkDuration(p.value);
                       setCustomWorkMins(String(p.value / 60));
@@ -200,159 +205,138 @@ const FocusTimer: React.FC = () => {
                   </button>
                 ))}
               </div>
-              {/* Custom work: minutes only, max 3 digits, 1–999 min */}
-              <div className="custom-input-row">
-                <label className="input-label-sm">Custom (min)</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  maxLength={3}
-                  value={customWorkMins}
-                  className="custom-time-input"
-                  placeholder="e.g. 30"
-                  onFocus={() => setCustomWorkMins("")}
-                  onChange={(e) => {
-                    const next = e.target.value.replace(/\D/g, "").slice(0, 3);
-                    setCustomWorkMins(next);
-                    const n = parseInt(next, 10);
-                    if (next !== "" && !Number.isNaN(n)) {
-                      const mins = clampWorkMinutes(n);
+              <div className="ft-custom-row">
+                <span className="ft-custom-label">Custom</span>
+                <div className="ft-custom-input-wrap">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={3}
+                    value={customWorkMins}
+                    className="ft-custom-input"
+                    placeholder="30"
+                    onFocus={() => setCustomWorkMins("")}
+                    onChange={(e) => {
+                      const next = e.target.value.replace(/\D/g, "").slice(0, 3);
+                      setCustomWorkMins(next);
+                      const n = parseInt(next, 10);
+                      if (next !== "" && !Number.isNaN(n)) {
+                        const mins = clampWorkMinutes(n);
+                        const sec = mins * 60;
+                        setWorkDuration(sec);
+                        setTimeLeft(sec);
+                      }
+                    }}
+                    onBlur={() => {
+                      const n = parseInt(customWorkMins, 10);
+                      const mins = clampWorkMinutes(
+                        Number.isNaN(n) ? Math.floor(workDuration / 60) : n,
+                      );
+                      setCustomWorkMins(String(mins));
                       const sec = mins * 60;
                       setWorkDuration(sec);
                       setTimeLeft(sec);
-                    }
-                  }}
-                  onBlur={() => {
-                    const n = parseInt(customWorkMins, 10);
-                    const mins = clampWorkMinutes(
-                      Number.isNaN(n) ? Math.floor(workDuration / 60) : n,
-                    );
-                    setCustomWorkMins(String(mins));
-                    const sec = mins * 60;
-                    setWorkDuration(sec);
-                    setTimeLeft(sec);
-                  }}
-                />
+                    }}
+                  />
+                  <span className="ft-custom-unit">min</span>
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Break duration presets */}
-            <div className="duration-section">
-              <label className="input-label">Break Duration</label>
-              <div className="preset-grid">
+            {/* Break duration card */}
+            <section className="ft-card">
+              <div className="ft-card-head">
+                <span className="ft-card-title">Break duration</span>
+                <span className="ft-card-meta">{Math.floor(breakDuration / 60)} min</span>
+              </div>
+              <div className="ft-preset-grid ft-preset-grid--3">
                 {BREAK_PRESETS.map((p) => (
                   <button
                     key={p.value}
-                    className={`preset-btn ${breakDuration === p.value ? "preset-btn--active" : ""}`}
+                    className={`ft-chip ${breakDuration === p.value ? "ft-chip--active" : ""}`}
                     onClick={() => setBreakDuration(p.value)}
                   >
                     {p.label}
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
 
             {/* Start button */}
             <button
               onClick={handleStart}
-              className={`start-btn ${!task.trim() ? "start-btn--disabled" : ""}`}
+              className={`ft-start ${!task.trim() ? "ft-start--disabled" : ""}`}
               disabled={!task.trim()}
             >
-              <Play size={20} fill="currentColor" style={{ marginRight: 8 }} />
-              Start Focus Session
+              <Play size={14} fill="currentColor" />
+              <span>Start Focus Session</span>
             </button>
-            {!task.trim() && <p className="task-warning">Please enter a task to get started</p>}
+            {!task.trim() && <p className="ft-helper">Enter a task above to begin.</p>}
           </div>
         ) : (
-          // ─── ACTIVE TIMER VIEW ────────────────────────────────────────────
-          <div className="timer-view">
-            {/* Phase badge */}
-            <div className={`phase-badge ${onBreak ? "phase-badge--break" : "phase-badge--work"}`}>
-              {onBreak ? (
-                <>
-                  <Coffee size={16} style={{ marginRight: 6 }} /> Break Time
-                </>
-              ) : (
-                <>Focus Mode</>
-              )}
+          // ─── ACTIVE TIMER VIEW ────────────────────────────────────────
+          <div className="ft-active">
+            <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
+              <span className="ft-phase-dot" />
+              <span>{onBreak ? "Break time" : "Focus mode"}</span>
             </div>
 
-            {/* Task label */}
-            <p className="active-task">{task}</p>
+            <p className="ft-active-task" title={task}>
+              {task}
+            </p>
 
-            {/* Circular progress ring */}
-            <div className="ring-container">
-              <svg className="timer-svg" viewBox="0 0 200 200">
-                {/* Background track */}
+            <div className="ft-ring-wrap">
+              <svg className="ft-ring" viewBox="0 0 200 200">
                 <circle
                   cx="100"
                   cy="100"
                   r={radius}
                   fill="none"
-                  stroke="#ffe4c6"
-                  strokeWidth="12"
+                  stroke="var(--ring-track)"
+                  strokeWidth="9"
                 />
-                {/* Progress arc */}
                 <circle
                   cx="100"
                   cy="100"
                   r={radius}
                   fill="none"
-                  stroke={onBreak ? "#4CAF50" : "#e9902c"}
-                  strokeWidth="12"
+                  stroke={onBreak ? "var(--ft-accent-break)" : "var(--ft-accent)"}
+                  strokeWidth="9"
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   transform="rotate(-90 100 100)"
                   style={{ transition: "stroke-dashoffset 0.8s ease, stroke 0.5s ease" }}
                 />
-                {/* Time text */}
-                <text
-                  x="100"
-                  y="95"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="timer-text"
-                >
-                  {formatTime(timeLeft)}
-                </text>
-                {/* Phase text below time */}
-                <text
-                  x="100"
-                  y="120"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="timer-subtext"
-                >
-                  {onBreak ? "until break ends" : "remaining"}
-                </text>
               </svg>
+              <div className="ft-ring-inner">
+                <div className="ft-ring-time">{formatTime(timeLeft)}</div>
+                <div className="ft-ring-sub">{onBreak ? "until break ends" : "remaining"}</div>
+              </div>
             </div>
 
-            {/* Controls */}
-            <div className="timer-controls">
+            <div className="ft-controls">
               {isRunning ? (
-                <button onClick={handlePause} className="control-btn control-btn--secondary">
-                  <Pause size={24} />
-                  Pause
+                <button onClick={handlePause} className="ft-ctrl ft-ctrl--secondary">
+                  <Pause size={14} />
+                  <span>Pause</span>
                 </button>
               ) : (
-                <button onClick={handleResume} className="control-btn control-btn--primary">
-                  <Play size={24} fill="currentColor" />
-                  Resume
+                <button onClick={handleResume} className="ft-ctrl ft-ctrl--primary">
+                  <Play size={14} fill="currentColor" />
+                  <span>Resume</span>
                 </button>
               )}
-              <button onClick={handleReset} className="control-btn control-btn--danger">
-                <RotateCcw size={24} />
-                Reset
+              <button onClick={handleReset} className="ft-ctrl ft-ctrl--ghost">
+                <RotateCcw size={14} />
+                <span>Reset</span>
               </button>
             </div>
 
-            {/* Break hint */}
             {!onBreak && (
-              <p className="break-hint">
-                Break starts automatically after {formatTime(breakDuration)}
+              <p className="ft-active-hint">
+                Break starts automatically after {Math.floor(breakDuration / 60)} min.
               </p>
             )}
           </div>
