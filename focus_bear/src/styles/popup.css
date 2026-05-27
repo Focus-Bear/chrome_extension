@@ -49,7 +49,7 @@ body {
 .main-header,
 .settings-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   column-gap: 10px;
   margin: 4px 0 12px;
@@ -69,6 +69,38 @@ body {
   align-items: center;
 }
 
+.focus-bear-wordmark {
+  justify-self: start;
+  height: 2rem;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  font-size: 2rem;
+}
+
+.header-bear-icon {
+  width: 2.0625rem;
+  height: 2.0625rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0;
+  color: black;
+}
+
 h1.popup-title {
   font-size: 2rem;
   font-weight: 500;
@@ -79,15 +111,6 @@ h1.popup-title {
   text-align: center;
 }
 
-h2.settings-title {
-  font-size: 2rem;
-  margin: 0 0 20px;
-  color: black;
-  text-align: center;
-  position: relative;
-  top: -4px;
-}
-
 .main-header .popup-title {
   margin: 0;
   justify-self: center;
@@ -95,12 +118,6 @@ h2.settings-title {
   min-width: 0;
 }
 
-.settings-header .settings-title {
-  margin: 0;
-  top: 0;
-  justify-self: center;
-  text-align: center;
-}
 
 /* ─── Settings Icon ──────────────────────────────────────────────────────── */
 
