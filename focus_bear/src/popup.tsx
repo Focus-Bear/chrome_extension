@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
+import focusBearLogoUrl from "../public/icons/focusBearLogo.png";
 import settingsBearLogoUrl from "../public/icons/bearLogoSettings.png";
 import setIcon from "../public/icons/settingsIcon.png";
 import { Home, Info } from "lucide-react";
@@ -557,10 +558,11 @@ const App = () => {
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <div className="header-brand">
-          <img src={settingsBearLogoUrl} alt="" className="header-bear-icon" aria-hidden="true" />
-          <span className="header-title">{t("home_title")}</span>
-        </div>
+        <img
+          src={focusBearLogoUrl}
+          alt={t("home_title")}
+          className="focus-bear-wordmark"
+        />
         <div className="main-header-end">
           <button
             type="button"

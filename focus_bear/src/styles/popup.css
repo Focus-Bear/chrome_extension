@@ -69,24 +69,34 @@ body {
   align-items: center;
 }
 
+.focus-bear-wordmark {
+  justify-self: start;
+  height: 2rem;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   justify-self: start;
+  font-size: 2rem;
 }
 
 .header-bear-icon {
-  width: 2rem;
-  height: 2rem;
+  width: 2.0625rem;
+  height: 2.0625rem;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .header-title {
-  font-size: 2rem;
+  font-size: inherit;
   font-weight: 400;
   line-height: 1;
+  letter-spacing: -0.04em;
   margin: 0;
   color: black;
 }
