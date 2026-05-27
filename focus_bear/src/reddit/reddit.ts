@@ -17,16 +17,23 @@
     document.head.appendChild(el);
   };
 
-  // Blur the home feed posts
+  const isPostPage = () => window.location.pathname.includes("/comments/");
+
+  // Blur the home feed posts and ads (only on feed, not post pages)
   const setBlurHomeFeed = (enabled: boolean) => {
-    const selectors = ["shreddit-post", '[data-testid="post-container"]', ".Post"];
+    if (isPostPage()) return;
+    const selectors = [
+      "shreddit-post",
+      '[data-testid="post-container"]',
+      ".Post",
+      "shreddit-ad-post",
+      '[data-adclicklocation]',
+      '[data-testid="ad-post"]',
+    ];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
-        if (enabled) {
-          el.classList.add(BLUR_CLASS);
-        } else {
-          el.classList.remove(BLUR_CLASS);
-        }
+        if (enabled) el.classList.add(BLUR_CLASS);
+        else el.classList.remove(BLUR_CLASS);
       });
     });
   };
@@ -38,28 +45,28 @@
       "aside",
       '[data-testid="subreddit-sidebar"]',
       "shreddit-communities-list",
+      "shreddit-recommended-communities-widget",
     ];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
-        if (enabled) {
-          el.classList.add(BLUR_CLASS);
-        } else {
-          el.classList.remove(BLUR_CLASS);
-        }
+        if (enabled) el.classList.add(BLUR_CLASS);
+        else el.classList.remove(BLUR_CLASS);
       });
     });
   };
 
-  // Blur comments section
+  // Blur comments section (only on post pages)
   const setBlurComments = (enabled: boolean) => {
-    const selectors = ["shreddit-comment-tree", '[data-testid="comment"]', ".Comment"];
+    if (!isPostPage()) return;
+    const selectors = [
+      "shreddit-comment-tree",
+      '[data-testid="comment"]',
+      ".Comment",
+    ];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
-        if (enabled) {
-          el.classList.add(BLUR_CLASS);
-        } else {
-          el.classList.remove(BLUR_CLASS);
-        }
+        if (enabled) el.classList.add(BLUR_CLASS);
+        else el.classList.remove(BLUR_CLASS);
       });
     });
   };
