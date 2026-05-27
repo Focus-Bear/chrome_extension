@@ -118,7 +118,6 @@ h1.popup-title {
   min-width: 0;
 }
 
-
 /* ─── Settings Icon ──────────────────────────────────────────────────────── */
 
 button.settings-icon-button {
@@ -665,6 +664,20 @@ button.settings-action-button {
   font-size: 14px;
 }
 
+.session-time-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.session-break-hint {
+  font-weight: 600;
+  color: #474747;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 /* Complete Session button — black text on orange */
 .complete-session-btn {
   display: inline-flex;
@@ -753,6 +766,11 @@ button.settings-action-button {
   font-size: 13px;
   margin: 8px 0 0;
   text-align: center;
+}
+
+.session-section .no-session.no-session--left {
+  text-align: left;
+  padding-left: 10px;
 }
 
 /* ─── Info tooltip on Unfocus Sessions ───────────────────────────────────── */

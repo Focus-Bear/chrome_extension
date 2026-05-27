@@ -165,6 +165,7 @@ const App = () => {
     phase: "focus" | "break";
     timeLeft: number;
     isRunning: boolean;
+    breakMin: number;
   } | null>(null);
 
   useEffect(() => {
@@ -317,6 +318,7 @@ const App = () => {
             phase: onBreak ? "break" : "focus",
             timeLeft,
             isRunning: !!isRunning,
+            breakMin: Math.max(1, Math.round((breakDuration ?? 0) / 60)),
           });
         } else {
           setActiveFocusSession(null);
@@ -558,11 +560,7 @@ const App = () => {
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <img
-          src={focusBearLogoUrl}
-          alt={t("home_title")}
-          className="focus-bear-wordmark"
-        />
+        <img src={focusBearLogoUrl} alt={t("home_title")} className="focus-bear-wordmark" />
         <div className="main-header-end">
           <button
             type="button"
@@ -626,7 +624,7 @@ const App = () => {
             <div className="session-card focus-session-card">
               <div className="session-card-header">
                 <span className={`phase-badge phase-${activeFocusSession.phase}`}>
-                  {activeFocusSession.phase === "focus" ? "Your Goal" : "On Break"}
+                  {activeFocusSession.phase === "focus" ? "Working" : "On Break"}
                 </span>
                 {!activeFocusSession.isRunning && (
                   <span className="phase-badge phase-paused">Paused</span>
@@ -640,7 +638,12 @@ const App = () => {
               )}
               <div className="session-row">
                 <span className="label">{t("time_left")}</span>
-                <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                <span className="session-time-wrap">
+                  <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                  {activeFocusSession.phase === "focus" && activeFocusSession.breakMin > 0 && (
+                    <span className="session-break-hint">{`-> ${activeFocusSession.breakMin} min break`}</span>
+                  )}
+                </span>
               </div>
               <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
                 Complete Session
@@ -698,7 +701,7 @@ const App = () => {
               ))}
             </div>
           ) : (
-            <p className="no-session">{t("no_unfocus_session")}</p>
+            <p className="no-session no-session--left">{t("no_unfocus_session")}</p>
           )}
         </section>
       </div>
@@ -713,7 +716,7 @@ const App = () => {
       <div className="settings-header">
         <div className="header-brand">
           <img src={settingsBearLogoUrl} alt="" className="header-bear-icon" aria-hidden="true" />
-          <h2 className="header-title">{t("settings_title")}</h2>
+          <h2 className="header-title">{t("settings_title").toLowerCase()}</h2>
         </div>
         <button
           type="button"
