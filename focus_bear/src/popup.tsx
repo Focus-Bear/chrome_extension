@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
-import iconUrl from "../public/icons/bearLogo.png";
+import settingsBearLogoUrl from "../public/icons/bearLogoSettings.png";
 import setIcon from "../public/icons/settingsIcon.png";
 import { Home, Info } from "lucide-react";
 
@@ -557,10 +557,10 @@ const App = () => {
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <div className="main-header-start">
-          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <div className="header-brand">
+          <img src={settingsBearLogoUrl} alt="" className="header-bear-icon" aria-hidden="true" />
+          <span className="header-title">{t("home_title")}</span>
         </div>
-        <h1 className="popup-title">{t("home_title")}</h1>
         <div className="main-header-end">
           <button
             type="button"
@@ -709,10 +709,10 @@ const App = () => {
   const settingsView = (
     <div className="settings-view">
       <div className="settings-header">
-        <div className="settings-header-start">
-          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <div className="header-brand">
+          <img src={settingsBearLogoUrl} alt="" className="header-bear-icon" aria-hidden="true" />
+          <h2 className="header-title">{t("settings_title")}</h2>
         </div>
-        <h2 className="settings-title">{t("settings_title")}</h2>
         <button
           type="button"
           className="settings-icon-button"
