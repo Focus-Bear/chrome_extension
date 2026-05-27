@@ -560,11 +560,7 @@ const App = () => {
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <img
-          src={focusBearLogoUrl}
-          alt={t("home_title")}
-          className="focus-bear-wordmark"
-        />
+        <img src={focusBearLogoUrl} alt={t("home_title")} className="focus-bear-wordmark" />
         <div className="main-header-end">
           <button
             type="button"
