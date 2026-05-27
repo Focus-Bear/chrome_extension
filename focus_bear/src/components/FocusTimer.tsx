@@ -290,7 +290,7 @@ const FocusTimer: React.FC = () => {
               className={`ft-start ${!task.trim() ? "ft-start--disabled" : ""}`}
               disabled={!task.trim()}
             >
-              <Play size={14} fill="currentColor" />
+              <Play size={14} fill="currentColor" strokeWidth={0} />
               <span>Start Focus Session</span>
             </button>
             {!task.trim() && <p className="ft-helper">Enter a task above to begin.</p>}
@@ -307,9 +307,11 @@ const FocusTimer: React.FC = () => {
                 </div>
               </div>
             )}
-            <div className={`ft-phase ${onBreak ? "ft-phase--break" : "ft-phase--work"}`}>
-              <span>{"Your Goal:"}</span>
-            </div>
+            {onBreak && (
+              <div className="ft-phase ft-phase--break">
+                <span>On Break</span>
+              </div>
+            )}
 
             <p className="ft-active-task" title={task}>
               {task}
@@ -348,17 +350,17 @@ const FocusTimer: React.FC = () => {
             <div className="ft-controls">
               {isRunning ? (
                 <button onClick={handlePause} className="ft-ctrl ft-ctrl--secondary">
-                  <Pause size={14} />
+                  <Pause size={14} fill="currentColor" strokeWidth={0} />
                   <span>Pause</span>
                 </button>
               ) : (
                 <>
                   <button onClick={handleResume} className="ft-ctrl ft-ctrl--primary">
-                    <Play size={14} fill="currentColor" />
+                    <Play size={14} fill="currentColor" strokeWidth={0} />
                     <span>Resume</span>
                   </button>
                   <button onClick={handleEnd} className="ft-ctrl ft-ctrl--ghost">
-                    <Square size={14} />
+                    <Square size={14} fill="currentColor" strokeWidth={0} />
                     <span>End Session</span>
                   </button>
                 </>
