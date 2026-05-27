@@ -216,9 +216,10 @@ const App = () => {
         gmailBlurEnabled,
         promotionBlurEnabled,
         socialBlurEnabled,
-        xBlurHomeFeed,
-        xBlurRecommendations,
-        xBlurReplies,
+        xBlurHomeFeed: storedXBlurHomeFeed,
+        xBlurRecommendations: storedXBlurRecommendations,
+        xBlurReplies: storedXBlurReplies,
+
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
@@ -234,9 +235,9 @@ const App = () => {
         setGmailBlurEnabled(gmailBlurEnabled ?? true);
         setPromotionBlurEnabled(promotionBlurEnabled ?? true);
         setSocialBlurEnabled(socialBlurEnabled ?? true);
-        setXBlurHomeFeed(xBlurHomeFeed ?? true);
-        setXBlurRecommendations(xBlurRecommendations ?? true);
-        setXBlurReplies(xBlurReplies ?? true);
+        setXBlurHomeFeed(storedXBlurHomeFeed ?? true);
+        setXBlurRecommendations(storedXBlurRecommendations ?? true);
+        setXBlurReplies(storedXBlurReplies ?? true);
       },
     );
   }, []);
