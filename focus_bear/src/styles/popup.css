@@ -4,19 +4,30 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* no horizontal bleed */
+  /* overflow-y left as auto so Chrome's popup window can scroll when
+     content is taller than the ~580px popup height limit.
+     The webkit-scrollbar rule below keeps the scrollbar invisible. */
 }
 
-/* Fixed-size container */
+/* Hide the scrollbar track visually while keeping scroll functional */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Container ──────────────────────────────────────────────────────────── */
+
 .popup-container {
   position: relative;
   width: 400px;
   height: fit-content;
-  padding: 12px 12px 12px;
-  background-color: #fff8e7;
+  padding: 10px;
+  background-color: #fbf7ee;
   font-family: var(--font-body);
 }
 
-/* Logo */
+/* ─── Logo ───────────────────────────────────────────────────────────────── */
+
 .focus-logo {
   position: absolute;
   top: 24px;
@@ -26,10 +37,19 @@ body {
   z-index: 1;
 }
 
-/* Main heading bar */
-.main-header {
+.main-view .focus-logo,
+.settings-view .focus-logo {
+  position: static;
+  width: 34px;
+  flex-shrink: 0;
+}
+
+/* ─── Headers ────────────────────────────────────────────────────────────── */
+
+.main-header,
+.settings-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   column-gap: 10px;
   margin: 4px 0 12px;
@@ -37,9 +57,9 @@ body {
   border-bottom: 1px solid #e0b991;
 }
 
-.main-header-start {
+.main-header-start,
+.settings-header-start {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
 }
 
@@ -49,13 +69,38 @@ body {
   align-items: center;
 }
 
-.main-view .focus-logo {
-  position: static;
-  width: 34px;
+.focus-bear-wordmark {
+  justify-self: start;
+  height: 2rem;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  font-size: 2rem;
+}
+
+.header-bear-icon {
+  width: 2.0625rem;
+  height: 2.0625rem;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
-/* Titles */
+.header-title {
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0;
+  color: black;
+}
+
 h1.popup-title {
   font-size: 2rem;
   font-weight: 500;
@@ -66,15 +111,6 @@ h1.popup-title {
   text-align: center;
 }
 
-h2.settings-title {
-  font-size: 2rem;
-  margin: 0 0 20px;
-  color: black;
-  text-align: center;
-  position: relative;
-  top: -4px;
-}
-
 .main-header .popup-title {
   margin: 0;
   justify-self: center;
@@ -82,48 +118,8 @@ h2.settings-title {
   min-width: 0;
 }
 
-.settings-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 10px;
-  margin: 4px 0 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e0b991;
-}
+/* ─── Settings Icon ──────────────────────────────────────────────────────── */
 
-.settings-header-start {
-  display: flex;
-  align-items: center;
-}
-
-.settings-view .focus-logo {
-  position: static;
-  width: 34px;
-  flex-shrink: 0;
-}
-
-.settings-header .settings-title {
-  margin: 0;
-  top: 0;
-  justify-self: center;
-  text-align: center;
-}
-
-/* Timer / no-session text */
-.timer-section,
-p.no-session {
-  margin-top: 20px;
-  font-size: 20px;
-  text-align: left;
-}
-
-.timer-section span:first-of-type {
-  display: block;
-  margin: 0 0 12px;
-}
-
-/* Settings Icon */
 button.settings-icon-button {
   flex-shrink: 0;
   display: flex;
@@ -139,6 +135,11 @@ button.settings-icon-button {
   cursor: pointer;
 }
 
+button.settings-icon-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
 img.settings-icon {
   width: 22px;
   height: 22px;
@@ -147,22 +148,21 @@ img.settings-icon {
   pointer-events: none;
 }
 
-/* Setting group names */
+/* ─── Settings Tabs & Accordions ─────────────────────────────────────────── */
+
+.settings-tabs {
+  margin-bottom: 14px;
+}
+
 .settings-label {
   font-size: 1.25rem;
   margin: 6px;
 }
 
-/* Options list */
 .options-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 0px;
-}
-
-.settings-tabs {
-  margin-bottom: 14px;
 }
 
 .settings-accordion {
@@ -185,6 +185,11 @@ img.settings-icon {
   border-bottom: 1px solid #e0b991;
 }
 
+.settings-accordion summary:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: -2px;
+}
+
 .settings-accordion .option-label {
   padding: 10px 12px;
   margin: 0;
@@ -197,15 +202,16 @@ img.settings-icon {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .option-text {
-  font-size: 18px;
+  font-size: 14px;
   color: #3f3f3f;
 }
 
-/* Toggle switch */
+/* ─── Toggle Switch ──────────────────────────────────────────────────────── */
+
 .toggle {
   display: flex;
   align-items: center;
@@ -261,113 +267,20 @@ img.settings-icon {
   left: 2px;
 }
 
-/* Close button */
-button.close-button {
-  display: block;
-  margin: 32px auto 0;
-  width: 225px;
-  padding: 10px 15px;
-  font-size: 18px;
-  color: #f3a650;
-  background-color: #fffcf6;
-  border: 2px solid #f3a650;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+/* ─── Tabs ───────────────────────────────────────────────────────────────── */
+
+/* Outer slot handles height — collapses to 0 when no session so no gap */
+.tab-bar-slot {
+  overflow: hidden;
+  max-height: 70px; /* safely above actual tab bar height */
+  transition: max-height 0.22s ease;
 }
 
-button.close-button:disabled {
-  background-color: #cccccc;
-  color: #666;
-  cursor: not-allowed;
+.tab-bar-slot--collapsed {
+  max-height: 0;
 }
 
-.settings-action-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  justify-content: space-between;
-}
-
-button.settings-action-button {
-  margin: 0;
-  width: 100%;
-  font-size: 16px;
-}
-
-/* Session Cards Container */
-.session-list {
-  max-height: 160px;
-  /* fits 2–3 cards depending on content */
-  overflow-y: auto;
-  margin-top: 20px;
-}
-
-/* Individual Session Card */
-.session-card {
-  background-color: #fffcf6;
-  border: 1px solid #e0b991;
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-/* Domain Title */
-.session-card .domain {
-  font-weight: bold;
-  color: #000000;
-  display: block;
-  margin-bottom: 4px;
-}
-
-/* Session Info Labels */
-.session-card .label {
-  font-weight: bold;
-  color: #333;
-}
-
-/* Complete Session Button */
-.complete-session-btn {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 8px 0;
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.complete-session-btn:hover {
-  background-color: #27ae60;
-}
-
-.complete-session-btn:active {
-  background-color: #1e8449;
-}
-
-.settings-warning {
-  max-width: 75%;
-  margin: 10px auto;
-  text-align: center;
-  color: #990000;
-  background: #fffcf6;
-  font-weight: bold;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  border: 1px solid #f3a650;
-}
-
-/* Blocklist/Relaxlist */
-
-/* Tabs */
+/* Inner visual bar */
 .tab-buttons {
   display: flex;
   margin: 0 0 18px;
@@ -377,6 +290,33 @@ button.settings-action-button {
   border: 1px solid #e0b991;
   border-radius: 10px;
   box-shadow: inset 0 1px 2px rgba(102, 51, 0, 0.06);
+  transition: opacity 0.2s ease;
+}
+
+/* Invisible but occupies height — only used during the brief init window */
+.tab-buttons--ghost {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Fade in when a session becomes active */
+.tab-buttons--visible {
+  animation: tab-fade-in 0.2s ease;
+}
+
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hide tab pane content without unmounting it.
+   !important needed to beat the display:flex on .active-sessions */
+.tab-pane--hidden {
+  display: none !important;
 }
 
 .tab-button {
@@ -384,9 +324,8 @@ button.settings-action-button {
   min-width: 0;
   padding: 7px 6px;
   font-size: 13px;
-  font-weight: 600;
-  color: #8a6640;
   font-weight: bold;
+  color: #8a6640;
   background: transparent;
   border: none;
   border-radius: 7px;
@@ -413,16 +352,148 @@ button.settings-action-button {
   background: rgba(255, 255, 255, 0.5);
 }
 
-.tab-button.active {
-  font-weight: bold;
-  background-color: #e9902c;
+.tab-button.active,
+.tab-button:active {
+  font-weight: 600;
+  background-color: #ffffff;
+  color: #0b0b0b;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
+/* Count badge on the Sessions tab */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  margin-left: 2px;
+  border-radius: 999px;
+  background-color: #0b0b0b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.tab-button.active .tab-badge {
+  background: #0b0b0b;
   color: #ffffff;
 }
 
-.tab-button:active {
-  font-weight: bold;
+/* ─── Warnings ───────────────────────────────────────────────────────────── */
+
+.settings-warning {
+  max-width: 85%;
+  margin: 10px auto;
+  text-align: center;
+  color: #7a3b02;
+  background: #fff4e0;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid #f0cc8b;
+}
+
+/* ─── Close / Action Buttons ─────────────────────────────────────────────── */
+
+button.close-button {
+  display: block;
+  margin: 32px auto 0;
+  width: 225px;
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e9902c;
+  background-color: #fffcf6;
+  border: 1.5px solid #e9902c;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button.close-button:disabled {
+  background-color: #cccccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+button.close-button:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
+.settings-action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: space-between;
+}
+
+button.settings-action-button {
+  margin: 0;
+  width: 100%;
+  font-size: 16px;
+}
+
+/* ─── Blocklist Editor ───────────────────────────────────────────────────── */
+
+.blocklist-instructions {
+  font-size: 13px;
+  color: #474747;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.site-input-container {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.site-input-container input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px 0 0 8px;
+  border: 1px solid #e0b991;
+  font-size: 14px;
+  background-color: #fffcf6;
+  color: #000000;
+}
+
+.site-input-container button {
+  padding: 8px 14px;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid #e9902c;
+  background-color: #fffcf6;
+  color: #e9902c;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.site-input-container button:hover:not(:disabled) {
   background-color: #e9902c;
-  color: #ffffff;
+  color: #0b0b0b;
+}
+
+.site-input-container button:disabled {
+  background-color: #ccc;
+  border-color: #aaa;
+  color: #666;
+  cursor: not-allowed;
 }
 
 /* Site list */
@@ -434,7 +505,6 @@ button.settings-action-button {
   list-style: none;
 }
 
-/* Individual site card */
 .site-list li {
   background-color: #fffcf6;
   border: 1px solid #e0b991;
@@ -448,28 +518,29 @@ button.settings-action-button {
   line-height: 1.4;
 }
 
-/* Site name */
 .site-list li span {
   font-weight: bold;
   color: #000000;
 }
 
-/* Buttons for actions */
 .site-list li button {
   margin-left: 6px;
   padding: 4px 10px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   border-radius: 6px;
-  border: 2px solid #f3a650;
+  border: 1.5px solid #e9902c;
   background-color: #fffcf6;
-  color: #f3a650;
+  color: #e9902c;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .site-list li button:hover:not(:disabled) {
-  background-color: #f3a650;
-  color: #fffcf6;
+  background-color: #e9902c;
+  color: #0b0b0b;
 }
 
 .site-list li button:disabled {
@@ -479,132 +550,8 @@ button.settings-action-button {
   cursor: not-allowed;
 }
 
-/* Special state for relaxlist toggle */
-.site-list li button.relax-active {
-  background-color: #e9902c;
-  color: white;
-  border-color: #e9902c;
-}
+/* ─── Active Sessions ────────────────────────────────────────────────────── */
 
-/* Buttons */
-.relax-button {
-  background: grey;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.relax-button.active {
-  background: green;
-}
-
-.remove-button {
-  background: red;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Active hours section */
-.active-hours-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.active-hours-container label {
-  font-size: 15px;
-  color: #000000;
-  font-weight: 700;
-}
-
-.active-hours-input {
-  width: 60px;
-  padding: 6px;
-  border: 1px solid #b68c5a;
-  border-radius: 6px;
-  background: #fffdf8;
-  color: #3d1f00;
-  font-size: 13px;
-  text-align: center;
-}
-
-.save-hours-btn {
-  background: #000000;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.save-hours-btn:disabled {
-  background-color: #ccc;
-  color: #666;
-  border-color: #aaa;
-  cursor: not-allowed;
-}
-
-/* Instruction text */
-.blocklist-instructions {
-  font-size: 15px;
-  color: #000000;
-  margin-bottom: 6px;
-  font-weight: 700;
-}
-
-/* Input + Add button container */
-.site-input-container {
-  display: flex;
-  margin-bottom: 12px;
-}
-
-/* Input box styled to match cards */
-.site-input-container input {
-  flex: 1;
-  padding: 8px 10px;
-  border-radius: 8px 0 0 8px;
-  border: 1px solid #e0b991;
-  font-size: 14px;
-  background-color: #fffcf6;
-  color: #000000;
-}
-
-/* Add button styled same width/height */
-.site-input-container button {
-  padding: 8px 14px;
-  border-radius: 0 8px 8px 0;
-  border: 1px solid #f3a650;
-  background-color: #fffcf6;
-  color: #f3a650;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.site-input-container button:hover:not(:disabled) {
-  background-color: #f3a650;
-  color: #fffcf6;
-}
-
-.site-input-container button:disabled {
-  background-color: #ccc;
-  border-color: #aaa;
-  color: #666;
-  cursor: not-allowed;
-}
-
-/*  Active Sessions */
 .active-sessions {
   margin-top: 12px;
   margin-bottom: 12px;
@@ -618,31 +565,51 @@ button.settings-action-button {
   flex-direction: column;
 }
 
-.session-section-title {
-  margin: 0 0 8px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: #000000;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e0b991;
+/* Section head row — title + optional info tooltip button */
+.session-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-/* Distinguish focus vs unfocus cards with a left accent bar */
+.session-section-title {
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #0b0b0b;
+  text-transform: none;
+  font-size: 13px;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin: 0 0 6px;
+  text-align: left;
+}
+
+/* Session list scroll container */
+.session-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 0;
+}
+
+/* Session cards */
+.session-card {
+  background-color: #ffffff;
+  border: 1px solid #e4dcc7;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .focus-session-card {
-  border-left: 4px solid #e9902c;
+  border-left: 3px solid #e9902c;
 }
 
 .unfocus-session-card {
-  border-left: 4px solid #b68c5a;
-}
-
-/* Override session-list max-height in the active view — it's already scoped by parent */
-.active-sessions .session-list {
-  max-height: 220px;
-  margin-top: 0;
+  border-left: 3px solid #474747;
 }
 
 .session-card-header {
@@ -653,6 +620,19 @@ button.settings-action-button {
   margin-bottom: 6px;
 }
 
+.session-card .domain {
+  font-weight: 600;
+  color: #0b0b0b;
+  font-size: 14px;
+  display: block;
+}
+
+.session-card .label {
+  font-weight: 600;
+  color: #474747;
+  font-size: 13px;
+}
+
 .session-card .session-row {
   display: flex;
   align-items: baseline;
@@ -661,74 +641,210 @@ button.settings-action-button {
 }
 
 .session-task {
-  font-weight: 600;
-  color: #000000;
+  font-weight: 500;
+  color: #0b0b0b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-intention {
+  font-weight: 400;
+  color: #474747;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .session-time {
-  font-family: monospace;
-  font-weight: 700;
-  color: #000000;
-  font-size: 16px;
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0b0b0b;
+  font-size: 14px;
 }
 
-.session-intention {
-  color: #000000;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.session-time-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.session-break-hint {
+  font-weight: 600;
+  color: #474747;
+  font-size: 13px;
   white-space: nowrap;
 }
 
-.phase-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  color: #fffcf6;
-}
-
-.phase-focus {
-  background-color: #e9902c;
-}
-
-.phase-break {
-  background-color: #6aa36a;
-}
-
-.phase-paused {
-  background-color: #8a8a8a;
-}
-
-/* Count badge on the Active Sessions tab */
-.tab-badge {
+/* Complete Session button — black text on orange */
+.complete-session-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 5px;
-  margin-left: 2px;
-  border-radius: 999px;
+  gap: 6px;
+  width: auto;
+  margin-top: 10px;
+  padding: 9px 14px;
   background-color: #e9902c;
-  color: #fffcf6;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  color: #0b0b0b;
+  border: 1px solid #b66911;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
+.complete-session-btn:hover {
+  background-color: #d78119;
+}
+
+.complete-session-btn:active {
+  background-color: #b66911;
+}
+
+.complete-session-btn:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
+/* Phase badges — pill with colored dot
+   Text stays dark (#0b0b0b) on all variants so it passes WCAG AA at any size.
+   State is communicated by the dot color only, not by text color. */
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  background: #fbf8f1;
+  border: 1px solid #e4dcc7;
+  color: #0b0b0b;
+}
+
+.phase-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #0b0b0b; /* default dot; overridden per variant below */
+}
+
+/* Dot colors only — text stays dark for WCAG AA compliance */
+.phase-focus::before {
+  background: #e9902c;
+  box-shadow: 0 0 0 2px rgba(233, 144, 44, 0.2);
+}
+
+.phase-break::before {
+  background: #2f8c46;
+  box-shadow: 0 0 0 2px rgba(47, 140, 70, 0.2);
+}
+
+.phase-paused {
+  background: #efefef;
+  border-color: #d6d6d6;
+  color: #474747;
+}
+
+.phase-paused::before {
+  background: #606060;
+}
+
+/* Empty state */
 .session-section .no-session {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: #4f4f4f;
   font-style: italic;
+  font-weight: 400;
+  color: #606060;
+  font-size: 13px;
+  margin: 8px 0 0;
   text-align: center;
+}
+
+.session-section .no-session.no-session--left {
+  text-align: left;
+  padding-left: 10px;
+}
+
+/* ─── Info tooltip on Unfocus Sessions ───────────────────────────────────── */
+
+.ses-tip-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.ses-info-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid #c9bfa6;
+  background: #ffffff;
+  color: #606060;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.ses-info-btn:hover {
+  background: #fbf8f1;
+  color: #0b0b0b;
+  border-color: #474747;
+}
+
+.ses-info-btn:focus-visible {
+  outline: 2px solid #e9902c;
+  outline-offset: 2px;
+}
+
+.ses-tooltip {
+  position: absolute;
+  left: 0;
+  bottom: 28px;
+  width: 240px;
+  padding: 10px 12px;
+  background: #0b0b0b;
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+.ses-tooltip strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #f5b96a;
+}
+
+.ses-tooltip p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+}
+
+.ses-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 7px;
+  width: 10px;
+  height: 10px;
+  background: #0b0b0b;
+  transform: rotate(45deg);
 }

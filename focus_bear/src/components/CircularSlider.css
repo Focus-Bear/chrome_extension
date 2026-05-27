@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap");
 
 :root {
   --slider-bg-color: #ffe4c6;
@@ -78,7 +78,7 @@
 }
 
 .workDuration-input {
-  font-family: "Courier Prime", sans-serif;
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
   font-weight: 700;
   background: #fab363;
   border: 2px solid #e9902c;
@@ -89,7 +89,7 @@
   margin: 0;
   text-align: center;
   font-size: 2rem;
-  color: #fff;
+  color: #0b0b0b;
   width: 6rem;
 }
 

@@ -30,8 +30,7 @@
         "https://*.wikipedia.org/*",
         "https://mail.google.com/*"
       ],
-      "js": ["content.js"],
-      "css": ["assets/intentionPopup.css"]
+      "js": ["content.js"]
     },
     {
       "matches": ["*://*.youtube.com/*"],

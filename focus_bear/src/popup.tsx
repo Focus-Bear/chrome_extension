@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/popup.css";
-import iconUrl from "../public/icons/bearLogo.png";
+import focusBearLogoUrl from "../public/icons/focusBearLogo.png";
+import settingsBearLogoUrl from "../public/icons/bearLogoSettings.png";
 import setIcon from "../public/icons/settingsIcon.png";
-import { Home } from "lucide-react";
+import { Home, Info } from "lucide-react";
 
 import "@radix-ui/themes/styles.css";
-import FocusTimer from "./components/FocusTimer";
+import FocusTimer from "./components/FocusTimer.js";
 
 const Toggle = ({
   checked,
@@ -155,6 +156,8 @@ const App = () => {
 
   const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
   const [settingsTab, setSettingsTab] = useState<"blurring" | "blocklist">("blurring");
+  const [sessionsInitialized, setSessionsInitialized] = useState(false);
+  const [showUnfocusTip, setShowUnfocusTip] = useState(false);
 
   const [allUnfocusSessions, setAllUnfocusSessions] = useState<
     Record<string, { intention: string; timeLeft: number }>
@@ -165,6 +168,7 @@ const App = () => {
     phase: "focus" | "break";
     timeLeft: number;
     isRunning: boolean;
+    breakMin: number;
   } | null>(null);
 
   useEffect(() => {
@@ -327,10 +331,13 @@ const App = () => {
             phase: onBreak ? "break" : "focus",
             timeLeft,
             isRunning: !!isRunning,
+            breakMin: Math.max(1, Math.round((breakDuration ?? 0) / 60)),
           });
         } else {
           setActiveFocusSession(null);
         }
+
+        setSessionsInitialized(true);
       });
     };
 
@@ -555,13 +562,18 @@ const App = () => {
     return `${m}:${s}`;
   };
 
+  const hasSessions = !!(activeFocusSession || Object.keys(allUnfocusSessions).length > 0);
+
+  useEffect(() => {
+    if (!hasSessions && currentTab === "active") {
+      setCurrentTab("timer");
+    }
+  }, [hasSessions, currentTab]);
+
   const mainView = (
     <div className="main-view">
       <div className="main-header">
-        <div className="main-header-start">
-          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
-        </div>
-        <h1 className="popup-title">{t("home_title")}</h1>
+        <img src={focusBearLogoUrl} alt={t("home_title")} className="focus-bear-wordmark" />
         <div className="main-header-end">
           <button
             type="button"
@@ -580,15 +592,29 @@ const App = () => {
           </button>
         </div>
       </div>
-      {/* Tab buttons */}
-      <div className="tab-buttons">
-        <button
-          className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
-          onClick={() => setCurrentTab("timer")}
+      {/* Slot collapses to zero height when no session — no gap, no jump.
+          Ghost during the brief init window so height is already there
+          when a session is found on first load. */}
+      <div
+        className={`tab-bar-slot${
+          sessionsInitialized && !hasSessions ? " tab-bar-slot--collapsed" : ""
+        }`}
+      >
+        <div
+          className={`tab-buttons${
+            !sessionsInitialized
+              ? " tab-buttons--ghost"
+              : hasSessions
+                ? " tab-buttons--visible"
+                : " tab-buttons--ghost"
+          }`}
         >
-          <span className="tab-label">Focus Timer</span>
-        </button>
-        {(activeFocusSession || Object.keys(allUnfocusSessions).length > 0) && (
+          <button
+            className={`tab-button ${currentTab === "timer" ? "active" : ""}`}
+            onClick={() => setCurrentTab("timer")}
+          >
+            <span className="tab-label">Focus Timer</span>
+          </button>
           <button
             className={`tab-button ${currentTab === "active" ? "active" : ""}`}
             onClick={() => setCurrentTab("active")}
@@ -598,79 +624,100 @@ const App = () => {
               {(activeFocusSession ? 1 : 0) + Object.keys(allUnfocusSessions).length}
             </span>
           </button>
-        )}
+        </div>
       </div>
-      {/* Tab content */}
-      {currentTab === "timer" && (
-        <div className="focus_session_player" style={{ backgroundColor: "#fffcf6" }}>
-          <FocusTimer />
-        </div>
-      )}
-      {currentTab === "active" && (
-        <div className="active-sessions">
-          <section className="session-section">
-            <h3 className="session-section-title">Focus Session</h3>
-            {activeFocusSession ? (
-              <div className="session-card focus-session-card">
-                <div className="session-card-header">
-                  <span className={`phase-badge phase-${activeFocusSession.phase}`}>
-                    {activeFocusSession.phase === "focus" ? "Focusing" : "On Break"}
-                  </span>
-                  {!activeFocusSession.isRunning && (
-                    <span className="phase-badge phase-paused">Paused</span>
-                  )}
-                </div>
-                {activeFocusSession.task && (
-                  <div className="session-row">
-                    <span className="label">Task:</span>
-                    <span className="session-task">{activeFocusSession.task}</span>
-                  </div>
+      {/* Tab content — always mounted to avoid remount flash; hidden via CSS */}
+      <div className={`focus_session_player${currentTab !== "timer" ? " tab-pane--hidden" : ""}`}>
+        <FocusTimer />
+      </div>
+      <div className={`active-sessions${currentTab !== "active" ? " tab-pane--hidden" : ""}`}>
+        <section className="session-section">
+          <h3 className="session-section-title">Focus Session</h3>
+          {activeFocusSession ? (
+            <div className="session-card focus-session-card">
+              <div className="session-card-header">
+                <span className={`phase-badge phase-${activeFocusSession.phase}`}>
+                  {activeFocusSession.phase === "focus" ? "Working" : "On Break"}
+                </span>
+                {!activeFocusSession.isRunning && (
+                  <span className="phase-badge phase-paused">Paused</span>
                 )}
+              </div>
+              {activeFocusSession.task && (
                 <div className="session-row">
-                  <span className="label">{t("time_left")}</span>
-                  <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                  <span className="label">Task:</span>
+                  <span className="session-task">{activeFocusSession.task}</span>
                 </div>
-                <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
-                  ✓ Complete Session
-                </button>
+              )}
+              <div className="session-row">
+                <span className="label">{t("time_left")}</span>
+                <span className="session-time-wrap">
+                  <span className="session-time">{formatTime(activeFocusSession.timeLeft)}</span>
+                  {activeFocusSession.phase === "focus" && activeFocusSession.breakMin > 0 && (
+                    <span className="session-break-hint">{`-> ${activeFocusSession.breakMin} min break`}</span>
+                  )}
+                </span>
               </div>
-            ) : (
-              <p className="no-session">No focus sessions running</p>
-            )}
-          </section>
+              <button className="complete-session-btn" onClick={handleCompleteFocusSession}>
+                Complete Session
+              </button>
+            </div>
+          ) : (
+            <p className="no-session">No focus sessions running</p>
+          )}
+        </section>
 
-          <section className="session-section">
-            <h3 className="session-section-title">Unfocus Sessions</h3>
-            {Object.keys(allUnfocusSessions).length > 0 ? (
-              <div className="session-list">
-                {Object.entries(allUnfocusSessions).map(([domain, session]) => (
-                  <div key={domain} className="session-card unfocus-session-card">
-                    <div className="session-card-header">
-                      <strong className="domain">{domain}</strong>
-                    </div>
-                    <div className="session-row">
-                      <span className="label">{t("time_left")}</span>
-                      <span className="session-time">{formatTime(session.timeLeft)}</span>
-                    </div>
-                    <div className="session-row">
-                      <span className="label">{t("intention_label")}</span>
-                      <span className="session-intention">{session.intention}</span>
-                    </div>
-                    <button
-                      className="complete-session-btn"
-                      onClick={() => handleCompleteUnfocusSession(domain)}
-                    >
-                      ✓ Complete Session
-                    </button>
+        <section className="session-section">
+          <div className="session-section-head" style={{ justifyContent: "flex-start" }}>
+            <h3 className="session-section-title" style={{ marginBottom: 0 }}>
+              Unfocus Sessions
+            </h3>
+            <div className="ses-tip-wrap">
+              <button
+                className="ses-info-btn"
+                aria-label="What is an Unfocus Session?"
+                onMouseEnter={() => setShowUnfocusTip(true)}
+                onMouseLeave={() => setShowUnfocusTip(false)}
+              >
+                <Info size={11} strokeWidth={2.5} />
+              </button>
+              {showUnfocusTip && (
+                <div className="ses-tooltip" role="tooltip">
+                  <strong>Unfocus Session</strong>
+                  <p>A timed allowance to visit a distracting site with intent.</p>
+                </div>
+              )}
+            </div>
+          </div>
+          {Object.keys(allUnfocusSessions).length > 0 ? (
+            <div className="session-list">
+              {Object.entries(allUnfocusSessions).map(([domain, session]) => (
+                <div key={domain} className="session-card unfocus-session-card">
+                  <div className="session-card-header">
+                    <strong className="domain">{domain}</strong>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="no-session">{t("no_unfocus_session")}</p>
-            )}
-          </section>
-        </div>
-      )}
+                  <div className="session-row">
+                    <span className="label">{t("intention_label")}</span>
+                    <span className="session-intention">{session.intention}</span>
+                  </div>
+                  <div className="session-row">
+                    <span className="label">{t("time_left")}</span>
+                    <span className="session-time">{formatTime(session.timeLeft)}</span>
+                  </div>
+                  <button
+                    className="complete-session-btn"
+                    onClick={() => handleCompleteUnfocusSession(domain)}
+                  >
+                    Complete Session
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-session no-session--left">{t("no_unfocus_session")}</p>
+          )}
+        </section>
+      </div>
       {settingsBlockedMessage && (
         <p className="settings-warning">{t("settings_locked_during_unfocus_session")}</p>
       )}
@@ -680,10 +727,10 @@ const App = () => {
   const settingsView = (
     <div className="settings-view">
       <div className="settings-header">
-        <div className="settings-header-start">
-          <img src={iconUrl} alt="Focus Mode Icon" className="focus-logo" />
+        <div className="header-brand">
+          <img src={settingsBearLogoUrl} alt="" className="header-bear-icon" aria-hidden="true" />
+          <h2 className="header-title">{t("settings_title").toLowerCase()}</h2>
         </div>
-        <h2 className="settings-title">{t("settings_title")}</h2>
         <button
           type="button"
           className="settings-icon-button"

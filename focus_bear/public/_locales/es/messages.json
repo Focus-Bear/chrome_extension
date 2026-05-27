@@ -30,10 +30,10 @@
     "message": "Difuminar sugerencias de empleo"
   },
   "intention_label": {
-    "message": "Intención"
+    "message": "Intención:"
   },
   "time_left": {
-    "message": "Tiempo restante"
+    "message": "Tiempo restante:"
   },
   "no_unfocus_session": {
     "message": "No hay una sesión de desenfoque activa."
