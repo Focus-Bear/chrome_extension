@@ -1,215 +1,213 @@
-# P000395SE Completion of Focus Bear Chrome Extension
+# P000395SE Focus Bear Chrome Extension
 
-**Focus Bear** is a Chrome extension designed to help users minimise distractions and stay focused by blocking access to distracting websites. After the completion of a focus session a break timer runs. You can also add website URL's to a block list to limit ditractions and can toggle off distracting popup's in popular websites like LinkedIn and Youtube to blur the news feed section for example. 
+**Focus Bear** is a Chrome extension (Manifest V3) that helps users stay focused by blocking distracting websites, running Pomodoro-style focus sessions, and reducing visual noise on sites like YouTube, LinkedIn, Gmail, Reddit, and Wikipedia.
+
+**Focus Bear** is a Chrome extension designed to help users minimise distractions and stay focused by blocking access to distracting websites. After the completion of a focus session a break timer runs. You can also add website URL's to a block list to limit ditractions and can toggle off distracting popup's in popular websites like LinkedIn and Youtube to blur the news feed section for example.
+
+Built as a capstone project extending the [Focus Bear](https://www.focusbear.io/) productivity app ecosystem.
 
 ## GitHub URL
 
 <https://github.com/Focus-Bear/chrome_extension>
 
-## Deloyment URL
+---
 
-- Not deployed yet
+## Extension Overview
+
+### Focus Sessions
+
+- Start a Pomodoro-style timer with a configurable work duration and break duration
+- Set durations via a draggable circular slider or preset values (5, 10, 30 min)
+- Pause, resume, and reset an active session
+- Break timer starts automatically after the work phase ends
+- Desktop notifications fire when each phase completes
+- Settings are locked and inaccessible while a focus session is active
+
+### Blocklist
+
+- Add and remove websites from a personal blocklist
+- During an active focus session, any matching site is immediately redirected to a blocked page
+- Blocking applies to all open tabs, not just newly opened ones
+- Blocked domains are listed in the popup for quick reference
+- Active hours can be configured to limit when blocking is enforced
+
+### Unfocus / Intention Popup
+
+- A floating popup appears on YouTube and LinkedIn before the page loads
+- Captures the user's intention and how long they plan to spend
+- Sessions under 10 minutes require 5+ characters of reasoning; 10+ minute sessions require 15+
+- Scrollable session cards in the popup show any currently active unfocus timers
+
+### Distraction Blurring
+
+Each toggle is saved globally and persists across tabs and reloads.
+
+| Site            | What can be blurred or hidden                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **YouTube**     | Homepage recommendations, chips bar, Shorts, comments, You menu                                                   |
+| **LinkedIn**    | Homepage feed, notifications, trending news, job recommendations, connection recommendations, notification badges |
+| **Gmail**       | Inbox, Promotions tab, Social and Updates tabs                                                                    |
+| **Wikipedia**   | Main page content; link preview popups on hover                                                                   |
+| **Reddit**      | Distracting feed content (via content script)                                                                     |
+| **X / Twitter** | Distracting feed content (via content script)                                                                     |
+
+### General
+
+- Spanish language support (mirrors Chrome's language setting)
+- UI follows Focus Bear branding and colour scheme
+- All settings persist via `chrome.storage.local`
+
+### Known Limitations
+
+- Distraction blurring on Gmail and some LinkedIn pages can be inconsistent depending on page load timing
+- LinkedIn toggles can affect YouTube subscription blurring due to shared content script logic
+
+---
 
 ## Technologies
 
-- **React 19** with **TypeScript** 
-- **HTML / CSS**
-- **Vite 6** (build and dev server)
-- **Chrome Extension Manifest V3** 
-- **Radix UI Themes** and **Lucide React** 
-- **Oxlint** and **Oxfmt** 
+| Tool                           | Purpose                        |
+| ------------------------------ | ------------------------------ |
+| React 19 + TypeScript          | UI components and popup logic  |
+| Vite 6                         | Build tooling and dev server   |
+| Chrome Extension Manifest V3   | Extension platform             |
+| Radix UI Themes + Lucide React | UI component library and icons |
+| Oxlint                         | Linting                        |
+| Oxfmt                          | Code formatting                |
+| Vitest                         | Unit testing                   |
 
-## Changelog
+---
 
-### Version 1.0.0 • 15 June 2025
+## Testing
 
-#### 🚀 New Features
+Unit tests cover the core business logic in `src/lib/` — the pure functions that have no Chrome API dependency.
 
-- A floating popup, to capture users intention and time allocation on YouTube and LinkedIn
-- A popup to view active focus sessions and a settings page to toggle blur features
-- Spanish language support that mirrors Chrome's language settings
+```bash
+cd focus_bear
+npm test
+```
 
-- Toggle to blur YouTube homepage recommendations and chips bar
-- Toggle to blur YouTube shorts
-- Toggle to blur YouTube comments
+**What is tested (38 tests across 3 files):**
 
-- Toggle to blur LinkedIn homepage feed
-- Toggle to blur LinkedIn notifications and trending news
-- Toggle to blur LinkedIn job recommendations
-- Toggle to blur LinkedIn connection recommendations
+| File                | Functions covered                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `focus.test.ts`     | `isFocusActive`, `buildFocusSessionState`, `computeTimeLeft`, `buildResumedSessionState`, pause→resume round trip |
+| `blocklist.test.ts` | `urlIsBlocklisted`, `buildBlockedUrl`                                                                             |
+| `unfocus.test.ts`   | `computeUnfocusEndTime`, `isUnfocusSessionActive`                                                                 |
 
-#### 🛠 Improvements
+Chrome API wiring (alarms, storage, message handlers) is not unit tested — that would require a Chrome API mock layer and is out of scope for this project.
 
-- Styling follows Focus Bear branding and colour scheme
-- Settings are global and saved across different tabs
-- Settings are saved on page reload
-- If there is an active focus session, settings page cannot be accessed
-- If a focus session is expected to be 10+ mins, 15+ characters of reasoning is required, other than 5 chracters
-- Active session cards in popup are scrollable
+---
 
-#### 🐞 Bug Fixes
+## CI Pipeline
 
-- Shorts section on YouTube homepage not blurred despite toggle being enabled in FocusBear extension
-- Subscription section on YouTube homepage not blurred despite toggle being enabled in FocusBear extension
-- Home Page blur not working after navigating from Shorts or Subscriptions page and refreshing
+Every pull request to `main` triggers three parallel jobs defined in `.github/workflows/lint.yml`:
 
-#### ❗ Known Issues
+| Job      | Tool   | What it checks              |
+| -------- | ------ | --------------------------- |
+| `oxlint` | Oxlint | Code quality and lint rules |
+| `oxfmt`  | Oxfmt  | Consistent code formatting  |
+| `test`   | Vitest | All unit tests pass         |
 
-- LinkedIn toggles also affects YouTube subscription blurring
-- Intention popup css being injected improperly on all LinkedIn pages
+All three must pass before a PR can be merged.
 
-### Version 1.1.0 • 2 Nov 2025
-
-#### 🚀 New Features
-
-- Pomodoro Timer added to popup from original extension
-
-- Toggle to blur YouTube you menu
-
-- Toggle to remove LinkedIn notification badges
-
-- Toggle to add Wikipedia link popups
-- Toggle to blur Wikipedia main page
-
-- Toggle to blur Gmail
-- Toggle to blur Gmail promotions
-- Toggle to blur Gmail social and updates
-
-- Blocklist accessible through settings
-- Site entry text box trims urls and adds to blocklist
-- Blocked domains displayed in popup
-- Blocked domains are blurred in active hours
-- Remove option for each domain in list
-- Options to set and save active hours for blocklist
-- Popup when attempting to access blocked domains
-
-#### 🛠 Improvements
-
-- Various new themed messages added to intention popup
-
-### Version 1.2.0 • 4th April 2026
-
-#### 🚀 New Features
-
-- Settings button now on top heading bar
-- Can now drag the focus session length and break tie you want or select pre determined time values like 5, 10, 30 min sessions and breaks 
-
-#### 🛠 Improvements
-
-- Refresh of UI: styling, colours, alignment, layout
-- Removal of relaxed list section
-- Using accordian to hide distract toggles
-- High contrast background and text for readability
-
-#### 🐞 Bug Fixes
-
-- Blurring of distracting websites completly not working before but now it's mostly working in LinkedIn, Youtube and Reddit
-- Fixed intention popup displaying different UI based on website like LinkedIn or Youtube
-
-#### ❗ Known Issues
-
-- Distraction blurring on certain websites still a bit inconsistent or not implemented e.g. Gmail
-- More UI and functional tests could be added to ensure it's working as expected
+---
 
 ## Getting Started
 
-These instructions will help you get a local copy of the project up and running for development/testing.
+### Prerequisites
 
-**Clone the repository**: git clone <https://github.com/Focus-Bear/chrome_extension>
+- Node.js 24+
+- Chrome (or any Chromium-based browser)
 
-### How to run
+### Install and build
 
-1. Navigate to directory (after cloning, from the repo root)
-   - cd focus_bear
+```bash
+# From repo root
+cd focus_bear
+npm install
+npm run build
+```
 
-2. Install dependencies
-   - npm install
+### Load in Chrome
 
-3. Build the extension (generates a `dist/` folder)
-   - npm run build
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `focus_bear/dist` folder
 
-4. Load the extension in Chrome
-   - Open Chrome and go to chrome://extensions/
-   - Turn on **Developer mode**
-   - Click **Load unpacked**
-   - Select the `focus_bear/dist` folder (not `src/` or the repo root)
+After any code changes: run `npm run build` again, then click **Reload** on the extension card and refresh any tabs you're testing.
 
-5. After code changes, click **Reload** on the extension card and refresh any tabs you’re testing
+### Other commands
 
-### Formatting
-
-1. Navigate to directory
-   - cd focus_bear
-
-2. Install dependencies (if you haven’t already)
-   - npm install
-
-3. Run Oxfmt
-   - npm run fmt
-
-### Linting
-
-To lint the project using Oxlint:
-
-1. Navigate to directory
-   - cd focus_bear
-
-2. Install dependencies (if you haven’t already)
-   - npm install
-
-3. Run Oxlint
-   - npm run lint
+```bash
+npm run fmt        # Format code with Oxfmt
+npm run fmt:check  # Check formatting (used in CI)
+npm run lint       # Lint with Oxlint
+npm test           # Run unit tests
+```
 
 ### Troubleshooting
 
-If you’re running into issues like missing build files or unexpected behaviour, try the following:
+- Confirm `dist/` exists and contains a `manifest.json`
+- Make sure you loaded `focus_bear/dist`, not the repo root or `src/`
+- Developer mode must be on in Chrome
+- If behaviour is unexpected after changes, do a clean rebuild:
 
-- Check that `dist/` exists and has a `manifest.json` inside it
-- You loaded **`focus_bear/dist`** in chrome://extensions/ (not the whole repo)
-- Developer mode is on
-- You ran `npm run build` from inside `focus_bear`
-- If it still acts weird, from `focus_bear` try:
-  1. rm -rf dist
-  2. npm run build
-  3. Reload the extension in Chrome
+```bash
+rm -rf dist
+npm run build
+```
+
+Then reload the extension in Chrome.
+
+---
 
 ## Project Structure
 
 ```text
 chrome_extension/               # Git repo root (this README lives here)
-└── focus_bear/                 # Extension app — run npm commands here
+└── focus_bear/                 # Extension source — run npm commands from here
     ├── public/
     │   ├── _locales/           # en, es language strings
     │   ├── icons/
     │   ├── fonts/
     │   ├── manifest.json
-    │   ├── blocked.html        # Page shown when blocklist blocks a site
+    │   ├── blocked.html        # Page shown when a blocked site is accessed
     │   └── blocked.js
     │
     ├── src/
-    │   ├── components/         # Focus timer UI (FocusTimer.tsx, etc.)
-    │   ├── context/            # Intention popup / unfocus helpers
-    │   ├── styles/             # popup.css, intentionPopup.css, etc.
+    │   ├── components/         # Reusable UI (FocusTimer, CircularSlider, etc.)
+    │   ├── context/            # Intention popup context and unfocus timer helpers
+    │   ├── styles/
+    │   ├── lib/                # Pure business logic (no Chrome API deps)
+    │   │   ├── focus.ts        # Session state helpers
+    │   │   ├── blocklist.ts    # URL matching and redirect URL builders
+    │   │   ├── unfocus.ts      # Unfocus session timing
+    │   │   └── __tests__/      # Vitest unit tests
     │   ├── youtube/
     │   ├── linkedin/
     │   ├── gmail/
     │   ├── wikipedia/
     │   ├── reddit/
-    │   ├── background.ts       # Service worker (focus sessions, blocklist, alarms)
-    │   ├── blocklist.ts
+    │   ├── x/
+    │   ├── background.ts       # Service worker — sessions, alarms, blocklist enforcement
+    │   ├── blocklist.ts        # Content script — per-page blocklist check
     │   ├── content.ts          # Injects unfocus intention popup on supported sites
     │   ├── popup.html
     │   ├── popup.tsx           # Main extension popup
-    │   └── intentionPopup.tsx  # Floating unfocus popup (built as floatingPopup.js)
+    │   └── intentionPopup.tsx  # Floating unfocus popup
     │
-    ├── package.json
-    ├── package-lock.json
+    ├── vitest.config.ts
+    ├── vite.config.ts
     ├── tsconfig.json
+    ├── package.json
     ├── .oxfmtrc.json
-    ├── .oxlintrc.json
-    └── vite.config.ts
+    └── .oxlintrc.json
 ```
+
+---
 
 ## License
 
-- N/A
+N/A
