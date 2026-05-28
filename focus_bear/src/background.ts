@@ -1,4 +1,9 @@
-import { isFocusActive, buildFocusSessionState, computeTimeLeft, buildResumedSessionState } from "./lib/focus.js";
+import {
+  isFocusActive,
+  buildFocusSessionState,
+  computeTimeLeft,
+  buildResumedSessionState,
+} from "./lib/focus.js";
 import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
 
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
@@ -140,7 +145,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "startFocusSession") {
     const { workDuration, breakDuration, onBreak, task } = request;
 
-    const focusSessionState = buildFocusSessionState({ workDuration, breakDuration, onBreak, task });
+    const focusSessionState = buildFocusSessionState({
+      workDuration,
+      breakDuration,
+      onBreak,
+      task,
+    });
     const { endTime } = focusSessionState;
 
     // Clear any previous focus alarms before starting fresh

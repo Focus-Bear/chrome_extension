@@ -71,7 +71,12 @@ describe("buildFocusSessionState", () => {
   });
 
   it("defaults task to empty string when omitted", () => {
-    const state = buildFocusSessionState({ workDuration: 60, breakDuration: 60, onBreak: false, now: NOW });
+    const state = buildFocusSessionState({
+      workDuration: 60,
+      breakDuration: 60,
+      onBreak: false,
+      now: NOW,
+    });
     expect(state.task).toBe("");
   });
 
@@ -122,7 +127,14 @@ describe("buildResumedSessionState", () => {
   const NOW = 50_000;
 
   it("recalculates endTime from saved timeLeft", () => {
-    const prev = { isRunning: false, timeLeft: 120, onBreak: false, started: true, endTime: 0, startTime: 0 };
+    const prev = {
+      isRunning: false,
+      timeLeft: 120,
+      onBreak: false,
+      started: true,
+      endTime: 0,
+      startTime: 0,
+    };
     const resumed = buildResumedSessionState(prev, NOW);
     expect(resumed.isRunning).toBe(true);
     expect(resumed.startTime).toBe(NOW);
@@ -130,7 +142,14 @@ describe("buildResumedSessionState", () => {
   });
 
   it("preserves onBreak from the previous state", () => {
-    const prev = { isRunning: false, timeLeft: 60, onBreak: true, started: true, endTime: 0, startTime: 0 };
+    const prev = {
+      isRunning: false,
+      timeLeft: 60,
+      onBreak: true,
+      started: true,
+      endTime: 0,
+      startTime: 0,
+    };
     expect(buildResumedSessionState(prev, NOW).onBreak).toBe(true);
   });
 
