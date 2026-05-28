@@ -150,9 +150,9 @@ const App = () => {
   const [redditBlurHomeFeed, setRedditBlurHomeFeed] = useState(true);
   const [redditBlurCommunities, setRedditBlurCommunities] = useState(true);
   const [redditBlurComments, setRedditBlurComments] = useState(true);
-  const [xBlurHomeFeed, setXBlurHomeFeed] = useState(true);
-  const [xBlurRecommendations, setXBlurRecommendations] = useState(true);
-  const [xBlurReplies, setXBlurReplies] = useState(true);
+  const [_xBlurHomeFeed, setXBlurHomeFeed] = useState(true);
+  const [_xBlurRecommendations, setXBlurRecommendations] = useState(true);
+  const [_xBlurReplies, setXBlurReplies] = useState(true);
 
   const [currentTab, setCurrentTab] = useState<"timer" | "active">("timer");
   const [settingsTab, setSettingsTab] = useState<"blurring" | "blocklist">("blurring");
@@ -216,13 +216,9 @@ const App = () => {
         gmailBlurEnabled,
         promotionBlurEnabled,
         socialBlurEnabled,
-        redditBlurHomeFeed,
-        redditBlurCommunities,
-        redditBlurCommeents,
         xBlurHomeFeed: storedXBlurHomeFeed,
         xBlurRecommendations: storedXBlurRecommendations,
         xBlurReplies: storedXBlurReplies,
-
       }) => {
         setBlurEnabled(blurEnabled ?? true);
         setHidden(commentsHidden ?? true);
