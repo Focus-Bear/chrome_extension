@@ -18,11 +18,7 @@
   };
 
   const setBlurHomeFeed = (enabled: boolean) => {
-    const selectors = [
-      'article',
-      '[data-testid="tweet"]',
-      '[data-testid="tweetText"]',
-    ];
+    const selectors = ["article", '[data-testid="tweet"]', '[data-testid="tweetText"]'];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) el.classList.add(BLUR_CLASS);
@@ -32,9 +28,7 @@
   };
 
   const setBlurRecommendations = (enabled: boolean) => {
-    const selectors = [
-      '[data-testid="sidebarColumn"]',
-    ];
+    const selectors = ['[data-testid="sidebarColumn"]'];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) el.classList.add(BLUR_CLASS);
@@ -44,10 +38,7 @@
   };
 
   const setBlurReplies = (enabled: boolean) => {
-    const selectors = [
-      '[data-testid="reply"]',
-      '[aria-label="Timeline: Conversation"] article',
-    ];
+    const selectors = ['[data-testid="reply"]', '[aria-label="Timeline: Conversation"] article'];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) el.classList.add(BLUR_CLASS);

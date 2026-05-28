@@ -58,13 +58,12 @@
       "js": ["content.js", "reddit.js"],
       "css": ["assets/intentionPopup.css"]
     },
-    
+
     {
-     "matches": ["*://*.x.com/*"],
+      "matches": ["*://*.x.com/*"],
       "js": ["content.js", "x.js"],
       "css": ["assets/intentionPopup.css"]
     }
-
   ],
   "web_accessible_resources": [
     {
