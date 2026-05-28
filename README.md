@@ -1,8 +1,6 @@
 # P000395SE Focus Bear Chrome Extension
 
-**Focus Bear** is a Chrome extension (Manifest V3) that helps users stay focused by blocking distracting websites, running Pomodoro-style focus sessions, and reducing visual noise on sites like YouTube, LinkedIn, Gmail, Reddit, and Wikipedia.
-
-**Focus Bear** is a Chrome extension designed to help users minimise distractions and stay focused by blocking access to distracting websites. After the completion of a focus session a break timer runs. You can also add website URL's to a block list to limit ditractions and can toggle off distracting popup's in popular websites like LinkedIn and Youtube to blur the news feed section for example.
+**Focus Bear** is a Chrome extension (Manifest V3) that helps users stay focused by blocking distracting websites, running Pomodoro-style focus sessions, website blocking, and reducing visual noise on sites like YouTube, LinkedIn, Gmail, Reddit, and Wikipedia.
 
 Built as a capstone project extending the [Focus Bear](https://www.focusbear.io/) productivity app ecosystem.
 
