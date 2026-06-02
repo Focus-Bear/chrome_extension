@@ -9,6 +9,9 @@ import { Home, Info } from "lucide-react";
 import "@radix-ui/themes/styles.css";
 import FocusTimer from "./components/FocusTimer.js";
 
+const storageSet = (values: Record<string, unknown>): Promise<void> =>
+  new Promise((resolve) => chrome.storage.local.set(values, resolve));
+
 const Toggle = ({
   checked,
   onChange,
@@ -180,8 +183,11 @@ const App = () => {
     });
   }, []);
 
-  // Load toggles
+  // Load toggles from storage when popup opens
   useEffect(() => {
+    // Remove legacy snapshot key so content scripts only use per-toggle keys
+    chrome.storage.local.remove("distractionToggles");
+
     chrome.storage.local.get(
       [
         "blurEnabled",
@@ -189,54 +195,45 @@ const App = () => {
         "homePageBlurEnabled",
         "shortsBlurEnabled",
         "youMenuBlurEnabled",
+        "youBlurEnabled",
         "linkedinBlurHome",
         "linkedinBlurNews",
         "linkedinRemoveBadges",
+        "wikipediaLinkPopupEnabled",
         "wikiLinkPopupEnabled",
         "wikipediaMainBlur",
         "gmailBlurEnabled",
         "promotionBlurEnabled",
         "socialBlurEnabled",
-        "socialBlurEnabled",
+        "redditBlurHomeFeed",
+        "redditBlurCommunities",
+        "redditBlurComments",
         "xBlurHomeFeed",
         "xBlurRecommendations",
         "xBlurReplies",
       ],
-      ({
-        blurEnabled,
-        commentsHidden,
-        homePageBlurEnabled,
-        shortsBlurEnabled,
-        youMenuBlurEnabled,
-        linkedinBlurHome,
-        linkedinBlurNews,
-        linkedinRemoveBadges,
-        wikiLinkPopupEnabled,
-        wikipediaMainBlur,
-        gmailBlurEnabled,
-        promotionBlurEnabled,
-        socialBlurEnabled,
-        xBlurHomeFeed: storedXBlurHomeFeed,
-        xBlurRecommendations: storedXBlurRecommendations,
-        xBlurReplies: storedXBlurReplies,
-      }) => {
-        setBlurEnabled(blurEnabled ?? true);
-        setHidden(commentsHidden ?? true);
-        setHomeBlurEnabled(homePageBlurEnabled ?? true);
-        setShortsBlurEnabled(shortsBlurEnabled ?? true);
-        setYouBlurEnabled(youMenuBlurEnabled ?? true);
-        setLinkedinBlurHome(linkedinBlurHome ?? true);
-        setLinkedinBlurNews(linkedinBlurNews ?? true);
-        setLinkedinRemoveBadges(linkedinRemoveBadges ?? true);
-        chrome.storage.local.set({ linkedinBlurJobs: false });
-        setWikipediaLinkPopupEnabled(wikiLinkPopupEnabled ?? true);
-        setWikipediaMainBlur(wikipediaMainBlur ?? true);
-        setGmailBlurEnabled(gmailBlurEnabled ?? true);
-        setPromotionBlurEnabled(promotionBlurEnabled ?? true);
-        setSocialBlurEnabled(socialBlurEnabled ?? true);
-        setXBlurHomeFeed(storedXBlurHomeFeed ?? true);
-        setXBlurRecommendations(storedXBlurRecommendations ?? true);
-        setXBlurReplies(storedXBlurReplies ?? true);
+      (data) => {
+        setBlurEnabled(data.blurEnabled ?? true);
+        setHidden(data.commentsHidden ?? true);
+        setHomeBlurEnabled(data.homePageBlurEnabled ?? true);
+        setShortsBlurEnabled(data.shortsBlurEnabled ?? true);
+        setYouBlurEnabled(data.youMenuBlurEnabled ?? data.youBlurEnabled ?? true);
+        setLinkedinBlurHome(data.linkedinBlurHome ?? true);
+        setLinkedinBlurNews(data.linkedinBlurNews ?? true);
+        setLinkedinRemoveBadges(data.linkedinRemoveBadges ?? true);
+        setWikipediaLinkPopupEnabled(
+          data.wikipediaLinkPopupEnabled ?? data.wikiLinkPopupEnabled ?? true,
+        );
+        setWikipediaMainBlur(data.wikipediaMainBlur ?? true);
+        setGmailBlurEnabled(data.gmailBlurEnabled ?? true);
+        setPromotionBlurEnabled(data.promotionBlurEnabled ?? true);
+        setSocialBlurEnabled(data.socialBlurEnabled ?? true);
+        setRedditBlurHomeFeed(data.redditBlurHomeFeed ?? true);
+        setRedditBlurCommunities(data.redditBlurCommunities ?? true);
+        setRedditBlurComments(data.redditBlurComments ?? true);
+        setXBlurHomeFeed(data.xBlurHomeFeed ?? true);
+        setXBlurRecommendations(data.xBlurRecommendations ?? true);
+        setXBlurReplies(data.xBlurReplies ?? true);
       },
     );
   }, []);
@@ -349,7 +346,7 @@ const App = () => {
   const handleShortsBlurToggle = async () => {
     const newValue = !shortsBlurEnabled;
     setShortsBlurEnabled(newValue);
-    chrome.storage.local.set({ shortsBlurEnabled: newValue });
+    await storageSet({ shortsBlurEnabled: newValue });
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -369,7 +366,7 @@ const App = () => {
   const handleBlurToggle = async () => {
     const newValue = !blurEnabled;
     setBlurEnabled(newValue);
-    chrome.storage.local.set({ blurEnabled: newValue });
+    await storageSet({ blurEnabled: newValue });
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -387,23 +384,27 @@ const App = () => {
   };
 
   const handleCommentsToggle = async () => {
+    const newValue = !hidden;
+    setHidden(newValue);
+    await storageSet({ commentsHidden: newValue });
+
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
     });
-    if (!tab?.id) return;
-    chrome.tabs.sendMessage(tab.id, { action: "toggleComments" }, (res) => {
-      if (!chrome.runtime.lastError && res?.status) {
-        setHidden(res.status === "hidden");
-      }
-    });
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_COMMENTS",
+        payload: newValue,
+      });
+    }
   };
 
   const handleHomeBlurToggle = async () => {
     const newValue = !homeBlurEnabled;
     setHomeBlurEnabled(newValue);
     setBlurEnabled(newValue);
-    chrome.storage.local.set({
+    await storageSet({
       homePageBlurEnabled: newValue,
       blurEnabled: newValue,
     });
@@ -427,7 +428,7 @@ const App = () => {
   const handleYouBlurToggle = async () => {
     const newValue = !youBlurEnabled;
     setYouBlurEnabled(newValue);
-    await chrome.storage.local.set({ youBlurEnabled: newValue });
+    await storageSet({ youMenuBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
@@ -454,28 +455,28 @@ const App = () => {
   const handleLinkedinNewsToggle = async () => {
     const newValue = !linkedinBlurNews;
     setLinkedinBlurNews(newValue);
-    await chrome.storage.local.set({ linkedinBlurNews: newValue });
+    await storageSet({ linkedinBlurNews: newValue });
     await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_NEWS", newValue);
   };
 
   const handleLinkedinHomeToggle = async () => {
     const newValue = !linkedinBlurHome;
     setLinkedinBlurHome(newValue);
-    await chrome.storage.local.set({ linkedinBlurHome: newValue });
+    await storageSet({ linkedinBlurHome: newValue });
     await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_HOME", newValue);
   };
 
   const handleLinkedinBadgeToggle = async () => {
     const newValue = !linkedinRemoveBadges;
     setLinkedinRemoveBadges(newValue);
-    await chrome.storage.local.set({ linkedinRemoveBadges: newValue });
+    await storageSet({ linkedinRemoveBadges: newValue });
     await sendLinkedinToggleToActiveTab("TOGGLE_LINKEDIN_BADGES", newValue);
   };
 
   const handleWikipediaLinkPopupToggle = async () => {
     const newValue = !wikipediaLinkPopupEnabled;
     setWikipediaLinkPopupEnabled(newValue);
-    await chrome.storage.local.set({ wikipediaLinkPopupEnabled: newValue });
+    await storageSet({ wikipediaLinkPopupEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -492,7 +493,7 @@ const App = () => {
   const handleWikipediaMainBlurToggle = async () => {
     const newValue = !wikipediaMainBlur;
     setWikipediaMainBlur(newValue);
-    await chrome.storage.local.set({ wikipediaMainBlur: newValue });
+    await storageSet({ wikipediaMainBlur: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -509,7 +510,7 @@ const App = () => {
   const handleGmailBlurToggle = async () => {
     const newValue = !gmailBlurEnabled;
     setGmailBlurEnabled(newValue);
-    await chrome.storage.local.set({ gmailBlurEnabled: newValue });
+    await storageSet({ gmailBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -526,7 +527,7 @@ const App = () => {
   const handlePromotionBlurToggle = async () => {
     const newValue = !promotionBlurEnabled;
     setPromotionBlurEnabled(newValue);
-    await chrome.storage.local.set({ promotionBlurEnabled: newValue });
+    await storageSet({ promotionBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -543,7 +544,7 @@ const App = () => {
   const handleSocialBlurToggle = async () => {
     const newValue = !socialBlurEnabled;
     setSocialBlurEnabled(newValue);
-    await chrome.storage.local.set({ socialBlurEnabled: newValue });
+    await storageSet({ socialBlurEnabled: newValue });
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
@@ -838,7 +839,7 @@ const App = () => {
                 onChange={async () => {
                   const v = !redditBlurHomeFeed;
                   setRedditBlurHomeFeed(v);
-                  await chrome.storage.local.set({ redditBlurHomeFeed: v });
+                  await storageSet({ redditBlurHomeFeed: v });
                   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
                     chrome.tabs.sendMessage(tab.id, {
@@ -855,7 +856,7 @@ const App = () => {
                 onChange={async () => {
                   const v = !redditBlurCommunities;
                   setRedditBlurCommunities(v);
-                  await chrome.storage.local.set({ redditBlurCommunities: v });
+                  await storageSet({ redditBlurCommunities: v });
                   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
                     chrome.tabs.sendMessage(tab.id, {
@@ -872,7 +873,7 @@ const App = () => {
                 onChange={async () => {
                   const v = !redditBlurComments;
                   setRedditBlurComments(v);
-                  await chrome.storage.local.set({ redditBlurComments: v });
+                  await storageSet({ redditBlurComments: v });
                   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
                     chrome.tabs.sendMessage(tab.id, {

@@ -56,11 +56,6 @@
     // 'ytd-watch-next-secondary-results-renderer'
   ];
 
-  for (const selector of selectorsToHide) {
-    const el = document.querySelector(selector);
-    if (el) el.remove();
-  }
-
   const blurTopSubscriptionsMenu = () => {
     const subLink = Array.from(document.querySelectorAll("ytd-guide-entry-renderer")).find(
       (el) => el.textContent?.trim().toLowerCase() === "subscriptions",
@@ -563,24 +558,19 @@
 
   // on page load, read storage and blur if needed
   const commentsObserver = makeObserver(() => {
-    safeGet("commentsHidden", ({ commentsHidden }) => {
+    safeGet({ commentsHidden: true }, ({ commentsHidden }) => {
       if (commentsHidden) applyCommentBlur();
+      else removeCommentBlur();
     });
   });
   commentsObserver.observe(document.body, { childList: true, subtree: true });
 
-  // listen for your popup toggle
-  chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-    if (msg.action === "toggleComments") {
-      chrome.storage.local.get({ commentsHidden: false }, ({ commentsHidden }) => {
-        const nowHidden = !commentsHidden;
-        if (nowHidden) applyCommentBlur();
-        else removeCommentBlur();
-        chrome.storage.local.set({ commentsHidden: nowHidden }, () => {
-          sendResponse({ status: nowHidden ? "hidden" : "shown" });
-        });
-      });
-      return true;
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === "TOGGLE_COMMENTS") {
+      const shouldHide = message.payload;
+      if (shouldHide) applyCommentBlur();
+      else removeCommentBlur();
+      chrome.storage.local.set({ commentsHidden: shouldHide });
     }
   });
 

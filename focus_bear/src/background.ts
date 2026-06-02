@@ -9,17 +9,18 @@ import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
 chrome.runtime.onInstalled.addListener((details) => {
   console.log("onInstalled:", details.reason);
-  resetDefaults();
+  clearSessionData();
+  if (details.reason === "install") {
+    setInstallToggleDefaults();
+  }
 });
 
-// Fires whenever the service worker comes alive, including when you hit "Reload" in chrome://extensions.
 chrome.runtime.onStartup.addListener(() => {
   console.log("onStartup");
-  resetDefaults();
+  clearSessionData();
 });
 
-// Bring _all_ your flags back to true (or your chosen defaults).
-function resetDefaults() {
+function clearSessionData() {
   chrome.storage.local.remove(
     [
       "unfocusStart",
@@ -35,10 +36,10 @@ function resetDefaults() {
     },
   );
 
-  // Clear any lingering alarms from a previous session
   chrome.alarms.clearAll();
+}
 
-  // The "first-run" gate
+function setInstallToggleDefaults() {
   chrome.storage.local.set(
     {
       showIntentionPopup: true,
@@ -50,7 +51,7 @@ function resetDefaults() {
       linkedinRemoveBadges: true,
       linkedinBlurHome: true,
     },
-    () => console.log("Defaults reset on install/startup"),
+    () => console.log("Install toggle defaults set"),
   );
 }
 
