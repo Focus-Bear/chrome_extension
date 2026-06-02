@@ -27,7 +27,7 @@
       '[data-testid="post-container"]',
       ".Post",
       "shreddit-ad-post",
-      '[data-adclicklocation]',
+      "[data-adclicklocation]",
       '[data-testid="ad-post"]',
     ];
     selectors.forEach((sel) => {
@@ -58,11 +58,7 @@
   // Blur comments section (only on post pages)
   const setBlurComments = (enabled: boolean) => {
     if (!isPostPage()) return;
-    const selectors = [
-      "shreddit-comment-tree",
-      '[data-testid="comment"]',
-      ".Comment",
-    ];
+    const selectors = ["shreddit-comment-tree", '[data-testid="comment"]', ".Comment"];
     selectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
         if (enabled) el.classList.add(BLUR_CLASS);
