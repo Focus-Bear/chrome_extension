@@ -3,6 +3,7 @@
   const BLUR_CLASS = "focusbear-linkedin-news-blur";
   const HIDE_BADGE_CLASS = "focusbear-hide-badge";
   const NEWS_MARKER = "data-focusbear-news-blur";
+  const HOME_MARKER = "data-focusbear-home-blur";
   const BADGE_MARKER = "data-focusbear-badge-hidden";
 
   const injectStyles = () => {
@@ -33,15 +34,18 @@
     return rightSide && cardLikeSize;
   };
 
-  /** Find only the LinkedIn News card in the right rail (not the whole page/sidebar). */
-  const findNewsContainer = (): HTMLElement | null => {
-    if (!isHomeFeed()) return null;
+  /** Find right-rail cards like "LinkedIn News" and "Today's puzzles". */
+  const findRightRailCards = (): HTMLElement[] => {
+    if (!isHomeFeed()) return [];
 
-    // Text-first targeting: find nodes whose own textContent contains "LinkedIn News".
-    const baseNodes = Array.from(
-      document.querySelectorAll<HTMLElement>("div, section, aside"),
-    ).filter((el) => (el.textContent || "").includes("LinkedIn News"));
-    if (baseNodes.length === 0) return null;
+    // Text-first targeting: find nodes whose textContent contains either heading.
+    const baseNodes = Array.from(document.querySelectorAll<HTMLElement>("div, section, aside")).filter(
+      (el) => {
+        const text = (el.textContent || "").toLowerCase();
+        return text.includes("linkedin news") || text.includes("today's puzzles");
+      },
+    );
+    if (baseNodes.length === 0) return [];
 
     const candidates: HTMLElement[] = [];
     baseNodes.forEach((node) => {
@@ -55,17 +59,20 @@
             text.includes("show more news") ||
             text.includes("today's puzzles"))
         ) {
-          candidates.push(current);
+          // De-dupe by DOM identity.
+          if (!candidates.includes(current)) candidates.push(current);
           break;
         }
         current = current.parentElement;
       }
     });
 
-    if (candidates.length === 0) return null;
+    if (candidates.length === 0) return [];
+
+    // Prefer the smallest card-like ancestors (tightest blur scope), but keep all unique matches.
     return candidates.sort(
       (a, b) => a.clientWidth * a.clientHeight - b.clientWidth * b.clientHeight,
-    )[0];
+    );
   };
 
   const clearNewsBlur = () => {
@@ -76,22 +83,71 @@
   };
 
   const setBlurNews = (enabled: boolean) => {
-    const current = document.querySelector<HTMLElement>(`[${NEWS_MARKER}="1"]`);
     if (!enabled) {
-      if (current) clearNewsBlur();
+      clearNewsBlur();
       return;
     }
 
-    const node = findNewsContainer();
-    if (!node) return;
+    const nodes = findRightRailCards();
+    if (nodes.length === 0) return;
 
-    // Keep blur stable: only switch DOM state if target changed.
-    if (current && current !== node) {
-      current.classList.remove(BLUR_CLASS);
-      current.removeAttribute(NEWS_MARKER);
-    }
-    if (!node.classList.contains(BLUR_CLASS)) node.classList.add(BLUR_CLASS);
-    if (node.getAttribute(NEWS_MARKER) !== "1") node.setAttribute(NEWS_MARKER, "1");
+    // Clear any stale target before applying new ones (cards can rerender/move).
+    clearNewsBlur();
+    nodes.forEach((node) => {
+      if (!node.classList.contains(BLUR_CLASS)) node.classList.add(BLUR_CLASS);
+      if (node.getAttribute(NEWS_MARKER) !== "1") node.setAttribute(NEWS_MARKER, "1");
+    });
+  };
+
+  // ---------------------------- LinkedIn Home Feed blur ---------------------------- //
+  const clearHomeBlur = () => {
+    document.querySelectorAll<HTMLElement>(`[${HOME_MARKER}="1"]`).forEach((el) => {
+      el.classList.remove(BLUR_CLASS);
+      el.removeAttribute(HOME_MARKER);
+    });
+  };
+
+  const markHomeBlur = (el: HTMLElement) => {
+    el.classList.add(BLUR_CLASS);
+    el.setAttribute(HOME_MARKER, "1");
+  };
+
+  const findHomeFeedBlurTargets = (): HTMLElement[] => {
+    if (!isHomeFeed()) return [];
+
+    const col = document.querySelector<HTMLElement>('[data-component-type="LazyColumn"]');
+    if (!col) return [];
+
+    const targets = new Set<HTMLElement>();
+    const composer = col.children[0] as HTMLElement | undefined;
+
+    const isAfterComposer = (el: HTMLElement) => {
+      if (!composer) return true;
+      return !!(composer.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    };
+
+    // 1) Direct blocks after "Start a post" (includes Sort by row).
+    Array.from(col.children)
+      .slice(1)
+      .forEach((el) => targets.add(el as HTMLElement));
+
+    // 2) Feed posts often sit in display:contents wrappers — blur those + their children.
+    col.querySelectorAll<HTMLElement>('[data-display-contents="true"]').forEach((el) => {
+      if (!isAfterComposer(el)) return;
+      targets.add(el);
+      Array.from(el.children).forEach((child) => {
+        if (child instanceof HTMLElement) targets.add(child);
+      });
+    });
+
+    return [...targets];
+  };
+
+  const setBlurHome = (enabled: boolean) => {
+    clearHomeBlur();
+    if (!enabled) return;
+
+    findHomeFeedBlurTargets().forEach(markHomeBlur);
   };
 
   const clearBadges = () => {
@@ -159,8 +215,11 @@
 
   const applyFromStorage = (done?: () => void) => {
     injectStyles();
-    chrome.storage.local.get({ linkedinBlurNews: true, linkedinRemoveBadges: true }, (res) => {
+    chrome.storage.local.get(
+      { linkedinBlurHome: true, linkedinBlurNews: true, linkedinRemoveBadges: true },
+      (res) => {
       try {
+        setBlurHome(!!res.linkedinBlurHome);
         setBlurNews(!!res.linkedinBlurNews);
         setRemoveBadges(!!res.linkedinRemoveBadges);
       } catch (e) {
@@ -168,11 +227,18 @@
       } finally {
         done?.();
       }
-    });
+      },
+    );
   };
 
   chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (!msg?.type) return;
+    injectStyles();
+    if (msg.type === "TOGGLE_LINKEDIN_HOME") {
+      setBlurHome(!!msg.payload);
+      sendResponse({ ok: true });
+      return;
+    }
     if (msg.type === "TOGGLE_LINKEDIN_NEWS") {
       setBlurNews(!!msg.payload);
       sendResponse({ ok: true });
@@ -187,7 +253,9 @@
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
-    if (changes.linkedinBlurNews || changes.linkedinRemoveBadges) scheduleApply();
+    if (changes.linkedinBlurHome || changes.linkedinBlurNews || changes.linkedinRemoveBadges) {
+      scheduleApply();
+    }
   });
 
   let scheduled = false;
