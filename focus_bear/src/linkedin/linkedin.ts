@@ -39,12 +39,12 @@
     if (!isHomeFeed()) return [];
 
     // Text-first targeting: find nodes whose textContent contains either heading.
-    const baseNodes = Array.from(document.querySelectorAll<HTMLElement>("div, section, aside")).filter(
-      (el) => {
-        const text = (el.textContent || "").toLowerCase();
-        return text.includes("linkedin news") || text.includes("today's puzzles");
-      },
-    );
+    const baseNodes = Array.from(
+      document.querySelectorAll<HTMLElement>("div, section, aside"),
+    ).filter((el) => {
+      const text = (el.textContent || "").toLowerCase();
+      return text.includes("linkedin news") || text.includes("today's puzzles");
+    });
     if (baseNodes.length === 0) return [];
 
     const candidates: HTMLElement[] = [];
@@ -218,15 +218,15 @@
     chrome.storage.local.get(
       { linkedinBlurHome: true, linkedinBlurNews: true, linkedinRemoveBadges: true },
       (res) => {
-      try {
-        setBlurHome(!!res.linkedinBlurHome);
-        setBlurNews(!!res.linkedinBlurNews);
-        setRemoveBadges(!!res.linkedinRemoveBadges);
-      } catch (e) {
-        console.warn("FocusBear: LinkedIn apply failed", e);
-      } finally {
-        done?.();
-      }
+        try {
+          setBlurHome(!!res.linkedinBlurHome);
+          setBlurNews(!!res.linkedinBlurNews);
+          setRemoveBadges(!!res.linkedinRemoveBadges);
+        } catch (e) {
+          console.warn("FocusBear: LinkedIn apply failed", e);
+        } finally {
+          done?.();
+        }
       },
     );
   };
