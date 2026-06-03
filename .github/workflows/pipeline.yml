@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   oxlint:
@@ -45,7 +45,7 @@ jobs:
       - name: Check formatting
         run: npx oxfmt --check .
 
-test:
+  test:
     name: Run Tests
     runs-on: ubuntu-latest
     defaults:
@@ -61,5 +61,3 @@ test:
       - run: npm ci
       - name: Run tests
         run: npm test
-
-        

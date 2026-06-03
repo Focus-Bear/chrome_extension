@@ -99,7 +99,7 @@ Chrome API wiring (alarms, storage, message handlers) is not unit tested — tha
 
 ## CI Pipeline
 
-Every pull request to `main` triggers three parallel jobs defined in `.github/workflows/lint.yml`:
+Every pull request to `main` triggers three parallel jobs defined in `.github/workflows/pipeline.yml`:
 
 | Job      | Tool   | What it checks              |
 | -------- | ------ | --------------------------- |
