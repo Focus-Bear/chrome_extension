@@ -44,3 +44,22 @@ jobs:
 
       - name: Check formatting
         run: npx oxfmt --check .
+
+test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: focus_bear
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
+      - run: npm ci
+      - name: Run tests
+        run: npm test
+
+        
