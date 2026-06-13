@@ -206,6 +206,56 @@ chrome_extension/               # Git repo root (this README lives here)
 
 ---
 
+## Release Notes
+
+### v1.1 (current)
+
+**Focus Bear v1.1** brings together timed focus sessions, site blocking, and distraction controls in one popup. Uplifted UI to be more intuitive for the user and match existing styling for focus bear.
+
+**What's new**
+- Pomodoro-style focus timer with configurable work and break durations, pause/resume, and desktop notifications
+- Personal blocklist that redirects distracting sites during active focus sessions
+- Intention popup on when opening new websites — set why you're visiting and how long you'll stay
+- Distraction blurring for YouTube, LinkedIn, Gmail, Wikipedia, Reddit, and X
+- Spanish language support via Chrome's locale settings
+
+**Known issues**
+- Gmail and some LinkedIn blur toggles can be inconsistent depending on page load timing
+
+---
+
+## Changelog
+
+### [1.1] — 12/6/2026
+
+#### Added
+- Focus session timer with Chrome alarms for work/break phase transitions (`background.ts`, `FocusTimer.tsx`)
+- Blocklist redirect to `blocked.html` during active focus sessions
+- Unfocus / intention popup functionality (`content.ts`, `intentionPopup.tsx`)
+- Blurring scripts for YouTube, LinkedIn, Gmail, Wikipedia, Reddit, and X
+- Unit tests for core logic in `src/lib/` (38 tests via Vitest)
+- CI pipeline: Oxlint, Oxfmt, and Vitest jobs on every PR
+- Fully uplift UI on all pages
+- Added accordian UI in burring settings to save space
+
+#### Fixed
+- Toggle settings now persist correctly across tabs and reloads
+- LinkedIn distraction blurring reliability improvements
+- YouTube comment toggle clickability
+
+#### Known limitations
+- Gmail blur timing inconsistencies on slow page loads
+
+### [1.0] — 05/03/2026
+
+#### Added
+- Initial Manifest V3 extension scaffold (React 19, TypeScript, Vite 6)
+- Extension popup with Focus Bear branding
+- Basic YouTube distraction blurring (homepage, Shorts, comments)
+- `chrome.storage.local` for settings persistence
+
+---
+
 ## License
 
 N/A
