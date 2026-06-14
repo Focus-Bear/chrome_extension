@@ -245,6 +245,8 @@ chrome_extension/               # Git repo root (this README lives here)
 
 #### Known limitations
 - Gmail blur timing inconsistencies on slow page loads
+- Extend testing to cover more complex use cases like multiple focus/unfocus sessions
+- As DOM elements are naturally updated on YouTube or LinkedIn it can break existing blurring
 
 ### [1.0] — 05/03/2026
 
