@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 (() => {
   console.log("YouTube blur script injected at", location.href);
 
@@ -8,7 +10,7 @@
   /** Returns false when the extension context has been invalidated. */
   function isContextValid(): boolean {
     try {
-      return !!chrome.runtime.id;
+      return !!browserApi.runtime.id;
     } catch {
       return false;
     }
@@ -29,7 +31,7 @@
   }
 
   /**
-   * Safe wrapper around chrome.storage.local.get.
+   * Safe wrapper around browserApi.storage.local.get.
    * If the extension context is already gone it disconnects all observers and
    * returns without throwing. Any error during the call is also caught.
    */
@@ -39,9 +41,9 @@
       return;
     }
     try {
-      chrome.storage.local.get(keys as any, callback);
+      browserApi.storage.local.get(keys as any, callback);
     } catch (err) {
-      console.warn("[FocusBear] chrome.storage.local.get failed:", err);
+      console.warn("[FocusBear] browserApi.storage.local.get failed:", err);
       disconnectAllObservers();
     }
   }
@@ -219,7 +221,7 @@
   };
 
   // Initialize saved state from storage
-  chrome.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled: enabled }) => {
+  browserApi.storage.local.get({ youMenuBlurEnabled: true }, ({ youMenuBlurEnabled: enabled }) => {
     youMenuBlurEnabled = enabled;
     applyYouMenuToggle(youMenuBlurEnabled);
   });
@@ -246,10 +248,10 @@
   observeYouMenu();
 
   // Listen for toggle message from popup
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_YOU_MENU_BLUR") {
       youMenuBlurEnabled = message.payload;
-      chrome.storage.local.set({ youMenuBlurEnabled });
+      browserApi.storage.local.set({ youMenuBlurEnabled });
       applyYouMenuToggle(youMenuBlurEnabled);
     }
   });
@@ -485,12 +487,12 @@
     });
   });
 
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     const { type, payload } = message;
 
     if (type === "TOGGLE_BLUR") {
       isBlurEnabled = payload;
-      chrome.storage.local.set({ blurEnabled: isBlurEnabled });
+      browserApi.storage.local.set({ blurEnabled: isBlurEnabled });
 
       if (isBlurEnabled) {
         applyBlurImmediately();
@@ -507,7 +509,7 @@
     }
   });
 
-  chrome.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
+  browserApi.storage.local.get({ blurEnabled: true }, ({ blurEnabled }) => {
     isBlurEnabled = blurEnabled;
 
     if (isBlurEnabled) {
@@ -565,12 +567,12 @@
   });
   commentsObserver.observe(document.body, { childList: true, subtree: true });
 
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_COMMENTS") {
       const shouldHide = message.payload;
       if (shouldHide) applyCommentBlur();
       else removeCommentBlur();
-      chrome.storage.local.set({ commentsHidden: shouldHide });
+      browserApi.storage.local.set({ commentsHidden: shouldHide });
     }
   });
 
@@ -587,10 +589,10 @@
       unblurMiniSidebarShorts();
     }
   }
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_SHORTS_BLUR") {
       const blurShorts = message.payload;
-      chrome.storage.local.set({ shortsBlurEnabled: blurShorts });
+      browserApi.storage.local.set({ shortsBlurEnabled: blurShorts });
       applyShortsToggle(blurShorts);
     }
   });
@@ -620,8 +622,8 @@
     attributes: true,
   });
 
-  // Add this to your existing chrome.runtime.onMessage listener
-  chrome.runtime.onMessage.addListener((message) => {
+  // Add this to your existing browserApi.runtime.onMessage listener
+  browserApi.runtime.onMessage.addListener((message) => {
     if (message.type === "TOGGLE_HOME_PAGE_BLUR") {
       const shouldBlur = message.payload;
       if (window.location.pathname === "/" || window.location.pathname === "/feed/subscriptions") {
@@ -890,12 +892,12 @@
   });
 
   // Message handler setup
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     const { type, payload } = message;
 
     if (type === "TOGGLE_HOME_PAGE_BLUR") {
       isHomePageBlurEnabled = payload;
-      chrome.storage.local.set({ homePageBlurEnabled: isHomePageBlurEnabled });
+      browserApi.storage.local.set({ homePageBlurEnabled: isHomePageBlurEnabled });
 
       if (isHomePageBlurEnabled) {
         blurRecommendedVideos();
@@ -912,7 +914,7 @@
   });
 
   // Initialize on page load
-  chrome.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
+  browserApi.storage.local.get({ homePageBlurEnabled: true }, ({ homePageBlurEnabled }) => {
     isHomePageBlurEnabled = homePageBlurEnabled;
 
     if (homePageBlurEnabled) {

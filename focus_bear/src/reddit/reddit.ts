@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 (() => {
   const STYLE_ID = "focusbear-reddit-style";
   const BLUR_CLASS = "focusbear-reddit-blur";
@@ -69,7 +71,7 @@
 
   const applyFromStorage = () => {
     injectStyles();
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       {
         redditBlurHomeFeed: true,
         redditBlurCommunities: true,
@@ -83,7 +85,7 @@
     );
   };
 
-  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (!msg?.type) return;
     if (msg.type === "TOGGLE_REDDIT_HOME_FEED") {
       setBlurHomeFeed(!!msg.payload);
@@ -99,7 +101,7 @@
     }
   });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  browserApi.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.redditBlurHomeFeed || changes.redditBlurCommunities || changes.redditBlurComments) {
       applyFromStorage();

@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 (() => {
   const STYLE_ID = "focusbear-x-style";
   const BLUR_CLASS = "focusbear-x-blur";
@@ -49,7 +51,7 @@
 
   const applyFromStorage = () => {
     injectStyles();
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       {
         xBlurHomeFeed: true,
         xBlurRecommendations: true,
@@ -63,7 +65,7 @@
     );
   };
 
-  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (!msg?.type) return;
     if (msg.type === "TOGGLE_X_HOME_FEED") {
       setBlurHomeFeed(!!msg.payload);
@@ -79,7 +81,7 @@
     }
   });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  browserApi.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.xBlurHomeFeed || changes.xBlurRecommendations || changes.xBlurReplies) {
       applyFromStorage();
