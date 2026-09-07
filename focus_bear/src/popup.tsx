@@ -52,7 +52,7 @@ const BlocklistEditor = () => {
     });
 
     const handler = (
-      changes: { [key: string]: browserApi.storage.StorageChange },
+      changes: { [key: string]: chrome.storage.StorageChange },
       areaName: string,
     ) => {
       if (areaName !== "local") return;
@@ -242,8 +242,8 @@ const App = () => {
 
   useEffect(() => {
     const onChanged = (
-      changes: Record<string, browserApi.storage.StorageChange>,
-      area: browserApi.storage.AreaName,
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: chrome.storage.AreaName,
     ) => {
       if (area !== "local") return;
       if (changes.linkedinBlurHome) {
