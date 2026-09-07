@@ -3,19 +3,21 @@
 
   const domain = window.location.hostname.replace(/^www\./, "");
 
+  const browserApi = chrome;
+
   const translations = {
-    heading: chrome.i18n.getMessage("heading"),
-    prompt: chrome.i18n.getMessage("prompt"),
-    placeholder: chrome.i18n.getMessage("placeholder"),
-    warning: chrome.i18n.getMessage("warning"),
-    duration: chrome.i18n.getMessage("duration"),
-    button: chrome.i18n.getMessage("button"),
-    time_default: chrome.i18n.getMessage("time_default"),
-    minute_1: chrome.i18n.getMessage("minute_1"),
-    minute_5: chrome.i18n.getMessage("minute_5"),
-    minute_10: chrome.i18n.getMessage("minute_10"),
-    minute_15: chrome.i18n.getMessage("minute_15"),
-    minute_30: chrome.i18n.getMessage("minute_30"),
+    heading: browserApi.i18n.getMessage("heading"),
+    prompt: browserApi.i18n.getMessage("prompt"),
+    placeholder: browserApi.i18n.getMessage("placeholder"),
+    warning: browserApi.i18n.getMessage("warning"),
+    duration: browserApi.i18n.getMessage("duration"),
+    button: browserApi.i18n.getMessage("button"),
+    time_default: browserApi.i18n.getMessage("time_default"),
+    minute_1: browserApi.i18n.getMessage("minute_1"),
+    minute_5: browserApi.i18n.getMessage("minute_5"),
+    minute_10: browserApi.i18n.getMessage("minute_10"),
+    minute_15: browserApi.i18n.getMessage("minute_15"),
+    minute_30: browserApi.i18n.getMessage("minute_30"),
   };
 
   // Send translations initially
@@ -31,12 +33,12 @@
   });
 
   // Inject popup on first visit if no domain Unfocus Session exists.
-  chrome.storage.local.get(["unfocusData"], ({ unfocusData }) => {
+  browserApi.storage.local.get(["unfocusData"], ({ unfocusData }) => {
     const session = unfocusData?.[domain];
     if (!session) {
       if (!document.getElementById("intention-popup-script")) {
         const script = document.createElement("script");
-        script.src = chrome.runtime.getURL("floatingPopup.js");
+        script.src = browserApi.runtime.getURL("floatingPopup.js");
         script.id = "intention-popup-script";
         script.type = "module";
         script.onload = () => {
@@ -56,7 +58,7 @@
     }
   });
 
-  chrome.storage.local.get(["unfocusData"], ({ unfocusData }) => {
+  browserApi.storage.local.get(["unfocusData"], ({ unfocusData }) => {
     const session = unfocusData?.[domain];
     if (session?.unfocusStart && session?.unfocusDuration) {
       const elapsed = Date.now() - session.unfocusStart;
@@ -93,7 +95,7 @@
     if (event.data.type === "STORE_UNFOCUS_DATA") {
       const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
       try {
-        chrome.storage.local.set(
+        browserApi.storage.local.set(
           {
             unfocusStart,
             unfocusDuration,
@@ -103,8 +105,8 @@
             lastUnfocusDuration: unfocusDuration,
           },
           () => {
-            if (chrome.runtime.lastError) {
-              console.warn("[FocusBear] storage.set error:", chrome.runtime.lastError.message);
+            if (browserApi.runtime.lastError) {
+              console.warn("[FocusBear] storage.set error:", browserApi.runtime.lastError.message);
               return;
             }
             const elapsed = Date.now() - unfocusStart;
@@ -152,9 +154,9 @@
       const { unfocusStart, unfocusDuration, unfocusIntention } = event.data.payload;
       const localDomain = window.location.hostname.replace(/^www\./, "");
       try {
-        chrome.storage.local.get(["unfocusData"], (result) => {
-          if (chrome.runtime.lastError) {
-            console.warn("[FocusBear] storage.get error:", chrome.runtime.lastError.message);
+        browserApi.storage.local.get(["unfocusData"], (result) => {
+          if (browserApi.runtime.lastError) {
+            console.warn("[FocusBear] storage.get error:", browserApi.runtime.lastError.message);
             return;
           }
           const unfocusData = result.unfocusData || {};
@@ -164,7 +166,7 @@
             unfocusIntention,
           };
           try {
-            chrome.storage.local.set({ unfocusData });
+            browserApi.storage.local.set({ unfocusData });
           } catch (err) {
             console.warn("[FocusBear] Could not update unfocusData (context invalid):", err);
           }
@@ -177,11 +179,11 @@
 
   window.addEventListener("show-popup-again", () => {
     try {
-      chrome.storage.local.get(
+      browserApi.storage.local.get(
         ["lastUnfocusIntention", "lastUnfocusDuration"],
         ({ lastUnfocusIntention, lastUnfocusDuration }) => {
-          if (chrome.runtime.lastError) {
-            console.warn("[FocusBear] storage.get error:", chrome.runtime.lastError.message);
+          if (browserApi.runtime.lastError) {
+            console.warn("[FocusBear] storage.get error:", browserApi.runtime.lastError.message);
             return;
           }
           if (document.getElementById("intention-popup-script")) {
@@ -189,7 +191,7 @@
           }
           try {
             const script = document.createElement("script");
-            script.src = chrome.runtime.getURL("floatingPopup.js");
+            script.src = browserApi.runtime.getURL("floatingPopup.js");
             script.id = "intention-popup-script";
             script.type = "module";
             script.onload = () => {
@@ -212,14 +214,14 @@
     }
   });
 
-  chrome.runtime.onMessage.addListener((message) => {
+  browserApi.runtime.onMessage.addListener((message) => {
     if (message.type === "COMPLETE_UNFOCUS_SESSION") {
-      chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
+      browserApi.storage.local.get("unfocusData", ({ unfocusData }) => {
         if (unfocusData) {
           const msgDomain = message.payload?.domain;
           if (msgDomain && unfocusData[msgDomain]) {
             delete unfocusData[msgDomain];
-            chrome.storage.local.set({ unfocusData });
+            browserApi.storage.local.set({ unfocusData });
           }
         }
       });
