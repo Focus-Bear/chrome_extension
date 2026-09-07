@@ -9,8 +9,10 @@ import { Home, Info } from "lucide-react";
 import "@radix-ui/themes/styles.css";
 import FocusTimer from "./components/FocusTimer.js";
 
+const browserApi = chrome;
+
 const storageSet = (values: Record<string, unknown>): Promise<void> =>
-  new Promise((resolve) => chrome.storage.local.set(values, resolve));
+  new Promise((resolve) => browserApi.storage.local.set(values, resolve));
 
 const Toggle = ({
   checked,
@@ -43,14 +45,14 @@ const BlocklistEditor = () => {
 
   useEffect(() => {
     if (loadedOnce.current) return;
-    chrome.storage.local.get(["blocklist", "focusSessionState"], (data) => {
+    browserApi.storage.local.get(["blocklist", "focusSessionState"], (data) => {
       if (data.blocklist) setBlocklist(data.blocklist);
       setInFocusSession(computeInFocusSession(data.focusSessionState));
       loadedOnce.current = true;
     });
 
     const handler = (
-      changes: { [key: string]: chrome.storage.StorageChange },
+      changes: { [key: string]: browserApi.storage.StorageChange },
       areaName: string,
     ) => {
       if (areaName !== "local") return;
@@ -61,8 +63,8 @@ const BlocklistEditor = () => {
         setBlocklist(changes.blocklist.newValue || []);
       }
     };
-    chrome.storage.onChanged.addListener(handler);
-    return () => chrome.storage.onChanged.removeListener(handler);
+    browserApi.storage.onChanged.addListener(handler);
+    return () => browserApi.storage.onChanged.removeListener(handler);
   }, []);
 
   const normalizeDomain = (input: string) => {
@@ -82,7 +84,7 @@ const BlocklistEditor = () => {
     if (!blocklist.includes(formatted)) {
       const updated = [...blocklist, formatted];
       setBlocklist(updated);
-      chrome.storage.local.set({ blocklist: updated });
+      browserApi.storage.local.set({ blocklist: updated });
     }
     setNewSite("");
   };
@@ -91,7 +93,7 @@ const BlocklistEditor = () => {
     if (inFocusSession) return;
     const updatedBlock = blocklist.filter((s) => s !== site);
     setBlocklist(updatedBlock);
-    chrome.storage.local.set({ blocklist: updatedBlock });
+    browserApi.storage.local.set({ blocklist: updatedBlock });
   };
 
   return (
@@ -133,7 +135,7 @@ const BlocklistEditor = () => {
 };
 
 const App = () => {
-  const t = (key: string) => chrome.i18n.getMessage(key); // i18n helper
+  const t = (key: string) => browserApi.i18n.getMessage(key); // i18n helper
   const [blurEnabled, setBlurEnabled] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [homeBlurEnabled, setHomeBlurEnabled] = useState(true);
@@ -175,7 +177,7 @@ const App = () => {
   } | null>(null);
 
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    browserApi.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
       if (tab?.url) {
         const domain = new URL(tab.url).hostname.replace(/^www\./, "");
         setCurrentDomain(domain);
@@ -186,9 +188,9 @@ const App = () => {
   // Load toggles from storage when popup opens
   useEffect(() => {
     // Remove legacy snapshot key so content scripts only use per-toggle keys
-    chrome.storage.local.remove("distractionToggles");
+    browserApi.storage.local.remove("distractionToggles");
 
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       [
         "blurEnabled",
         "commentsHidden",
@@ -240,8 +242,8 @@ const App = () => {
 
   useEffect(() => {
     const onChanged = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      area: chrome.storage.AreaName,
+      changes: Record<string, browserApi.storage.StorageChange>,
+      area: browserApi.storage.AreaName,
     ) => {
       if (area !== "local") return;
       if (changes.linkedinBlurHome) {
@@ -257,24 +259,24 @@ const App = () => {
         setLinkedinRemoveBadges(v !== undefined ? !!v : true);
       }
     };
-    chrome.storage.onChanged.addListener(onChanged);
-    return () => chrome.storage.onChanged.removeListener(onChanged);
+    browserApi.storage.onChanged.addListener(onChanged);
+    return () => browserApi.storage.onChanged.removeListener(onChanged);
   }, []);
 
   const handleCompleteUnfocusSession = (domain: string) => {
-    chrome.storage.local.get("unfocusData", ({ unfocusData }) => {
+    browserApi.storage.local.get("unfocusData", ({ unfocusData }) => {
       if (unfocusData && unfocusData[domain]) {
         delete unfocusData[domain];
-        chrome.storage.local.set({ unfocusData }, async () => {
+        browserApi.storage.local.set({ unfocusData }, async () => {
           setAllUnfocusSessions((prev) => {
             const updated = { ...prev };
             delete updated[domain];
             return updated;
           });
-          const allTabs = await chrome.tabs.query({});
+          const allTabs = await browserApi.tabs.query({});
           allTabs.forEach((tab) => {
             if (tab.id && tab.url && tab.url.includes(domain)) {
-              chrome.tabs.sendMessage(tab.id, {
+              browserApi.tabs.sendMessage(tab.id, {
                 type: "COMPLETE_UNFOCUS_SESSION",
                 payload: { domain },
               });
@@ -286,14 +288,14 @@ const App = () => {
   };
 
   const handleCompleteFocusSession = () => {
-    chrome.runtime.sendMessage({ action: "resetFocusSession" }, () => {
+    browserApi.runtime.sendMessage({ action: "resetFocusSession" }, () => {
       setActiveFocusSession(null);
     });
   };
 
   useEffect(() => {
     const updateSessions = () => {
-      chrome.storage.local.get(["unfocusData", "focusSessionState"], (data) => {
+      browserApi.storage.local.get(["unfocusData", "focusSessionState"], (data) => {
         const { unfocusData, focusSessionState } = data;
         const sessions: Record<string, { intention: string; timeLeft: number }> = {};
         const now = Date.now();
@@ -347,16 +349,16 @@ const App = () => {
     const newValue = !shortsBlurEnabled;
     setShortsBlurEnabled(newValue);
     await storageSet({ shortsBlurEnabled: newValue });
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_SHORTS_BLUR",
         payload: newValue,
       });
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_BLUR",
         payload: newValue,
       });
@@ -367,16 +369,16 @@ const App = () => {
     const newValue = !blurEnabled;
     setBlurEnabled(newValue);
     await storageSet({ blurEnabled: newValue });
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_BLUR",
         payload: newValue,
       });
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_BLUR",
         payload: newValue,
       });
@@ -388,12 +390,12 @@ const App = () => {
     setHidden(newValue);
     await storageSet({ commentsHidden: newValue });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_COMMENTS",
         payload: newValue,
       });
@@ -409,16 +411,16 @@ const App = () => {
       blurEnabled: newValue,
     });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_HOME_PAGE_BLUR",
         payload: newValue,
       });
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_BLUR",
         payload: newValue,
       });
@@ -430,9 +432,9 @@ const App = () => {
     setYouBlurEnabled(newValue);
     await storageSet({ youMenuBlurEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await browserApi.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, {
+      browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_YOU_MENU_BLUR",
         payload: newValue,
       });
@@ -440,13 +442,13 @@ const App = () => {
   };
 
   const sendLinkedinToggleToActiveTab = async (type: string, payload: boolean) => {
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (!tab?.id || !tab.url?.includes("linkedin.com")) return;
     try {
-      await chrome.tabs.sendMessage(tab.id, { type, payload });
+      await browserApi.tabs.sendMessage(tab.id, { type, payload });
     } catch {
       // Content script may not be ready yet; storage listener in linkedin.ts will still apply.
     }
@@ -478,12 +480,12 @@ const App = () => {
     setWikipediaLinkPopupEnabled(newValue);
     await storageSet({ wikipediaLinkPopupEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
+      await browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_WIKI_LINK_POPUP",
         payload: newValue,
       });
@@ -495,12 +497,12 @@ const App = () => {
     setWikipediaMainBlur(newValue);
     await storageSet({ wikipediaMainBlur: newValue });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
+      await browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_WIKIPEDIA_MAIN",
         payload: newValue,
       });
@@ -512,12 +514,12 @@ const App = () => {
     setGmailBlurEnabled(newValue);
     await storageSet({ gmailBlurEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
+      await browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_GMAIL_BLUR",
         payload: newValue,
       });
@@ -529,12 +531,12 @@ const App = () => {
     setPromotionBlurEnabled(newValue);
     await storageSet({ promotionBlurEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({
+    const [tab] = await browserApi.tabs.query({
       active: true,
       currentWindow: true,
     });
     if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
+      await browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_PROMOTION_BLUR",
         payload: newValue,
       });
@@ -546,9 +548,9 @@ const App = () => {
     setSocialBlurEnabled(newValue);
     await storageSet({ socialBlurEnabled: newValue });
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await browserApi.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
-      await chrome.tabs.sendMessage(tab.id, {
+      await browserApi.tabs.sendMessage(tab.id, {
         type: "TOGGLE_SOCIAL_BLUR",
         payload: newValue,
       });
@@ -840,9 +842,9 @@ const App = () => {
                   const v = !redditBlurHomeFeed;
                   setRedditBlurHomeFeed(v);
                   await storageSet({ redditBlurHomeFeed: v });
-                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  const [tab] = await browserApi.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
-                    chrome.tabs.sendMessage(tab.id, {
+                    browserApi.tabs.sendMessage(tab.id, {
                       type: "TOGGLE_REDDIT_HOME_FEED",
                       payload: v,
                     });
@@ -857,9 +859,9 @@ const App = () => {
                   const v = !redditBlurCommunities;
                   setRedditBlurCommunities(v);
                   await storageSet({ redditBlurCommunities: v });
-                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  const [tab] = await browserApi.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
-                    chrome.tabs.sendMessage(tab.id, {
+                    browserApi.tabs.sendMessage(tab.id, {
                       type: "TOGGLE_REDDIT_COMMUNITIES",
                       payload: v,
                     });
@@ -874,9 +876,9 @@ const App = () => {
                   const v = !redditBlurComments;
                   setRedditBlurComments(v);
                   await storageSet({ redditBlurComments: v });
-                  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                  const [tab] = await browserApi.tabs.query({ active: true, currentWindow: true });
                   if (tab?.id)
-                    chrome.tabs.sendMessage(tab.id, {
+                    browserApi.tabs.sendMessage(tab.id, {
                       type: "TOGGLE_REDDIT_COMMENTS",
                       payload: v,
                     });
