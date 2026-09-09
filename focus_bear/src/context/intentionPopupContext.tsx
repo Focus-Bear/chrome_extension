@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+const browserApi = chrome;
 
 interface IntentionContextProps {
   intention: string;
@@ -64,7 +65,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
     setTimeLeft(totalSeconds);
     setTimerActive(true);
 
-    chrome.storage.local.set({
+    browserApi.storage.local.set({
       unfocusStart: Date.now(),
       unfocusDuration: minutes,
       unfocusIntention: intention,
@@ -76,7 +77,7 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
           setTimerActive(false);
-          chrome.storage.local.remove(["unfocusStart", "unfocusDuration", "unfocusIntention"]);
+          browserApi.storage.local.remove(["unfocusStart", "unfocusDuration", "unfocusIntention"]);
           window.dispatchEvent(new CustomEvent("show-popup-again"));
           return 0;
         }
