@@ -64,19 +64,12 @@ export const IntentionProvider = ({ children }: { children: ReactNode }) => {
     setTimeLeft(totalSeconds);
     setTimerActive(true);
 
-    chrome.storage.local.set({
-      unfocusStart: Date.now(),
-      unfocusDuration: minutes,
-      unfocusIntention: intention,
-    });
-
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
           setTimerActive(false);
-          chrome.storage.local.remove(["unfocusStart", "unfocusDuration", "unfocusIntention"]);
           window.dispatchEvent(new CustomEvent("show-popup-again"));
           return 0;
         }
