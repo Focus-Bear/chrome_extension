@@ -1,7 +1,7 @@
 declare const browser: typeof chrome | undefined;
-export const browserApi: typeof chrome = typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
 
 (() => {
+  const browserApi: typeof chrome = typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
   console.log("Wikipedia blur script injected at", location.href);
 
   const BlurSection =
