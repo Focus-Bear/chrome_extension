@@ -34,7 +34,7 @@ export default defineConfig({
         youtube: resolve(__dirname, "src/youtube/youtube.ts"),
         linkedin: resolve(__dirname, "src/linkedin/linkedin.ts"),
         wikipedia: resolve(__dirname, "src/wikipedia/wikipedia.ts"),
-        linkpopup: resolve(__dirname, "src/wikipedia/linkPopup.js"),
+        linkpopup: resolve(__dirname, "src/wikipedia/linkpopup.js"),
         gmail: resolve(__dirname, "src/gmail/gmail.ts"),
         reddit: resolve(__dirname, "src/reddit/reddit.ts"),
         x: resolve(__dirname, "src/x/x.ts"),

@@ -1,15 +1,17 @@
+const browserApi = chrome;
+
 (async () => {
   const containerId = "focus-wikipedia-link-popup";
 
   // Load user setting from storage
-  const { wikipediaLinkPopupEnabled } = await chrome.storage.local.get({
+  const { wikipediaLinkPopupEnabled } = await browserApi.storage.local.get({
     wikipediaLinkPopupEnabled: true,
   });
 
   let enabled = wikipediaLinkPopupEnabled;
 
   // Listen for toggle messages from popup
-  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (msg.type === "TOGGLE_WIKI_LINK_POPUP") {
       enabled = !!msg.payload;
       sendResponse({ ok: true });
@@ -86,7 +88,7 @@
     injectIntentionPopupCSS();
 
     // Get extension image URL
-    const logoUrl = chrome.runtime.getURL("icons/bearLogo.png");
+    const logoUrl = browserApi.runtime.getURL("icons/bearLogo.png");
 
     // Overlay
     const overlay = document.createElement("div");

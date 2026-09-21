@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 // Define message interface safely
 interface BlurToggleMessage {
   type: string;
@@ -205,13 +207,13 @@ interface BlurToggleMessage {
 
   // ─── Context validity guard ───────────────────────────────────────────────
   // When the extension is reloaded/updated the content script's chrome APIs
-  // become invalid. Any attempt to call chrome.storage / chrome.runtime then
+  // become invalid. Any attempt to call browserApi.storage / browserApi.runtime then
   // throws "Extension context invalidated." We detect this, tear down the
   // observer and intervals, and swallow the error so nothing crashes.
 
   const isContextValid = (): boolean => {
     try {
-      return !!chrome.runtime?.id;
+      return !!browserApi.runtime?.id;
     } catch {
       return false;
     }
@@ -238,10 +240,10 @@ interface BlurToggleMessage {
         return;
       }
       try {
-        chrome.storage.local.get(
+        browserApi.storage.local.get(
           { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
           (res) => {
-            if (chrome.runtime.lastError) return;
+            if (browserApi.runtime.lastError) return;
             if (res.gmailBlurEnabled) {
               blurTitle();
               applySidebarBlur();
@@ -279,8 +281,8 @@ interface BlurToggleMessage {
         if (!isContextValid()) return;
         const currentTab = getCurrentGmailCategory();
         try {
-          chrome.storage.local.get({ socialBlurEnabled: true }, (res) => {
-            if (chrome.runtime.lastError) return;
+          browserApi.storage.local.get({ socialBlurEnabled: true }, (res) => {
+            if (browserApi.runtime.lastError) return;
             if (res.socialBlurEnabled && (currentTab === "social" || currentTab === "updates")) {
               applySocialBlur();
             } else {
@@ -295,10 +297,10 @@ interface BlurToggleMessage {
   });
 
   // Chrome Message Listener
-  chrome.runtime.onMessage.addListener((message: BlurToggleMessage) => {
+  browserApi.runtime.onMessage.addListener((message: BlurToggleMessage) => {
     if (message.type === "TOGGLE_GMAIL_BLUR") {
       const shouldBlur = Boolean(message.payload);
-      chrome.storage.local.set({ gmailBlurEnabled: shouldBlur });
+      browserApi.storage.local.set({ gmailBlurEnabled: shouldBlur });
       if (shouldBlur) {
         blurTitle();
         applySidebarBlur();
@@ -307,7 +309,7 @@ interface BlurToggleMessage {
       }
     } else if (message.type === "TOGGLE_PROMOTION_BLUR") {
       const shouldBlur = Boolean(message.payload);
-      chrome.storage.local.set({ promotionBlurEnabled: shouldBlur });
+      browserApi.storage.local.set({ promotionBlurEnabled: shouldBlur });
       if (shouldBlur) {
         applyPromotionBlur();
       } else {
@@ -315,7 +317,7 @@ interface BlurToggleMessage {
       }
     } else if (message.type === "TOGGLE_SOCIAL_BLUR") {
       const shouldBlur = Boolean(message.payload);
-      chrome.storage.local.set({ socialBlurEnabled: shouldBlur });
+      browserApi.storage.local.set({ socialBlurEnabled: shouldBlur });
       const currentTab = getCurrentGmailCategory();
       if (shouldBlur && (currentTab === "social" || currentTab === "updates")) {
         applySocialBlur();
@@ -327,10 +329,10 @@ interface BlurToggleMessage {
 
   // On Initial Load
   try {
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       { gmailBlurEnabled: true, promotionBlurEnabled: true, socialBlurEnabled: true },
       (res) => {
-        if (chrome.runtime.lastError) return;
+        if (browserApi.runtime.lastError) return;
         if (res.gmailBlurEnabled) {
           blurTitle();
           applySidebarBlur();

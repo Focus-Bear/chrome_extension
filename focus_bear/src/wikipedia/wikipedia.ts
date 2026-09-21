@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 (() => {
   console.log("Wikipedia blur script injected at", location.href);
 
@@ -21,12 +23,12 @@
   };
 
   // Stored setting on load
-  chrome.storage.local.get({ wikipediaMainBlur: true }, ({ wikipediaMainBlur }) => {
+  browserApi.storage.local.get({ wikipediaMainBlur: true }, ({ wikipediaMainBlur }) => {
     toggleMainPage(wikipediaMainBlur);
   });
 
   // Listen for settings toggle
-  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (msg.type === "TOGGLE_WIKIPEDIA_MAIN") {
       toggleMainPage(!!msg.payload);
       sendResponse({ ok: true });

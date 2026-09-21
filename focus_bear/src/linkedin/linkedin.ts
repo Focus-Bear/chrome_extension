@@ -1,3 +1,5 @@
+const browserApi = chrome;
+
 (() => {
   const STYLE_ID = "focusbear-linkedin-style";
   const BLUR_CLASS = "focusbear-linkedin-news-blur";
@@ -215,7 +217,7 @@
 
   const applyFromStorage = (done?: () => void) => {
     injectStyles();
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       { linkedinBlurHome: true, linkedinBlurNews: true, linkedinRemoveBadges: true },
       (res) => {
         try {
@@ -231,7 +233,7 @@
     );
   };
 
-  chrome.runtime.onMessage.addListener((msg, _s, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((msg, _s, sendResponse) => {
     if (!msg?.type) return;
     injectStyles();
     if (msg.type === "TOGGLE_LINKEDIN_HOME") {
@@ -251,7 +253,7 @@
     }
   });
 
-  chrome.storage.onChanged.addListener((changes, area) => {
+  browserApi.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if (changes.linkedinBlurHome || changes.linkedinBlurNews || changes.linkedinRemoveBadges) {
       scheduleApply();
