@@ -3,6 +3,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { targets } from "./target.js";
 
+// Resolve the paths to the project directories.
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const manifestsDir = resolve(root, "manifests");
@@ -12,8 +13,10 @@ if (!existsSync(primaryDistDir)) {
     throw new Error ("dist/ not found - run 'vite build' before this script.");
 }
 
+// Read and parse the base manifest file.
 const base = JSON.parse(readFileSync(resolve(manifestsDir, "base.json"), "utf-8"));
 
+// Build each target's browser specific manifest, and write it to the target output directory.
 for (const target of targets) {
     const overrides = JSON.parse(readFileSync(resolve(manifestsDir, target.overrideFile), "utf-8"),);
     const manifest = {...base, ...overrides};
