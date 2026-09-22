@@ -6,6 +6,8 @@ export const browserApi: typeof chrome = typeof browser !== "undefined" ? (brows
 
   const domain = window.location.hostname.replace(/^www\./, "");
 
+  const browserApi = chrome;
+
   const translations = {
     heading: browserApi.i18n.getMessage("heading"),
     prompt: browserApi.i18n.getMessage("prompt"),

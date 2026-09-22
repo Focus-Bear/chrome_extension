@@ -7,6 +7,8 @@ import {
 import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
 import { browserApi } from "./lib/browserApi.js";
 
+const browserApi = chrome;
+
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
 browserApi.runtime.onInstalled.addListener((details) => {
   console.log("onInstalled:", details.reason);
