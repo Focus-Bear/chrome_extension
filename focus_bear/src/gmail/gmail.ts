@@ -8,7 +8,8 @@ interface BlurToggleMessage {
 
 // Immediately invoked function expression (IIFE)
 (() => {
-  const browserApi: typeof chrome = typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
+  const browserApi: typeof chrome =
+    typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
   console.log("Gmail blur script injected at", location.href);
 
   const GMAIL_BLUR_STYLE_ID = "focus-bear-gmail-blur-style";

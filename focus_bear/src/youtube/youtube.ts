@@ -1,5 +1,6 @@
 declare const browser: typeof chrome | undefined;
-export const browserApi: typeof chrome = typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
+export const browserApi: typeof chrome =
+  typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
 
 (() => {
   console.log("YouTube blur script injected at", location.href);

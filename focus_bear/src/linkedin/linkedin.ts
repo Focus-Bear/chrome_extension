@@ -1,7 +1,8 @@
 declare const browser: typeof chrome | undefined;
 
 (() => {
-  const browserApi: typeof chrome = typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
+  const browserApi: typeof chrome =
+    typeof browser !== "undefined" ? (browser as typeof chrome) : chrome;
   const STYLE_ID = "focusbear-linkedin-style";
   const BLUR_CLASS = "focusbear-linkedin-news-blur";
   const HIDE_BADGE_CLASS = "focusbear-hide-badge";
