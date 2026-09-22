@@ -13,7 +13,6 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         { src: "src/styles/*", dest: "assets" },
-        { src: "public/manifest.json", dest: "." },
         { src: "public/icons/**/*", dest: "icons" },
         { src: "public/fonts/*", dest: "fonts" },
         { src: "public/blocked.html", dest: "." },

@@ -9,7 +9,7 @@ import { Home, Info } from "lucide-react";
 import "@radix-ui/themes/styles.css";
 import FocusTimer from "./components/FocusTimer.js";
 
-const browserApi = chrome;
+import { browserApi } from "./lib/browserApi.js";
 
 const storageSet = (values: Record<string, unknown>): Promise<void> =>
   new Promise((resolve) => browserApi.storage.local.set(values, resolve));

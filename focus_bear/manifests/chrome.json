@@ -23,6 +23,12 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "focusbear@placeholder.focusbear.io",
+      "strict_min_version": "121.0"
+    }
+  },
   "content_scripts": [
     {
       "matches": [
