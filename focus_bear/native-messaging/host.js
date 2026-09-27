@@ -8,7 +8,7 @@
 import { appendFileSync } from 'fs';
 import { createConnection } from 'net';
 
-const SOCKET_PATH = '/tmp/focusbear.sock';
+const SOCKET_PATH = '\\\\.\\pipe\\focusbear';
 
 let appSocket = null;
 let isConnectedToApp = false;
