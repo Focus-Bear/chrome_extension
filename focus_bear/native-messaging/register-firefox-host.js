@@ -23,7 +23,7 @@ export function registerFirefoxNativeHost(installDir) {
     const outputPath = join(installDir, "com.focusbear.host.json");
     writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
 
-    // Register the manifest path in th ecurrent user's Windows Registery. 
+    // Register the manifest path in the current user's Windows Registery. 
     execFileSync("reg", [
         "add",
         "HKCU\\Software\\Mozilla\\NativeMessagingHosts\\com.focusbear.host",
