@@ -5,8 +5,7 @@ import {
   buildResumedSessionState,
 } from "./lib/focus.js";
 import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
-
-const browserApi = chrome;
+import { browserApi } from "./lib/browserApi.js";
 
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
 browserApi.runtime.onInstalled.addListener((details) => {

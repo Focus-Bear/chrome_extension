@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { browserApi } from "../lib/browserApi.js";
+
 interface UnfocusSession {
   unfocusStart: number;
   unfocusDuration: number; // in minutes
@@ -13,7 +15,7 @@ export const useUnfocusTimer = () => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const restoreFromStorage = () => {
-    chrome.storage.local.get(
+    browserApi.storage.local.get(
       ["unfocusStart", "unfocusDuration", "unfocusIntention"],
       (result: UnfocusSession) => {
         const { unfocusStart, unfocusDuration, unfocusIntention } = result;
@@ -35,7 +37,7 @@ export const useUnfocusTimer = () => {
               if (prev <= 1) {
                 clearInterval(intervalRef.current!);
                 setTimerActive(false);
-                chrome.storage.local.remove([
+                browserApi.storage.local.remove([
                   "unfocusStart",
                   "unfocusDuration",
                   "unfocusIntention",
