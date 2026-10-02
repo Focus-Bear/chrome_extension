@@ -56,6 +56,56 @@ function setInstallToggleDefaults() {
   );
 }
 
+// ------------------------------------------------ Native Messaging ------------------------------------------------ //
+
+const NATIVE_HOST = "com.focusbear.host";
+let nativePort: chrome.runtime.Port | null = null;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+function connectNativeHost() {
+  try {
+    nativePort = browserApi.runtime.connectNative(NATIVE_HOST);
+  } catch (err) {
+    console.warn("[FocusBear] connectNative threw: ", err);
+    scheduleReconnect();
+    return;
+  }
+
+  nativePort.onMessage.addListener((message: any) => {
+    if (message.type === "BLOCKLIST_RESPONSE" || message.type === "BLOCKLIST_UPDATE") {
+      browserApi.storage.local.set({ blocklist: message.data }, () => {
+        console.log("[FocusBear] blocklist synced: ", message.data.length, "entries");
+      });
+    }
+  });
+
+  nativePort.onDisconnect.addListener(() => {
+    console.warn("[FocusBear] native host disconnected: ", browserApi.runtime.lastError);
+    nativePort = null;
+    scheduleReconnect();
+  });
+
+  nativePort.postMessage({ type: "GET_BLOCKLIST" });
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) return;
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    connectNativeHost();
+  }, 5000);
+}
+
+function requestBlocklistRefresh() {
+  if (nativePort) {
+    nativePort.postMessage({ type: "GET_BLOCKLIST" });
+  } else {
+    connectNativeHost();
+  }
+}
+
+connectNativeHost();
+
 // ------------------------------------------------ Notifications ------------------------------------------------ //
 
 function showNotification(id: string, title: string, message: string) {
@@ -162,6 +212,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.storage.local.set({ focusSessionState }, () => {
       const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
       browserApi.alarms.create(alarmName, { when: endTime });
+      requestBlocklistRefresh();
       sendResponse({ success: true });
     });
 
