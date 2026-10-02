@@ -85,7 +85,7 @@ function connectNativeHost() {
     scheduleReconnect();
   });
 
-  nativePort.postMessage({type: "GET_BLOCKLIST"});
+  nativePort.postMessage({ type: "GET_BLOCKLIST" });
 }
 
 function scheduleReconnect() {
@@ -98,7 +98,7 @@ function scheduleReconnect() {
 
 function requestBlocklistRefresh() {
   if (nativePort) {
-    nativePort.postMessage({type: "GET_BLOCKLIST" });
+    nativePort.postMessage({ type: "GET_BLOCKLIST" });
   } else {
     connectNativeHost();
   }
