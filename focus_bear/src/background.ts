@@ -61,6 +61,7 @@ function setInstallToggleDefaults() {
 const NATIVE_HOST = "com.focusbear.host";
 let nativePort: chrome.runtime.Port | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+declare const browser: typeof chrome | undefined;
 
 function connectNativeHost() {
   try {
@@ -70,6 +71,9 @@ function connectNativeHost() {
     scheduleReconnect();
     return;
   }
+
+  const browserName = typeof browser != "undefined" ? "firefox" : "chrome";
+  nativePort.postMessage({ type: "PING", browser: browserName });
 
   nativePort.onMessage.addListener((message: any) => {
     if (message.type === "BLOCKLIST_RESPONSE" || message.type === "BLOCKLIST_UPDATE") {
