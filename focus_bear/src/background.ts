@@ -253,6 +253,16 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
       browserApi.alarms.create(alarmName, { when: endTime });
       requestBlocklistRefresh();
+
+      // Alert the application as well
+      if (!onBreak && nativePort) {
+        nativePort.postMessage({
+          type: "REQUEST_SESSION_START",
+          durationSeconds: workDuration,
+          task: task || "",
+        });
+      }
+
       sendResponse({ success: true });
     });
 
@@ -268,6 +278,10 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Cancel alarms while paused, re-created on resume
         browserApi.alarms.clear(ALARM_FOCUS_WORK);
         browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+
+        if (nativePort){
+          nativePort.postMessage({ type: "REQUEST_SESSION_PAUSE" });
+        }
       }
       sendResponse({ success: true });
     });
@@ -283,6 +297,10 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         browserApi.storage.local.set({ focusSessionState }, () => {
           const alarmName = prev.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
           browserApi.alarms.create(alarmName, { when: endTime });
+
+          if (nativePort) {
+            nativePort.postMessage({ type: "REQUEST_SESSION_RESUME" });
+          }
         });
       }
       sendResponse({ success: true });
@@ -294,6 +312,9 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.alarms.clear(ALARM_FOCUS_WORK);
     browserApi.alarms.clear(ALARM_FOCUS_BREAK);
     browserApi.storage.local.remove("focusSessionState", () => {
+      if (nativePort) {
+        nativePort.postMessage({ type: "REQUEST_SESSION_CANCEL" });
+      }
       sendResponse({ success: true });
     });
     return true;

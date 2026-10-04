@@ -238,7 +238,52 @@ readMessage((message) => {
         log("Not connected to app, whitelist update not forwarded");
       }
       break;
+    
+    case "REQUEST_SESSION_START":
+      log("Forwarding REQUEST_SESSION_START to app");
+      if (isConnectedToApp && appSocket) {
+        appSocket.write(JSON.stringify({
+          type: "REQUEST_SESSION_START",
+          durationSeconds: message.durationSeconds,
+          task: message.task
+        }) + '\n');
+      } else {
+        log("Not connected to app, cannot forward REQUEST_SESSION_START");
+      }
+      break;
 
+    case "REQUEST_SESSION_PAUSE":
+      log("Forwarding REQUEST_SESSION_PAUSE to app");
+      if (isConnectedToApp && appSocket) {
+        appSocket.write(JSON.stringify({
+          type: "REQUEST_SESSION_PAUSE",
+        }) + '\n');
+      } else {
+        log("Not connected to app, cannot forward REQUEST_SESSION_PAUSE");
+      }
+      break;
+        case "REQUEST_SESSION_RESUME":
+      log("Forwarding REQUEST_SESSION_RESUME to app");
+      if (isConnectedToApp && appSocket) {
+        appSocket.write(JSON.stringify({
+          type: "REQUEST_SESSION_RESUME",
+        }) + '\n');
+      } else {
+        log("Not connected to app, cannot forward REQUEST_SESSION_RESUME");
+      }
+
+      break;
+        case "REQUEST_SESSION_CANCEL":
+      log("Forwarding REQUEST_SESSION_CANCEL to app");
+      if (isConnectedToApp && appSocket) {
+        appSocket.write(JSON.stringify({
+          type: "REQUEST_SESSION_CANCEL",
+        }) + '\n');
+      } else {
+        log("Not connected to app, cannot forward REQUEST_SESSION_CANCEL");
+      }
+      break;
+     
     default:
       log(`Unknown message type: ${message.type}`);
       sendMessage({
