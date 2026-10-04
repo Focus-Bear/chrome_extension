@@ -84,6 +84,11 @@ function connectToApp() {
     appSocket.write(
       JSON.stringify({ type: "NATIVE_HOST_CONNECTED", browser: cachedBrowserId }) + "\n",
     );
+
+    // The browser often starts the host before the app is running, so any early
+    // GET_BLOCKLIST fails. Fetch it now that we're connected (also covers reconnects);
+    // the response is pushed to the extension as a BLOCKLIST_UPDATE.
+    appSocket.write(JSON.stringify({ type: "GET_BLOCKLIST" }) + "\n");
   });
 
   // Large messages (e.g. long blocklists) arrive split across several chunks,
@@ -129,6 +134,10 @@ function connectToApp() {
             clearTimeout(pendingBlocklistTimeout);
             pendingBlocklistTimeout = null;
             cb(null, message.data);
+          } else {
+            // Unrequested response (e.g. the sync on connect): push it to the extension.
+            log(`Pushing blocklist to extension (${message.data.length} entries)`);
+            sendMessage({ type: "BLOCKLIST_UPDATE", data: message.data, timestamp: Date.now() });
           }
         }
       } catch (error) {
