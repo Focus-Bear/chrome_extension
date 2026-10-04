@@ -1,0 +1,9 @@
+{
+  "name": "com.focusbear.host",
+  "description": "Focus Bear native messaging host",
+  "path": "C:\\Users\\pikad\\OneDrive\\Desktop\\chrome_extension\\focus_bear\\native-messaging\\host-launcher.cmd",
+  "type": "stdio",
+  "allowed_extensions": [
+    "focusbear@placeholder.focusbear.io"
+  ]
+}

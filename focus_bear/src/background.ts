@@ -76,6 +76,46 @@ function connectNativeHost() {
       browserApi.storage.local.set({ blocklist: message.data }, () => {
         console.log("[FocusBear] blocklist synced: ", message.data.length, "entries");
       });
+    } else if (message.type === "SESSION_START") {
+      const focusSessionState = buildFocusSessionState({
+        workDuration: message.durationSeconds,
+        breakDuration: 0,
+        onBreak: false,
+        task: message.intention,
+      });
+      browserApi.alarms.clear(ALARM_FOCUS_WORK);
+      browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+      browserApi.storage.local.set({ focusSessionState }, () => {
+        browserApi.alarms.create(ALARM_FOCUS_WORK, { when: focusSessionState.endTime });
+        console.log("[FocusBear] Session started from app:", message.intention);
+      });
+    } else if (message.type === "SESSION_PAUSE") {
+      browserApi.storage.local.get("focusSessionState", (data) => {
+        const state = data.focusSessionState;
+        if (!state) return;
+        const updated = { ...state, isRunning: false, timeLeft: computeTimeLeft(state) };
+        browserApi.storage.local.set({ focusSessionState: updated });
+        browserApi.alarms.clear(ALARM_FOCUS_WORK);
+        browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+        console.log("[FocusBear] Session paused from app");
+      });
+    } else if (message.type === "SESSION_RESUME") {
+      browserApi.storage.local.get("focusSessionState", (data) => {
+        const prev = data.focusSessionState;
+        if (!prev || prev.isRunning) return;
+
+        const resumed = buildResumedSessionState(prev);
+        browserApi.storage.local.set({ focusSessionState: resumed }, () => {
+          browserApi.alarms.create(ALARM_FOCUS_WORK, { when: resumed.endTime });
+          console.log("[FocusBear] Session resumed from app");
+        });
+      });
+    } else if (message.type === "SESSION_CANCEL") {
+        browserApi.alarms.clear(ALARM_FOCUS_WORK);
+        browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+        browserApi.storage.local.remove("focusSessionState", () => {
+          console.log("[FocusBear] Session cancelled from app");
+        });
     }
   });
 

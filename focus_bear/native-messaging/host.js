@@ -108,6 +108,9 @@ function connectToApp() {
             pendingBlocklistTimeout = null;
             cb(null, message.data);
           }
+        } else if (['SESSION_START', 'SESSION_PAUSE', 'SESSION_RESUME', 'SESSION_CANCEL'].includes(message.type)) {
+          log(`Forwarding ${message.type} to extension`);
+          sendMessage(message);
         }
       } catch (error) {
         log(`Error parsing socket message: ${error.message}`);
