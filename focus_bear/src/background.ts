@@ -111,11 +111,11 @@ function connectNativeHost() {
         });
       });
     } else if (message.type === "SESSION_CANCEL") {
-        browserApi.alarms.clear(ALARM_FOCUS_WORK);
-        browserApi.alarms.clear(ALARM_FOCUS_BREAK);
-        browserApi.storage.local.remove("focusSessionState", () => {
-          console.log("[FocusBear] Session cancelled from app");
-        });
+      browserApi.alarms.clear(ALARM_FOCUS_WORK);
+      browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+      browserApi.storage.local.remove("focusSessionState", () => {
+        console.log("[FocusBear] Session cancelled from app");
+      });
     }
   });
 
@@ -279,7 +279,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         browserApi.alarms.clear(ALARM_FOCUS_WORK);
         browserApi.alarms.clear(ALARM_FOCUS_BREAK);
 
-        if (nativePort){
+        if (nativePort) {
           nativePort.postMessage({ type: "REQUEST_SESSION_PAUSE" });
         }
       }
