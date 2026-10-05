@@ -80,12 +80,11 @@ function connectNativeHost() {
       browserApi.storage.local.get("blocklist", (data) => {
         const existing: string[] = data.blocklist || [];
         const incoming: string[] = message.data || [];
-        const merged = Array.from(new Set ([...existing, ...incoming]));
+        const merged = Array.from(new Set([...existing, ...incoming]));
         browserApi.storage.local.set({ blocklist: merged }, () => {
           console.log("[FocusBear] blocklist synced: ", merged.length, "entries");
         });
       });
-
     } else if (message.type === "SESSION_START") {
       const focusSessionState = buildFocusSessionState({
         workDuration: message.durationSeconds,
@@ -266,7 +265,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.storage.local.set({ focusSessionState }, () => {
       const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
       browserApi.alarms.create(alarmName, { when: endTime });
-      
+
       // Alert the application as well
       if (!onBreak && nativePort) {
         nativePort.postMessage({
