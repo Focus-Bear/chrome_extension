@@ -8,7 +8,9 @@
 import { appendFileSync } from "fs";
 import { createConnection } from "net";
 
-const SOCKET_PATH = "\\\\.\\pipe\\focusbear";
+// Windows uses a named pipe; macOS and Linux use a Unix domain socket.
+const SOCKET_PATH =
+  process.platform === "win32" ? "\\\\.\\pipe\\focusbear" : "/tmp/focusbear.sock";
 
 let appSocket = null;
 let isConnectedToApp = false;
