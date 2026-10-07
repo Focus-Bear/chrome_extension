@@ -128,9 +128,8 @@ function connectNativeHost() {
     }
   });
 
-  nativePort.onDisconnect.addListener((p: any) => {
+  nativePort.onDisconnect.addListener(() => {
     console.warn("[FocusBear] native host disconnected: ", browserApi.runtime.lastError);
-    console.log("[FocusBear] native host disconnected:", p?.error?.message ?? browserApi.runtime.lastError?.message);
     nativePort = null;
     scheduleReconnect();
   });
