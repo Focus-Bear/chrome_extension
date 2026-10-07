@@ -33,7 +33,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "focusbear@placeholder.focusbear.io",
+      "id": "focusbear@.focusbear.io",
       "strict_min_version": "121.0"
     }
   },

@@ -3,5 +3,5 @@
   "description": "Focus Bear native messaging host",
   "path": "__LAUNCHER_PATH__",
   "type": "stdio",
-  "allowed_extensions": ["focusbear@placeholder.focusbear.io"]
+  "allowed_extensions": ["focusbear@.focusbear.io"]
 }
