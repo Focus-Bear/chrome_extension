@@ -55,6 +55,13 @@ Each toggle is saved globally and persists across tabs and reloads.
 - UI follows Focus Bear branding and colour scheme
 - All settings persist via `chrome.storage.local`
 
+### Desktop App Connection
+
+- The extension connects to the Focus Bear desktop app through native messaging
+- The app's blocklist and focus sessions sync to the extension automatically
+- Works with Chrome, Opera GX and Firefox on Windows, and Chrome and Firefox on Mac
+- See [native-messaging/README.md](focus_bear/native-messaging/README.md) for setup, testing and the message list
+
 ### Known Limitations
 
 - Distraction blurring on Gmail and some LinkedIn pages can be inconsistent depending on page load timing

@@ -7,6 +7,8 @@
 
 import { appendFileSync } from "fs";
 import { createConnection } from "net";
+import { tmpdir } from "os";
+import { join } from "path";
 
 const SOCKET_PATH = "\\\\.\\pipe\\focusbear";
 
@@ -17,8 +19,17 @@ let pendingBlocklistCallback = null;
 let pendingBlocklistTimeout = null;
 
 // Native messaging uses length-prefixed JSON messages
+// Browsers reject (and disconnect) host messages larger than 1 MB.
+const MAX_MESSAGE_BYTES = 1024 * 1024;
+
 function sendMessage(message) {
-  const buffer = Buffer.from(JSON.stringify(message));
+  let buffer = Buffer.from(JSON.stringify(message));
+  if (buffer.length > MAX_MESSAGE_BYTES) {
+    log(`Message ${message.type} is ${buffer.length} bytes, over the 1 MB limit; not sent`);
+    buffer = Buffer.from(
+      JSON.stringify({ type: "ERROR", error: `${message.type} exceeded 1 MB message limit` }),
+    );
+  }
   const header = Buffer.alloc(4);
   header.writeUInt32LE(buffer.length, 0);
 
@@ -47,9 +58,14 @@ function readMessage(callback) {
 
 // Log to a file since stdout is used for messaging
 function log(message) {
-  const logPath = "/tmp/focusbear-native-host.log";
+  // os.tmpdir() resolves to %TEMP% on Windows; "/tmp" does not exist there.
+  const logPath = join(tmpdir(), "focusbear-native-host.log");
   const timestamp = new Date().toISOString();
-  appendFileSync(logPath, `[${timestamp}] ${message}\n`);
+  try {
+    appendFileSync(logPath, `[${timestamp}] ${message}\n`);
+  } catch {
+    // Never let logging crash the host; stdout is reserved for the browser.
+  }
 }
 
 // Connect to Electron app via Unix socket
@@ -57,6 +73,8 @@ function connectToApp() {
   log("Attempting to connect to Electron app socket...");
 
   appSocket = createConnection(SOCKET_PATH);
+  // Decode as UTF-8 across chunk boundaries so multi-byte characters are never split.
+  appSocket.setEncoding("utf8");
 
   appSocket.on("connect", () => {
     log("Connected to Electron app via socket");
@@ -66,13 +84,22 @@ function connectToApp() {
     appSocket.write(
       JSON.stringify({ type: "NATIVE_HOST_CONNECTED", browser: cachedBrowserId }) + "\n",
     );
+
+    // The browser often starts the host before the app is running, so any early
+    // GET_BLOCKLIST fails. Fetch it now that we're connected (also covers reconnects);
+    // the response is pushed to the extension as a BLOCKLIST_UPDATE.
+    appSocket.write(JSON.stringify({ type: "GET_BLOCKLIST" }) + "\n");
   });
 
+  // Large messages (e.g. long blocklists) arrive split across several chunks,
+  // so buffer until a full newline-terminated message is available.
+  let socketBuffer = "";
+
   appSocket.on("data", (data) => {
-    const lines = data
-      .toString()
-      .split("\n")
-      .filter((line) => line.trim());
+    socketBuffer += data;
+    const parts = socketBuffer.split("\n");
+    socketBuffer = parts.pop();
+    const lines = parts.filter((line) => line.trim());
 
     lines.forEach((line) => {
       try {
@@ -107,6 +134,10 @@ function connectToApp() {
             clearTimeout(pendingBlocklistTimeout);
             pendingBlocklistTimeout = null;
             cb(null, message.data);
+          } else {
+            // Unrequested response (e.g. the sync on connect): push it to the extension.
+            log(`Pushing blocklist to extension (${message.data.length} entries)`);
+            sendMessage({ type: "BLOCKLIST_UPDATE", data: message.data, timestamp: Date.now() });
           }
         } else if (
           ["SESSION_START", "SESSION_PAUSE", "SESSION_RESUME", "SESSION_CANCEL"].includes(
