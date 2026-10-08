@@ -61,6 +61,7 @@ function setInstallToggleDefaults() {
 const NATIVE_HOST = "com.focusbear.host";
 let nativePort: chrome.runtime.Port | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+declare const browser: typeof chrome | undefined;
 
 function connectNativeHost() {
   try {
@@ -71,10 +72,58 @@ function connectNativeHost() {
     return;
   }
 
+  const browserName = typeof browser != "undefined" ? "firefox" : "chrome";
+  nativePort.postMessage({ type: "PING", browser: browserName });
+
   nativePort.onMessage.addListener((message: any) => {
     if (message.type === "BLOCKLIST_RESPONSE" || message.type === "BLOCKLIST_UPDATE") {
-      browserApi.storage.local.set({ blocklist: message.data }, () => {
-        console.log("[FocusBear] blocklist synced: ", message.data.length, "entries");
+      browserApi.storage.local.get("blocklist", (data) => {
+        const existing: string[] = data.blocklist || [];
+        const incoming: string[] = message.data || [];
+        const merged = Array.from(new Set([...existing, ...incoming]));
+        browserApi.storage.local.set({ blocklist: merged }, () => {
+          console.log("[FocusBear] blocklist synced: ", merged.length, "entries");
+        });
+      });
+    } else if (message.type === "SESSION_START") {
+      const focusSessionState = buildFocusSessionState({
+        workDuration: message.durationSeconds,
+        breakDuration: 0,
+        onBreak: false,
+        task: message.intention,
+      });
+      browserApi.alarms.clear(ALARM_FOCUS_WORK);
+      browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+      browserApi.storage.local.set({ focusSessionState }, () => {
+        browserApi.alarms.create(ALARM_FOCUS_WORK, { when: focusSessionState.endTime });
+        console.log("[FocusBear] Session started from app:", message.intention);
+      });
+    } else if (message.type === "SESSION_PAUSE") {
+      browserApi.storage.local.get("focusSessionState", (data) => {
+        const state = data.focusSessionState;
+        if (!state) return;
+        const updated = { ...state, isRunning: false, timeLeft: computeTimeLeft(state) };
+        browserApi.storage.local.set({ focusSessionState: updated });
+        browserApi.alarms.clear(ALARM_FOCUS_WORK);
+        browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+        console.log("[FocusBear] Session paused from app");
+      });
+    } else if (message.type === "SESSION_RESUME") {
+      browserApi.storage.local.get("focusSessionState", (data) => {
+        const prev = data.focusSessionState;
+        if (!prev || prev.isRunning) return;
+
+        const resumed = buildResumedSessionState(prev);
+        browserApi.storage.local.set({ focusSessionState: resumed }, () => {
+          browserApi.alarms.create(ALARM_FOCUS_WORK, { when: resumed.endTime });
+          console.log("[FocusBear] Session resumed from app");
+        });
+      });
+    } else if (message.type === "SESSION_CANCEL") {
+      browserApi.alarms.clear(ALARM_FOCUS_WORK);
+      browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+      browserApi.storage.local.remove("focusSessionState", () => {
+        console.log("[FocusBear] Session cancelled from app");
       });
     }
   });
@@ -100,6 +149,10 @@ function requestBlocklistRefresh() {
   if (nativePort) {
     nativePort.postMessage({ type: "GET_BLOCKLIST" });
   } else {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     connectNativeHost();
   }
 }
@@ -212,7 +265,18 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.storage.local.set({ focusSessionState }, () => {
       const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
       browserApi.alarms.create(alarmName, { when: endTime });
+
+      // Alert the application as well
+      if (!onBreak && nativePort) {
+        nativePort.postMessage({
+          type: "REQUEST_SESSION_START",
+          durationSeconds: workDuration,
+          task: task || "",
+        });
+      }
+
       requestBlocklistRefresh();
+
       sendResponse({ success: true });
     });
 
@@ -228,6 +292,10 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Cancel alarms while paused, re-created on resume
         browserApi.alarms.clear(ALARM_FOCUS_WORK);
         browserApi.alarms.clear(ALARM_FOCUS_BREAK);
+
+        if (nativePort) {
+          nativePort.postMessage({ type: "REQUEST_SESSION_PAUSE" });
+        }
       }
       sendResponse({ success: true });
     });
@@ -243,6 +311,10 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         browserApi.storage.local.set({ focusSessionState }, () => {
           const alarmName = prev.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
           browserApi.alarms.create(alarmName, { when: endTime });
+
+          if (nativePort) {
+            nativePort.postMessage({ type: "REQUEST_SESSION_RESUME" });
+          }
         });
       }
       sendResponse({ success: true });
@@ -254,6 +326,9 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.alarms.clear(ALARM_FOCUS_WORK);
     browserApi.alarms.clear(ALARM_FOCUS_BREAK);
     browserApi.storage.local.remove("focusSessionState", () => {
+      if (nativePort) {
+        nativePort.postMessage({ type: "REQUEST_SESSION_CANCEL" });
+      }
       sendResponse({ success: true });
     });
     return true;
