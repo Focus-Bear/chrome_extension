@@ -25,4 +25,7 @@ dist-ssr
 
 # Additional /dist
 dist-firefox
-com.focusbear.host.json
+
+# Generated native messaging host manifests (contain local paths)
+native-messaging/com.focusbear.host.json
+native-messaging/com.focusbear.host.chrome.json
