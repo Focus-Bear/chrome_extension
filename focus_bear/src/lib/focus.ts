@@ -25,7 +25,8 @@ export function buildFocusSessionState(params: {
   remainingSeconds?: number;
 }): FocusSessionState {
   const now = params.now ?? Date.now();
-  const duration = params.remainingSeconds ?? (params.onBreak ? params.breakDuration : params.workDuration);
+  const duration =
+    params.remainingSeconds ?? (params.onBreak ? params.breakDuration : params.workDuration);
   return {
     task: params.task ?? "",
     workDuration: params.workDuration,
