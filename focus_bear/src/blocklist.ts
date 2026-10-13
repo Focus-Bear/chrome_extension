@@ -8,15 +8,16 @@ export const browserApi: typeof chrome =
   type FocusSessionState = {
     started?: boolean;
     onBreak?: boolean;
+    isRunning?: boolean;
   };
 
   function isInActiveFocusSession(state: FocusSessionState | undefined): boolean {
     if (!state) return false;
-    return state.started === true && state.onBreak !== true;
+    return state.started === true && state.isRunning === true && state.onBreak !== true;
   }
 
   function redirectToBlockedPage(host: string) {
-    const blockedUrl = browserApi.runtime.getURL("blocked.html") + "?d=" + encodeURIComponent(host);
+    const blockedUrl = browserApi.runtime.getURL("blocked.html") + "?d=" + encodeURIComponent(host) + "&u=" + encodeURIComponent(window.location.href);
     // Stop any ongoing parsing/loading first.
     try {
       window.stop();
