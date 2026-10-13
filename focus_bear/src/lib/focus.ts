@@ -12,7 +12,7 @@ export type FocusSessionState = {
 
 /** True only when a focus session is actively running — not on break, not paused, not absent. */
 export function isFocusActive(state: FocusSessionState | undefined): boolean {
-  return !!(state && state.started === true && state.isRunning ===  true && state.onBreak !== true);
+  return !!(state && state.started === true && state.onBreak !== true);
 }
 
 /** Build the initial state object when starting a new focus session. */
