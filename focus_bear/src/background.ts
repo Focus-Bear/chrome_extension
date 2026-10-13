@@ -86,6 +86,7 @@ function connectNativeHost() {
         });
       });
     } else if (message.type === "SESSION_START") {
+      console.log("[FocusBear] SESSION_START recieved:", JSON.stringify(message));
       const focusSessionState = buildFocusSessionState({
         workDuration: message.durationSeconds ?? message.durationSeconds,
         breakDuration: 0,
