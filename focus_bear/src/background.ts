@@ -87,10 +87,11 @@ function connectNativeHost() {
       });
     } else if (message.type === "SESSION_START") {
       const focusSessionState = buildFocusSessionState({
-        workDuration: message.durationSeconds,
+        workDuration: message.totalSeconds ?? message.durationSeconds,
         breakDuration: 0,
         onBreak: false,
         task: message.intention,
+        remainingSeconds: message.durationSeconds,
       });
       browserApi.alarms.clear(ALARM_FOCUS_WORK);
       browserApi.alarms.clear(ALARM_FOCUS_BREAK);

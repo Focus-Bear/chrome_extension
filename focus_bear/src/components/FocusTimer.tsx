@@ -96,6 +96,8 @@ const FocusTimer: React.FC = () => {
   const [breakJustStarted, setBreakJustStarted] = useState(false);
   const prevOnBreakRef = useRef<boolean | null>(null);
 
+  const [phaseTotal, setPhaseTotal] = useState<number | null>(null);
+
   // Load persisted state
   useEffect(() => {
     chrome.runtime.sendMessage({ action: "getFocusSessionState" }, (response) => {
@@ -112,6 +114,7 @@ const FocusTimer: React.FC = () => {
         setStarted(!!started);
         setOnBreak(!!onBreak);
         setTimeLeft(remaining);
+        setPhaseTotal((onBreak ? breakDuration : workDuration) ?? null);
       }
       setLoading(false);
     });
@@ -134,6 +137,7 @@ const FocusTimer: React.FC = () => {
         setStarted(false);
         setOnBreak(false);
         setBreakManuallySet(false);
+        setPhaseTotal(null);
         setWorkMin((wm) => {
           setBreakMin(Math.max(1, Math.round(wm / 5)));
           setTimeLeft(wm * 60);
@@ -151,6 +155,7 @@ const FocusTimer: React.FC = () => {
         setStarted(!!started);
         setOnBreak(!!onBreak);
         setTimeLeft(remaining);
+        setPhaseTotal((onBreak ? breakDuration : workDuration) ?? null);
       }
     };
     chrome.storage.onChanged.addListener(handler);
@@ -197,6 +202,7 @@ const FocusTimer: React.FC = () => {
       setStarted(false);
       setBreakJustStarted(false);
       setBreakManuallySet(false);
+      setPhaseTotal(null);
       setBreakMin(Math.max(1, Math.round(workMin / 5)));
       setTimeLeft(workMin * 60);
     });
@@ -220,7 +226,7 @@ const FocusTimer: React.FC = () => {
     );
   };
 
-  const totalDuration = (onBreak ? breakMin : workMin) * 60;
+  const totalDuration = phaseTotal || (onBreak ? breakMin : workMin) * 60;
   const progress = totalDuration > 0 ? 1 - timeLeft / totalDuration : 0;
   const radius = 84;
   const circumference = 2 * Math.PI * radius;
