@@ -17,7 +17,7 @@ export const browserApi: typeof chrome =
   }
 
   function redirectToBlockedPage(host: string) {
-    const blockedUrl = browserApi.runtime.getURL("blocked.html") + "?d=" + encodeURIComponent(host) + "&u=" + encodeURIComponent(window.location.href);
+    const blockedUrl = browserApi.runtime.getURL("blocked.html") + "?d=" + encodeURIComponent(host);
     // Stop any ongoing parsing/loading first.
     try {
       window.stop();
