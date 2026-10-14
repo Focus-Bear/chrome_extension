@@ -220,7 +220,7 @@ browserApi.alarms.onAlarm.addListener((alarm) => {
 
       browserApi.storage.local.remove("focusSessionState", () => {
         if (nativePort) {
-          nativePort.postMessage({ type: "REQUEST_SESSION_CANCEL"});
+          nativePort.postMessage({ type: "REQUEST_SESSION_CANCEL" });
         }
         showNotification(
           "focus_session_done_" + Date.now(),
