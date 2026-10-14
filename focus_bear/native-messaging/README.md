@@ -33,6 +33,8 @@ node native-messaging/dev-register.js <your-extension-id>
 
 On Mac, run `node native-messaging/register-mac-host.js` instead.
 
+On Linux, run `node native-messaging/register-linux-host.js` instead. Add your Chrome extension ID on the end to also register Chrome, Chromium, Brave and Opera. Without an ID, only Firefox is registered.
+
 Restart the browser once you're done.
 
 ## Step 3: Test it

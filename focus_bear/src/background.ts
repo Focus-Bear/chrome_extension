@@ -86,11 +86,13 @@ function connectNativeHost() {
         });
       });
     } else if (message.type === "SESSION_START") {
+      const onBreak = !!message.onBreak;
       const focusSessionState = buildFocusSessionState({
-        workDuration: message.durationSeconds,
-        breakDuration: 0,
-        onBreak: false,
+        workDuration: message.totalSeconds ?? message.durationSeconds,
+        breakDuration: message.breakSeconds ?? 0,
+        onBreak,
         task: message.intention,
+        remainingSeconds: message.durationSeconds,
       });
       browserApi.alarms.clear(ALARM_FOCUS_WORK);
       browserApi.alarms.clear(ALARM_FOCUS_BREAK);
@@ -115,7 +117,8 @@ function connectNativeHost() {
 
         const resumed = buildResumedSessionState(prev);
         browserApi.storage.local.set({ focusSessionState: resumed }, () => {
-          browserApi.alarms.create(ALARM_FOCUS_WORK, { when: resumed.endTime });
+          const alarmName = prev.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
+          browserApi.alarms.create(alarmName, { when: resumed.endTime });
           console.log("[FocusBear] Session resumed from app");
         });
       });
@@ -216,6 +219,9 @@ browserApi.alarms.onAlarm.addListener((alarm) => {
       if (!focusSessionState?.isRunning || !focusSessionState.onBreak) return;
 
       browserApi.storage.local.remove("focusSessionState", () => {
+        if (nativePort) {
+          nativePort.postMessage({ type: "REQUEST_SESSION_CANCEL" });
+        }
         showNotification(
           "focus_session_done_" + Date.now(),
           "Focus session complete!",
@@ -271,6 +277,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         nativePort.postMessage({
           type: "REQUEST_SESSION_START",
           durationSeconds: workDuration,
+          breakSeconds: breakDuration,
           task: task || "",
         });
       }
