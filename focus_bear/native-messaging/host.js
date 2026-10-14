@@ -282,6 +282,7 @@ readMessage((message) => {
           JSON.stringify({
             type: "REQUEST_SESSION_START",
             durationSeconds: message.durationSeconds,
+            breakSeconds: message.breakSeconds,
             task: message.task,
           }) + "\n",
         );
