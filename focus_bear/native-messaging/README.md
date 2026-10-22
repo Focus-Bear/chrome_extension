@@ -31,7 +31,7 @@ This sets it up for Firefox, Chrome and Opera GX. It uses the extension ID `incf
 node native-messaging/dev-register.js <your-extension-id>
 ```
 
-On Mac, run `node native-messaging/register-mac-host.js` instead.
+On Mac, run `node native-messaging/register-mac-host.js` instead. As on Linux, add your Chrome extension ID on the end to register Chrome as well.
 
 On Linux, run `node native-messaging/register-linux-host.js` instead. Add your Chrome extension ID on the end to also register Chrome, Chromium, Brave and Opera. Without an ID, only Firefox is registered.
 
@@ -64,20 +64,21 @@ From the extension:
 - `PING` with the browser name. The host replies with `PONG`
 - `GET_BLOCKLIST`. The app replies with `BLOCKLIST_RESPONSE`, or you get an `ERROR` if the app isn't running
 - `GET_WHITELIST` and `WHITELIST_UPDATE`
-- `REQUEST_SESSION_START` with `durationSeconds` and `task`
+- `REQUEST_SESSION_START` with `durationSeconds`, `breakSeconds` and `task`
 - `REQUEST_SESSION_PAUSE`, `REQUEST_SESSION_RESUME`, `REQUEST_SESSION_CANCEL`
 
 From the app:
 
 - `BLOCKLIST_UPDATE` with the full blocklist in `data`
 - `WHITELIST_UPDATE` and `WHITELIST_RESPONSE`
-- `SESSION_START` with `durationSeconds` and `intention` (the app's name for the task)
+- `SESSION_START` with `durationSeconds` (time left), `totalSeconds` (full session length, for the timer ring), `breakSeconds`, `onBreak` and `intention` (the app's name for the task)
 - `SESSION_PAUSE`, `SESSION_RESUME`, `SESSION_CANCEL`
 
-When the host connects to the app, it asks for the blocklist straight away, so the extension still gets it if the browser was opened first. If the app closes, the host keeps trying to reconnect every 2 seconds.
+When the host connects to the app, it asks for the blocklist straight away, so the extension still gets it if the browser was opened first. If a session or focus break is already running, the app sends a `SESSION_START` with the time left (plus `SESSION_PAUSE` if it's paused), so closing and reopening the browser doesn't lose it. If the app closes, the host keeps trying to reconnect every 2 seconds.
 
 ## If something's not working
 
 - **"Specified native messaging host not found"** in the service worker console means the host isn't registered, or the extension ID doesn't match. Run step 2 again with the right ID.
 - The host writes a log to `%TEMP%\focusbear-native-host.log` on Windows, which is the first place to look.
 - If the mock says the pipe is already in use, the real app or another mock is still running.
+- On Windows the app only accepts one browser at a time. If Chrome is connected, Firefox won't connect until Chrome is closed (and the other way round).

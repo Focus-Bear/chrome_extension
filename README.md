@@ -1,6 +1,6 @@
 # P000395SE & P000444SE Focus Bear Extension
 
-**Focus Bear** is a extension (Manifest V3) that helps users stay focused by blocking distracting websites, running Pomodoro-style focus sessions, website blocking, and reducing visual noise on sites like YouTube, LinkedIn, Gmail, Reddit, and Wikipedia.
+**Focus Bear** is a browser extension (Manifest V3) that helps users stay focused by blocking distracting websites, running Pomodoro-style focus sessions, website blocking, and reducing visual noise on sites like YouTube, LinkedIn, Gmail, Reddit, and Wikipedia.
 
 Built as a capstone project extending the [Focus Bear](https://www.focusbear.io/) productivity app ecosystem.
 
@@ -67,6 +67,14 @@ Each toggle is saved globally and persists across tabs and reloads.
 
 - Distraction blurring on Gmail and some LinkedIn pages can be inconsistent depending on page load timing
 - LinkedIn toggles can affect YouTube subscription blurring due to shared content script logic
+- Registering the native host is a manual developer step (`dev-register.js` on Windows, `register-mac-host.js` and `register-linux-host.js` on macOS and Linux). For end users this should be done by each desktop app's installer
+- The native host runs on Node.js, so Node.js needs to be installed on the computer
+- The Chrome host manifest allows the development (unpacked) extension ID. It will need the published Chrome Web Store ID before release
+- The Windows app accepts one browser connection at a time, so Chrome and Firefox can't both be connected to it at once. The Linux app supports several
+- When connected to the app, the extension updates its own session state before the app confirms a pause or cancel. If the app refuses (for example a password, Super Pomodoro mode or a teacher session on Windows), the two can go out of sync
+- Pause and stop are still available in the extension, even when the app's strictness level would normally prevent them
+- Blocklist matching checks whether a blocked site appears anywhere in the hostname, so blocking `x.com` also blocks other hostnames that contain `x.com`
+- Follow-up work is tracked as GitHub issues in this repository and the desktop app repositories
 
 ---
 
@@ -80,7 +88,7 @@ The Focus Bear extension uses a shared application codebase with browser-specifi
 - `manifests/chrome.json` and `manifests/firefox.json` define browser-specific overrides, including native messaging permissions and background configuration.
 - `scripts/build-manifests.js` combines the base manifest with each browser override. `npm run build` generates the Chrome/Chromium build in `dist/` and the Firefox build in `dist-firefox/`.
 
-Opera GX and other Chromium-based browsers, and use the Chromium build, subject to each browser's native messaging registration and compatibility requirements.
+Opera GX and other Chromium-based browsers use the Chromium build, subject to each browser's native messaging registration and compatibility requirements.
 
 ### Native messaging architecture
 The extension does not communicate directly with the desktop application's internal APIs. Instead, it opens a native messaging connection to the registered host `com.focusbear.host`, which relays messages between the browser and the desktop app over a local IPC socket.
@@ -120,7 +128,19 @@ The extension does not communicate directly with the desktop application's inter
 | macOS                | Unix domain socket: `/tmp/focusbear.sock` | Per-browser native messaging manifest files and a shell launcher are written under the user's Library/Application Support directory.|
 | Linux                | Unix domain socket: `/tmp/focusbear.sock` | Per-browser native messaging manifest files and a shell launcher are written under the user's home configuration directories.  |
 
-Chrome and other Chromium-based browsers use `allowed_origins` in the host manifest, while Firefox uses `allowed_extensions`. The registered manifest must allow the ID of the extension build being loaded. On Linux and macOS, the registration script can accept a Chrome extension ID to register Chromium-based browsers, while Firefox can be registered without that ID. For more detailed information, visit the operating system's desktop application repository.  
+Chrome and other Chromium-based browsers use `allowed_origins` in the host manifest, while Firefox uses `allowed_extensions`. The registered manifest must allow the ID of the extension build being loaded. On Linux and macOS, the registration script can accept a Chrome extension ID to register Chromium-based browsers, while Firefox can be registered without that ID. For more detailed information, visit the operating system's desktop application repository.
+
+### Reconnecting browsers
+When a browser connects, for example after it has been closed and reopened, the host fetches the current blocklist from the app straight away. If a focus session or break is already running, the app (with the desktop app changes listed below) also sends a `SESSION_START` with the time left (`durationSeconds`), the full session length (`totalSeconds`, used for the timer ring), the break length (`breakSeconds`) and whether it is on a break (`onBreak`), followed by `SESSION_PAUSE` if the session is paused. This lets the session carry on in the extension instead of restarting. The full message list is in [native-messaging/README.md](focus_bear/native-messaging/README.md).
+
+### Desktop app changes
+The desktop app side of the native messaging work lives in each app's own repository. At handover (23/10/2026) these pull requests were waiting for review by Focus Bear:
+
+| App     | Repository                                                                      | Pull requests                                                                                   |
+| ------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Windows | `Focus-Bear/windows-app-v2` (C# / WPF, main code in `Services/NativeMessagingHost.cs`) | #1686 base native messaging, then #1666 reconnecting browsers, timer ring and focus breaks |
+| macOS   | `Focus-Bear/Mac-App`                                                            | #2893                                                                                           |
+| Linux   | `Focus-Bear/Linux-App`                                                          | Pull request from the team's fork                                                               |
 
 ## Technologies
 
@@ -155,6 +175,8 @@ npm test
 
 Chrome API wiring (alarms, storage, message handlers) is not unit tested — that would require a Chrome API mock layer and is out of scope for this project.
 
+**Desktop app connection:** `native-messaging/mock-app.js` stands in for the desktop app, so the extension, native host and messages can be tested without one (see [native-messaging/README.md](focus_bear/native-messaging/README.md)). End-to-end testing against the Windows, macOS and Linux apps is recorded in the project's test plan.
+
 ---
 
 ## CI Pipeline
@@ -175,8 +197,9 @@ All three must pass before a PR can be merged.
 
 ### Prerequisites
 
-- Node.js 24+
-- Chrome (or any Chromium-based browser)
+- Node.js 24+ (also needed to run the native messaging host)
+- Chrome, Opera GX or another Chromium-based browser, and/or Firefox
+- Optional: the Focus Bear desktop app to test syncing, or `native-messaging/mock-app.js` in its place
 
 ### Install and build
 
@@ -197,8 +220,18 @@ npm run build
 ### Load in Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`
-2. Click **Load a temporary extension**
-3. Load the `manifest.json` within the `/firefox-dist` folder
+2. Click **Load Temporary Add-on**
+3. Select the `manifest.json` inside the `focus_bear/dist-firefox` folder
+
+### Load in Opera GX
+
+1. Open `opera://extensions`
+2. Turn on **Developer mode**
+3. Click **Load unpacked** and select the same `focus_bear/dist` folder as Chrome
+
+### Connect to the desktop app
+
+Register the native host for your operating system, restart the browser and start the Focus Bear app. Step-by-step setup, testing with the mock app and troubleshooting are in [native-messaging/README.md](focus_bear/native-messaging/README.md).
 
 After any code changes: run `npm run build` again, then click **Reload** on the extension card and refresh any tabs you're testing.
 
@@ -241,9 +274,13 @@ chrome_extension/                     # Git repo root (this README lives here)
     |   ├── target.js                 # Declares Chrome and Firefox build targets
     ├── native-messaging/       
     |   ├── host.js                   # Relays messages between browser and desktop app
-    |   ├── dev-register.js           # Registers development host on Windows
+    |   ├── host-launcher.cmd         # Starts host.js with Node on Windows
+    |   ├── dev-register.js           # Registers development host on Windows (Firefox and Chrome)
+    |   ├── register-firefox-host.js  # Windows Firefox registration, used by dev-register.js
+    |   ├── register-chrome-host.js   # Windows Chrome and Opera GX registration, used by dev-register.js
     |   ├── register-mac-host.js      # Registers host on macOS
     |   ├── register-linux-host.js    # Registers host on Linux
+    |   ├── mock-app.js               # Stands in for the desktop app when testing
     |   ├── README.md                 # Setup guide
     ├── public/
     │   ├── _locales/                 # en, es language strings
@@ -310,9 +347,12 @@ chrome_extension/                     # Git repo root (this README lives here)
 ### Unified Extension Update - Browser Compatibility and Native Messaging
 - Shared browser codebase with separate Chrome/Chromium and Firefox manifest builds
 - Native messaging connection between the extension and Focus Bear desktop app on Windows, macOS and Linux
-- Automatic blocklist syncrhonisation and focus-session state updates between the extension and desktop app
+- Automatic blocklist synchronisation and focus-session state updates between the extension and desktop app
 - Host registration scripts and platform-specific launcher for Windows, macOS and Linux
 - Expanded browser support to Chromium-based browsers
+- Focus sessions and focus breaks carry on when the browser is closed and reopened mid-session
+- Timer ring keeps the full session length after the browser reconnects
+- Focus breaks synced between the extension and the desktop app
 
 ### [1.1] — 12/6/2026
 
