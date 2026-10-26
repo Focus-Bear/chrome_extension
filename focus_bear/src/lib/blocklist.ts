@@ -1,3 +1,14 @@
+/**
+ * The list to store for a BLOCKLIST_UPDATE / BLOCKLIST_RESPONSE. Every app (Mac, Windows, Linux)
+ * sends its complete current list, so it replaces the stored one; merging kept removed sites
+ * blocked forever. A payload that is not a list returns null so the caller ignores it instead of
+ * wiping the user's blocklist.
+ */
+export function blocklistFromUpdate(data: unknown): string[] | null {
+  if (!Array.isArray(data)) return null;
+  return data.filter((entry): entry is string => typeof entry === "string");
+}
+
 /** Check whether a URL's hostname matches any entry in the blocklist. */
 export function urlIsBlocklisted(
   url: string,

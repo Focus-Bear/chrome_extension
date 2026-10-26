@@ -10,6 +10,18 @@ export type FocusSessionState = {
   task?: string;
 };
 
+export const ALARM_FOCUS_WORK = "focus_work";
+export const ALARM_FOCUS_BREAK = "focus_break";
+
+/** A SESSION_START sent by the app. On a break, durationSeconds is the time left in the break. */
+export type AppSessionStartMessage = {
+  durationSeconds?: number;
+  totalSeconds?: number;
+  breakSeconds?: number;
+  onBreak?: boolean;
+  intention?: string;
+};
+
 /** True only when a focus session is actively running — not on break, not paused, not absent. */
 export function isFocusActive(state: FocusSessionState | undefined): boolean {
   return !!(state && state.started === true && state.onBreak !== true);
@@ -49,4 +61,25 @@ export function buildResumedSessionState(prev: FocusSessionState, now?: number):
   const t = now ?? Date.now();
   const endTime = t + (prev.timeLeft ?? 0) * 1000;
   return { ...prev, startTime: t, endTime, isRunning: true };
+}
+
+/** Build the session state for a SESSION_START from the app, which may join a session mid-way. */
+export function buildSessionStateFromApp(
+  message: AppSessionStartMessage,
+  now?: number,
+): FocusSessionState {
+  const durationSeconds = message.durationSeconds ?? 0;
+  return buildFocusSessionState({
+    workDuration: message.totalSeconds ?? durationSeconds,
+    breakDuration: message.breakSeconds ?? 0,
+    onBreak: !!message.onBreak,
+    task: message.intention,
+    remainingSeconds: message.durationSeconds,
+    now,
+  });
+}
+
+/** The alarm that ends the session's current phase: the work alarm starts the break, the break alarm ends the session. */
+export function phaseEndAlarmName(state: FocusSessionState): string {
+  return state.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
 }

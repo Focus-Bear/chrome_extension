@@ -4,6 +4,10 @@ import {
   buildFocusSessionState,
   computeTimeLeft,
   buildResumedSessionState,
+  buildSessionStateFromApp,
+  phaseEndAlarmName,
+  ALARM_FOCUS_WORK,
+  ALARM_FOCUS_BREAK,
 } from "../focus.js";
 
 // ─── isFocusActive ────────────────────────────────────────────────────────────
@@ -184,5 +188,48 @@ describe("pause → resume round trip", () => {
 
     expect(resumed.isRunning).toBe(true);
     expect(resumed.endTime).toBe(RESUMED_AT + 20 * 60 * 1000);
+  });
+});
+
+// ─── SESSION_START from the app ───────────────────────────────────────────────
+
+describe("buildSessionStateFromApp", () => {
+  const NOW = 5_000_000;
+
+  it("resumes a break mid-way: ends when the break's time left runs out, on the break alarm", () => {
+    const state = buildSessionStateFromApp(
+      { durationSeconds: 120, totalSeconds: 25 * 60, breakSeconds: 5 * 60, onBreak: true },
+      NOW,
+    );
+    expect(state.onBreak).toBe(true);
+    expect(state.endTime).toBe(NOW + 120 * 1000);
+    expect(state.breakDuration).toBe(5 * 60);
+    expect(phaseEndAlarmName(state)).toBe(ALARM_FOCUS_BREAK);
+  });
+
+  it("uses the full break length when a break is sent without the time left", () => {
+    const state = buildSessionStateFromApp({ breakSeconds: 300, onBreak: true }, NOW);
+    expect(state.endTime).toBe(NOW + 300 * 1000);
+    expect(phaseEndAlarmName(state)).toBe(ALARM_FOCUS_BREAK);
+  });
+
+  it("leaves a normal work session unchanged: work alarm at the time left, break kept for later", () => {
+    const state = buildSessionStateFromApp(
+      { durationSeconds: 600, totalSeconds: 25 * 60, breakSeconds: 5 * 60, intention: "write" },
+      NOW,
+    );
+    expect(state.onBreak).toBe(false);
+    expect(state.endTime).toBe(NOW + 600 * 1000);
+    expect(state.workDuration).toBe(25 * 60);
+    expect(state.breakDuration).toBe(5 * 60);
+    expect(state.task).toBe("write");
+    expect(phaseEndAlarmName(state)).toBe(ALARM_FOCUS_WORK);
+  });
+
+  it("treats a start without totalSeconds as a fresh session of durationSeconds", () => {
+    const state = buildSessionStateFromApp({ durationSeconds: 1500 }, NOW);
+    expect(state.workDuration).toBe(1500);
+    expect(state.breakDuration).toBe(0);
+    expect(phaseEndAlarmName(state)).toBe(ALARM_FOCUS_WORK);
   });
 });
