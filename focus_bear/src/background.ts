@@ -3,8 +3,12 @@ import {
   buildFocusSessionState,
   computeTimeLeft,
   buildResumedSessionState,
+  buildSessionStateFromApp,
+  phaseEndAlarmName,
+  ALARM_FOCUS_WORK,
+  ALARM_FOCUS_BREAK,
 } from "./lib/focus.js";
-import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
+import { urlIsBlocklisted, buildBlockedUrl, blocklistFromUpdate } from "./lib/blocklist.js";
 import { browserApi } from "./lib/browserApi.js";
 
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
@@ -77,27 +81,22 @@ function connectNativeHost() {
 
   nativePort.onMessage.addListener((message: any) => {
     if (message.type === "BLOCKLIST_RESPONSE" || message.type === "BLOCKLIST_UPDATE") {
-      browserApi.storage.local.get("blocklist", (data) => {
-        const existing: string[] = data.blocklist || [];
-        const incoming: string[] = message.data || [];
-        const merged = Array.from(new Set([...existing, ...incoming]));
-        browserApi.storage.local.set({ blocklist: merged }, () => {
-          console.log("[FocusBear] blocklist synced: ", merged.length, "entries");
-        });
+      const blocklist = blocklistFromUpdate(message.data);
+      if (!blocklist) {
+        console.warn("[FocusBear] ignoring malformed blocklist message:", message.type);
+        return;
+      }
+      browserApi.storage.local.set({ blocklist }, () => {
+        console.log("[FocusBear] blocklist synced: ", blocklist.length, "entries");
       });
     } else if (message.type === "SESSION_START") {
-      const onBreak = !!message.onBreak;
-      const focusSessionState = buildFocusSessionState({
-        workDuration: message.totalSeconds ?? message.durationSeconds,
-        breakDuration: message.breakSeconds ?? 0,
-        onBreak,
-        task: message.intention,
-        remainingSeconds: message.durationSeconds,
-      });
+      const focusSessionState = buildSessionStateFromApp(message);
       browserApi.alarms.clear(ALARM_FOCUS_WORK);
       browserApi.alarms.clear(ALARM_FOCUS_BREAK);
       browserApi.storage.local.set({ focusSessionState }, () => {
-        browserApi.alarms.create(ALARM_FOCUS_WORK, { when: focusSessionState.endTime });
+        browserApi.alarms.create(phaseEndAlarmName(focusSessionState), {
+          when: focusSessionState.endTime,
+        });
         console.log("[FocusBear] Session started from app:", message.intention);
       });
     } else if (message.type === "SESSION_PAUSE") {
@@ -117,8 +116,7 @@ function connectNativeHost() {
 
         const resumed = buildResumedSessionState(prev);
         browserApi.storage.local.set({ focusSessionState: resumed }, () => {
-          const alarmName = prev.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
-          browserApi.alarms.create(alarmName, { when: resumed.endTime });
+          browserApi.alarms.create(phaseEndAlarmName(resumed), { when: resumed.endTime });
           console.log("[FocusBear] Session resumed from app");
         });
       });
@@ -179,8 +177,6 @@ function showNotification(id: string, title: string, message: string) {
 // Service workers can be terminated by Chrome at any time; alarms persist and
 // will wake the service worker when they fire.
 
-const ALARM_FOCUS_WORK = "focus_work";
-const ALARM_FOCUS_BREAK = "focus_break";
 const ALARM_UNFOCUS_PREFIX = "unfocus_";
 
 browserApi.alarms.onAlarm.addListener((alarm) => {
@@ -269,8 +265,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
     browserApi.alarms.clear(ALARM_FOCUS_BREAK);
 
     browserApi.storage.local.set({ focusSessionState }, () => {
-      const alarmName = onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
-      browserApi.alarms.create(alarmName, { when: endTime });
+      browserApi.alarms.create(phaseEndAlarmName(focusSessionState), { when: endTime });
 
       // Alert the application as well
       if (!onBreak && nativePort) {
@@ -316,8 +311,7 @@ browserApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const focusSessionState = buildResumedSessionState(prev);
         const { endTime } = focusSessionState;
         browserApi.storage.local.set({ focusSessionState }, () => {
-          const alarmName = prev.onBreak ? ALARM_FOCUS_BREAK : ALARM_FOCUS_WORK;
-          browserApi.alarms.create(alarmName, { when: endTime });
+          browserApi.alarms.create(phaseEndAlarmName(focusSessionState), { when: endTime });
 
           if (nativePort) {
             nativePort.postMessage({ type: "REQUEST_SESSION_RESUME" });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { urlIsBlocklisted, buildBlockedUrl } from "../blocklist.js";
+import { urlIsBlocklisted, buildBlockedUrl, blocklistFromUpdate } from "../blocklist.js";
 
 // ─── urlIsBlocklisted ─────────────────────────────────────────────────────────
 
@@ -83,5 +83,32 @@ describe("buildBlockedUrl", () => {
 
   it("URL-encodes a hostname with slashes", () => {
     expect(buildBlockedUrl(BASE, "bad/host")).toBe(`${BASE}?d=bad%2Fhost`);
+  });
+});
+
+// ─── blocklistFromUpdate ──────────────────────────────────────────────────────
+
+describe("blocklistFromUpdate", () => {
+  it("replaces the list, so a site removed in the app is no longer blocked", () => {
+    const before = blocklistFromUpdate(["reddit.com", "youtube.com"]);
+    expect(urlIsBlocklisted("https://www.youtube.com/", before ?? []).blocked).toBe(true);
+
+    const after = blocklistFromUpdate(["reddit.com"]);
+    expect(after).toEqual(["reddit.com"]);
+    expect(urlIsBlocklisted("https://www.youtube.com/", after ?? []).blocked).toBe(false);
+    expect(urlIsBlocklisted("https://www.reddit.com/", after ?? []).blocked).toBe(true);
+  });
+
+  it("returns an empty list when the app clears every site", () => {
+    expect(blocklistFromUpdate([])).toEqual([]);
+  });
+
+  it("returns null for a malformed payload so the stored list is kept", () => {
+    expect(blocklistFromUpdate(undefined)).toBeNull();
+    expect(blocklistFromUpdate("reddit.com")).toBeNull();
+  });
+
+  it("drops entries that are not strings", () => {
+    expect(blocklistFromUpdate(["reddit.com", 42, null])).toEqual(["reddit.com"]);
   });
 });
