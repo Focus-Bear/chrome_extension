@@ -1,3 +1,13 @@
+import {
+  CARD_BOUNDARY_SELECTOR,
+  FEED_SELECTOR,
+  LABELLED_COUNT_BADGE_SELECTORS,
+  RIGHT_RAIL_CARDS,
+  cardKindForHeading,
+  isCountBadgeText,
+  type RightRailCardKind,
+} from "./rightRail.js";
+
 declare const browser: typeof chrome | undefined;
 
 (() => {
@@ -30,53 +40,56 @@ declare const browser: typeof chrome | undefined;
 
   const isHomeFeed = () => window.location.pathname.startsWith("/feed");
 
-  const isLikelyNewsCard = (el: HTMLElement) => {
-    const rect = el.getBoundingClientRect();
-    const rightSide = rect.left > window.innerWidth * 0.5;
-    const cardLikeSize =
-      rect.width >= 220 && rect.width <= 450 && rect.height >= 180 && rect.height <= 1200;
-    return rightSide && cardLikeSize;
+  /** What marks a right-rail card: its heading's text node, or a link only that card holds. */
+  type CardAnchor = { kind: RightRailCardKind; element: HTMLElement };
+
+  const findHeadingAnchors = (): CardAnchor[] => {
+    const anchors: CardAnchor[] = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const kind = cardKindForHeading(node.nodeValue || "");
+      if (kind && node.parentElement) anchors.push({ kind, element: node.parentElement });
+    }
+    return anchors;
+  };
+
+  const findLinkAnchors = (): CardAnchor[] =>
+    RIGHT_RAIL_CARDS.flatMap(({ kind, linkSelector }) =>
+      Array.from(document.querySelectorAll<HTMLElement>(linkSelector)).map((element) => ({
+        kind,
+        element,
+      })),
+    );
+
+  /** A card grows while it stays clear of the page frame, the feed and the other cards. */
+  const canGrowInto = (parent: HTMLElement, kind: RightRailCardKind, anchors: CardAnchor[]) =>
+    !parent.matches(CARD_BOUNDARY_SELECTOR) &&
+    !parent.matches(FEED_SELECTOR) &&
+    !parent.querySelector(FEED_SELECTOR) &&
+    !anchors.some((other) => other.kind !== kind && parent.contains(other.element));
+
+  const cardAround = (anchor: CardAnchor, anchors: CardAnchor[]): HTMLElement => {
+    let card = anchor.element;
+    let parent = card.parentElement;
+    while (parent && canGrowInto(parent, anchor.kind, anchors)) {
+      card = parent;
+      parent = card.parentElement;
+    }
+    return card;
   };
 
   /** Find right-rail cards like "LinkedIn News" and "Today's puzzles". */
   const findRightRailCards = (): HTMLElement[] => {
-    if (!isHomeFeed()) return [];
-
-    // Text-first targeting: find nodes whose textContent contains either heading.
-    const baseNodes = Array.from(
-      document.querySelectorAll<HTMLElement>("div, section, aside"),
-    ).filter((el) => {
-      const text = (el.textContent || "").toLowerCase();
-      return text.includes("linkedin news") || text.includes("today's puzzles");
-    });
-    if (baseNodes.length === 0) return [];
-
-    const candidates: HTMLElement[] = [];
-    baseNodes.forEach((node) => {
-      // Walk up to a card-like ancestor and keep the first good match.
-      let current: HTMLElement | null = node;
-      for (let i = 0; i < 6 && current; i += 1) {
-        const text = (current.textContent || "").toLowerCase();
-        if (
-          isLikelyNewsCard(current) &&
-          (text.includes("top stories") ||
-            text.includes("show more news") ||
-            text.includes("today's puzzles"))
-        ) {
-          // De-dupe by DOM identity.
-          if (!candidates.includes(current)) candidates.push(current);
-          break;
-        }
-        current = current.parentElement;
-      }
-    });
-
-    if (candidates.length === 0) return [];
-
-    // Prefer the smallest card-like ancestors (tightest blur scope), but keep all unique matches.
-    return candidates.sort(
-      (a, b) => a.clientWidth * a.clientHeight - b.clientWidth * b.clientHeight,
+    if (!isHomeFeed() || !document.body) return [];
+    const anchors = [...findHeadingAnchors(), ...findLinkAnchors()].filter(
+      (anchor) => !anchor.element.closest(FEED_SELECTOR),
     );
+    const cards: HTMLElement[] = [];
+    anchors.forEach((anchor) => {
+      if (cards.some((card) => card.contains(anchor.element))) return;
+      cards.push(cardAround(anchor, anchors));
+    });
+    return cards;
   };
 
   const clearNewsBlur = () => {
@@ -177,8 +190,7 @@ declare const browser: typeof chrome | undefined;
     });
 
     const isBadgeBubble = (el: HTMLElement) => {
-      const text = (el.textContent || "").trim();
-      if (!/^\d+$/.test(text)) return false;
+      if (!isCountBadgeText(el.textContent || "")) return false;
       const rect = el.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return false;
       // Keep this strict so we never hide icons/containers.
@@ -210,6 +222,10 @@ declare const browser: typeof chrome | undefined;
       const itemContainer = item.closest<HTMLElement>("li, nav");
       if (itemContainer) collectBadgeCandidates(itemContainer);
     });
+
+    document
+      .querySelectorAll<HTMLElement>(LABELLED_COUNT_BADGE_SELECTORS.join(","))
+      .forEach((badge) => seen.add(badge));
 
     seen.forEach((node) => {
       node.classList.add(HIDE_BADGE_CLASS);
