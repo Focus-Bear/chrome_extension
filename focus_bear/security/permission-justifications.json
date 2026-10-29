@@ -1,0 +1,21 @@
+{
+  "$comment": "ST4S BE2/BE3 evidence: why the extension needs each permission it requests. scripts/check-permissions.js fails the build when a manifest requests something not justified here, or when a justification is left for something no longer requested.",
+  "permissions": {
+    "storage": "Saves the student's own settings on their device: focus-timer durations, the personal blocklist, blur preferences and the current focus or intention session, so they survive the popup closing and browser restarts.",
+    "tabs": "Reads the address of each tab as it loads (tabs.onUpdated / tabs.query) to decide on the device whether it is on the student's own blocklist during their focus session, and redirects a blocked tab to the extension's blocked page (tabs.update). Also messages open tabs when the student changes blur settings. No address is sent anywhere.",
+    "notifications": "Shows the end-of-focus and end-of-break notifications for the student's own Pomodoro timer.",
+    "alarms": "Ends focus, break and intention sessions on time even when the background worker has been suspended.",
+    "nativeMessaging": "Chrome and Firefox only. Lets the installed Focus Bear desktop app start and stop the student's focus session in the browser, so the desktop and browser stay in step. Talks only to the com.focusbear.host native host installed with the desktop app."
+  },
+  "host_permissions": {
+    "*://*.youtube.com/*": "Hides distracting YouTube elements (recommendations, Shorts) the student chose to blur, and shows the intention prompt.",
+    "*://*.linkedin.com/*": "Blurs the LinkedIn feed the student chose to hide.",
+    "*://*.wikipedia.org/*": "Shows the link preview prompt that stops the student wandering off-topic on Wikipedia.",
+    "*://mail.google.com/*": "Hides the Gmail inbox tabs the student chose to blur.",
+    "*://*.reddit.com/*": "Shows the intention prompt and blurs the Reddit feed.",
+    "*://*.x.com/*": "Shows the intention prompt and blurs the X feed."
+  },
+  "content_script_matches": {
+    "<all_urls>": "Runs only the blocklist script (blocklist.js) at document start so a site on the student's own blocklist is covered before it renders during a focus session. It reads no page content and sends nothing off the device. This is what Chrome shows as \"Read and change all your data on all websites\"."
+  }
+}
