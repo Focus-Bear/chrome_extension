@@ -5,12 +5,12 @@
 `.github/workflows/security-scan.yml` runs when a release is published or a `v*` tag is pushed, at 02:00 UTC on the
 1st of every month, and on demand ("Run workflow").
 
-| Check | What it covers |
-|---|---|
-| `npm audit` | Known vulnerabilities in the npm dependency tree. |
-| OSV-Scanner | `package-lock.json` against the OSV database (GitHub, npm and other advisories). |
-| Semgrep `p/javascript`, `p/typescript`, `p/secrets` | The source and the built `dist/` bundle that ships to the stores. |
-| `scripts/check-permissions.js` | Every requested permission has a justification (BE3). |
+| Check                                               | What it covers                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `npm audit`                                         | Known vulnerabilities in the npm dependency tree.                                |
+| OSV-Scanner                                         | `package-lock.json` against the OSV database (GitHub, npm and other advisories). |
+| Semgrep `p/javascript`, `p/typescript`, `p/secrets` | The source and the built `dist/` bundle that ships to the stores.                |
+| `scripts/check-permissions.js`                      | Every requested permission has a justification (BE3).                            |
 
 Reports are uploaded as run artifacts and kept for 90 days. **Before each store submission, run the workflow and
 save that run's artifacts in the ST4S evidence pack**, so the release-time scan outlives artifact retention. High or
