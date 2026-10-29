@@ -1,0 +1,121 @@
+# ST4S AP1#: a vulnerability scan of the extension on every release and at least monthly.
+# Results are kept as workflow artifacts (the AP1 evidence), and high/critical findings open an issue.
+name: Security scan
+
+on:
+  release:
+    types: [published]
+  push:
+    tags: ["v*"]
+  schedule:
+    # 02:00 UTC on the 1st of every month.
+    - cron: "0 2 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  REPORT_DIR: security-reports
+  REPORT_RETENTION_DAYS: 90
+  FINDINGS_ISSUE_TITLE: "Security scan: high or critical findings"
+
+jobs:
+  dependencies:
+    name: Dependency audit (npm audit + OSV-Scanner)
+    runs-on: ubuntu-latest
+    outputs:
+      high_or_critical: ${{ steps.audit.outputs.high_or_critical }}
+    defaults:
+      run:
+        working-directory: focus_bear
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
+      - run: npm ci
+      - name: npm audit
+        id: audit
+        run: |
+          mkdir -p "../$REPORT_DIR"
+          npm audit --json > "../$REPORT_DIR/npm-audit.json" || true
+          high_or_critical=$(jq '(.metadata.vulnerabilities.high // 0) + (.metadata.vulnerabilities.critical // 0)' "../$REPORT_DIR/npm-audit.json")
+          echo "high_or_critical=$high_or_critical" >> "$GITHUB_OUTPUT"
+          echo "npm audit: $high_or_critical high/critical" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check every permission is justified (ST4S BE3)
+        run: node scripts/check-permissions.js
+      - name: OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --lockfile=focus_bear/package-lock.json
+            --format=json
+            --output=security-reports/osv-scanner.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-${{ github.run_id }}
+          path: ${{ env.REPORT_DIR }}
+          retention-days: ${{ env.REPORT_RETENTION_DAYS }}
+
+  static-analysis:
+    name: Static analysis of the source and built bundle (Semgrep)
+    runs-on: ubuntu-latest
+    outputs:
+      errors: ${{ steps.semgrep.outputs.errors }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: focus_bear/package-lock.json
+      - name: Build the extension that ships to the stores
+        working-directory: focus_bear
+        run: npm ci && npm run build
+      - name: Semgrep (JavaScript, TypeScript, browser-extension rules)
+        id: semgrep
+        run: |
+          mkdir -p "$REPORT_DIR"
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:latest semgrep scan \
+            --config p/javascript --config p/typescript --config p/secrets \
+            --metrics off --sarif --output "$REPORT_DIR/semgrep.sarif" focus_bear/src focus_bear/public focus_bear/dist || true
+          errors=$(jq '[.runs[].results[] | select(.level == "error")] | length' "$REPORT_DIR/semgrep.sarif")
+          echo "errors=$errors" >> "$GITHUB_OUTPUT"
+          echo "Semgrep: $errors error-level findings" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-${{ github.run_id }}
+          path: ${{ env.REPORT_DIR }}
+          retention-days: ${{ env.REPORT_RETENTION_DAYS }}
+
+  report-findings:
+    name: Open or update an issue for high/critical findings
+    needs: [dependencies, static-analysis]
+    if: needs.dependencies.outputs.high_or_critical != '0' || needs.static-analysis.outputs.errors != '0'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      HIGH_OR_CRITICAL: ${{ needs.dependencies.outputs.high_or_critical }}
+      SEMGREP_ERRORS: ${{ needs.static-analysis.outputs.errors }}
+    steps:
+      - name: Comment on the open findings issue, or open one
+        run: |
+          body="Scan run: $RUN_URL
+          - npm audit high/critical: $HIGH_OR_CRITICAL
+          - Semgrep error-level findings: $SEMGREP_ERRORS
+
+          Reports are in the run's artifacts. Fix or record a risk decision within the patch timeframes (2 weeks, or 48 hours when an exploit exists)."
+          existing=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "in:title \"$FINDINGS_ISSUE_TITLE\"" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" -R "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create -R "$GITHUB_REPOSITORY" --title "$FINDINGS_ISSUE_TITLE" --body "$body"
+          fi

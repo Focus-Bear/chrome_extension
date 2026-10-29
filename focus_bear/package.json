@@ -13,7 +13,8 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:permissions": "node scripts/check-permissions.js"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.13",
