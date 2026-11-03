@@ -16,6 +16,9 @@ const SOCKET_PATH = process.platform === "win32" ? "\\\\.\\pipe\\focusbear" : "/
 let appSocket = null;
 let isConnectedToApp = false;
 let cachedBrowserId = null;
+// Tab reporting (TAB_URL / NAVIGATE_TAB), announced by the extension in its PING.
+let cachedProtocolVersion = null;
+let cachedCapabilities = null;
 let pendingBlocklistCallback = null;
 let pendingBlocklistTimeout = null;
 
@@ -83,7 +86,12 @@ function connectToApp() {
 
     // Send initial handshake — include cached browser ID if known (covers reconnects)
     appSocket.write(
-      JSON.stringify({ type: "NATIVE_HOST_CONNECTED", browser: cachedBrowserId }) + "\n",
+      JSON.stringify({
+        type: "NATIVE_HOST_CONNECTED",
+        browser: cachedBrowserId,
+        protocolVersion: cachedProtocolVersion,
+        capabilities: cachedCapabilities,
+      }) + "\n",
     );
 
     // The browser often starts the host before the app is running, so any early
@@ -141,9 +149,13 @@ function connectToApp() {
             sendMessage({ type: "BLOCKLIST_UPDATE", data: message.data, timestamp: Date.now() });
           }
         } else if (
-          ["SESSION_START", "SESSION_PAUSE", "SESSION_RESUME", "SESSION_CANCEL"].includes(
-            message.type,
-          )
+          [
+            "SESSION_START",
+            "SESSION_PAUSE",
+            "SESSION_RESUME",
+            "SESSION_CANCEL",
+            "NAVIGATE_TAB",
+          ].includes(message.type)
         ) {
           log(`Forwarding ${message.type} to extension`);
           sendMessage(message);
@@ -234,6 +246,8 @@ readMessage((message) => {
     case "PING":
       log("Received ping, sending pong");
       if (message.browser) cachedBrowserId = message.browser;
+      if (message.protocolVersion) cachedProtocolVersion = message.protocolVersion;
+      if (Array.isArray(message.capabilities)) cachedCapabilities = message.capabilities;
       sendMessage({
         type: "PONG",
         timestamp: Date.now(),
@@ -244,9 +258,19 @@ readMessage((message) => {
           JSON.stringify({
             type: "PING",
             browser: cachedBrowserId || "unknown",
+            protocolVersion: cachedProtocolVersion,
+            capabilities: cachedCapabilities,
             timestamp: Date.now(),
           }) + "\n",
         );
+      }
+      break;
+
+    case "TAB_URL":
+    case "NAVIGATE_RESULT":
+      // Forwarded as is; dropped while the app isn't running (the next tab change reports again).
+      if (isConnectedToApp && appSocket) {
+        appSocket.write(JSON.stringify(message) + "\n");
       }
       break;
 
