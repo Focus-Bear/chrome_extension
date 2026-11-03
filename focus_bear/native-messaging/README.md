@@ -74,6 +74,15 @@ From the app:
 - `SESSION_START` with `durationSeconds` (time left), `totalSeconds` (full session length, for the timer ring), `breakSeconds`, `onBreak` and `intention` (the app's name for the task)
 - `SESSION_PAUSE`, `SESSION_RESUME`, `SESSION_CANCEL`
 
+### Tab reporting (protocol version 2)
+
+The desktop app can check the page in front with its own rules (focus sessions, blocking schedules, super-distracting sites, the AI check) instead of reading the browser's address bar. The Windows app needs this for Firefox, whose address bar it can't read reliably in every version and language.
+
+- The extension's `PING` carries `protocolVersion: 2` and `capabilities: ["tab_url", "navigate_tab"]`. The host passes them on in `NATIVE_HOST_CONNECTED` and in the `PING` it forwards to the app.
+- From the extension: `TAB_URL` with `url`, `title`, `tabId`, `windowId`, `incognito` and `reason` (`connect`, `activated`, `updated` or `focus`). It's sent for the active tab of the last focused window whenever that changes.
+- From the app: `NAVIGATE_TAB` with `tabId`, `url`, `expectedUrl` and `requestId`. The extension moves the tab only if it's still on `expectedUrl`, and only to an `http(s)` address. Firefox doesn't let extensions open `file:` pages, so the app opens its own block page itself. The extension answers with `NAVIGATE_RESULT` (`requestId`, `applied`, `error`).
+- An app that blocks from `TAB_URL` reports may send that browser an empty blocklist, so the extension doesn't redirect a site before the app has asked the user for an intention.
+
 When the host connects to the app, it asks for the blocklist straight away, so the extension still gets it if the browser was opened first. If a session or focus break is already running, the app sends a `SESSION_START` with the time left (plus `SESSION_PAUSE` if it's paused), so closing and reopening the browser doesn't lose it. If the app closes, the host keeps trying to reconnect every 2 seconds.
 
 ## If something's not working

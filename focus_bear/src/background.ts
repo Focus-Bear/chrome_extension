@@ -6,6 +6,14 @@ import {
 } from "./lib/focus.js";
 import { urlIsBlocklisted, buildBlockedUrl } from "./lib/blocklist.js";
 import { browserApi } from "./lib/browserApi.js";
+import {
+  TAB_CAPABILITIES,
+  TAB_PROTOCOL_VERSION,
+  buildTabReport,
+  isReportableUpdate,
+  parseNavigateRequest,
+  tabStillOn,
+} from "./lib/tabReport.js";
 
 // Fires on a real install or version-upgrade. (only when you first load or bump the version field in manifest.json)
 browserApi.runtime.onInstalled.addListener((details) => {
@@ -73,7 +81,12 @@ function connectNativeHost() {
   }
 
   const browserName = typeof browser != "undefined" ? "firefox" : "chrome";
-  nativePort.postMessage({ type: "PING", browser: browserName });
+  nativePort.postMessage({
+    type: "PING",
+    browser: browserName,
+    protocolVersion: TAB_PROTOCOL_VERSION,
+    capabilities: TAB_CAPABILITIES,
+  });
 
   nativePort.onMessage.addListener((message: any) => {
     if (message.type === "BLOCKLIST_RESPONSE" || message.type === "BLOCKLIST_UPDATE") {
@@ -122,6 +135,8 @@ function connectNativeHost() {
           console.log("[FocusBear] Session resumed from app");
         });
       });
+    } else if (message.type === "NAVIGATE_TAB") {
+      handleNavigateRequest(message);
     } else if (message.type === "SESSION_CANCEL") {
       browserApi.alarms.clear(ALARM_FOCUS_WORK);
       browserApi.alarms.clear(ALARM_FOCUS_BREAK);
@@ -138,6 +153,7 @@ function connectNativeHost() {
   });
 
   nativePort.postMessage({ type: "GET_BLOCKLIST" });
+  reportActiveTab("connect");
 }
 
 function scheduleReconnect() {
@@ -161,6 +177,63 @@ function requestBlocklistRefresh() {
 }
 
 connectNativeHost();
+
+// ------------------------------------------------ Tab reporting ------------------------------------------------ //
+// The desktop app checks the page in front against its own rules (sessions, schedules, super-distracting
+// sites, the AI check) and may ask for the tab to be sent elsewhere. See lib/tabReport.ts.
+
+function reportActiveTab(reason: string) {
+  if (!nativePort) return;
+  browserApi.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+    const report = buildTabReport(tabs && tabs[0], reason);
+    if (report && nativePort) {
+      try {
+        nativePort.postMessage(report);
+      } catch (err) {
+        console.warn("[FocusBear] could not report the tab:", err);
+      }
+    }
+  });
+}
+
+browserApi.tabs.onActivated.addListener(() => reportActiveTab("activated"));
+
+browserApi.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
+  if (isReportableUpdate(changeInfo, tab)) reportActiveTab("updated");
+});
+
+browserApi.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId !== browserApi.windows.WINDOW_ID_NONE) reportActiveTab("focus");
+});
+
+function handleNavigateRequest(message: any) {
+  const request = parseNavigateRequest(message);
+  const reply = (applied: boolean, error?: string) =>
+    nativePort?.postMessage({
+      type: "NAVIGATE_RESULT",
+      requestId: message && message.requestId,
+      applied,
+      error,
+    });
+  if (!request) {
+    reply(false, "invalid request");
+    return;
+  }
+  browserApi.tabs.get(request.tabId, (tab) => {
+    if (browserApi.runtime.lastError || !tab) {
+      reply(false, "no such tab");
+      return;
+    }
+    if (!tabStillOn(tab.url, request.expectedUrl)) {
+      reply(false, "tab moved on");
+      return;
+    }
+    browserApi.tabs
+      .update(request.tabId, { url: request.url })
+      .then(() => reply(true))
+      .catch((err) => reply(false, String(err)));
+  });
+}
 
 // ------------------------------------------------ Notifications ------------------------------------------------ //
 
